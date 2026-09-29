@@ -466,6 +466,12 @@
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
       <p>Entrada 15:00 h · Salida 10:00 h · No mascotas · No fumar dentro<br><span class="text-cream/50">Nº de registro: A/JA/00117</span></p>
     </div>
+    <nav class="mx-auto mt-6 flex max-w-7xl flex-wrap justify-center gap-x-5 gap-y-2 border-t border-white/10 px-4 pt-5 text-xs text-cream/50" aria-label="Textos legales">
+      <a href="aviso-legal.html" class="hover:text-cream">Aviso legal</a>
+      <a href="privacidad.html" class="hover:text-cream">Política de privacidad</a>
+      <a href="cookies.html" class="hover:text-cream">Política de cookies</a>
+      <a href="condiciones-reserva.html" class="hover:text-cream">Condiciones de reserva</a>
+    </nav>
   </footer>
 
   <!-- Botón flotante de reserva (solo móvil) -->
@@ -508,6 +514,10 @@
           <textarea name="comentarios" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></textarea></label>
 
         <p class="rounded-xl bg-pine-50 px-4 py-3 text-xs text-pine-700">Entrada 15:00 h · Salida 10:00 h · No se aceptan mascotas · No se permite fumar dentro</p>
+        <label class="flex items-start gap-3 text-sm text-pine-800">
+          <input type="checkbox" name="privacidad" required class="mt-0.5 h-5 w-5 accent-pine-700" />
+          <span>He leído la <a href="privacidad.html" target="_blank" class="font-semibold underline">política de privacidad</a> y acepto que se usen mis datos para responder a mi solicitud.</span></label>
+        <p class="-mt-2 text-xs leading-relaxed text-pine-700/70">Responsable: Isabel Moreno Sánchez. Finalidad: responder a tu solicitud de reserva. Legitimación: tu consentimiento. No se ceden datos a terceros salvo obligación legal. Puedes ejercer tus derechos en info@cabanaslospinos.com.</p>
         <p id="formError" class="hidden text-sm font-medium text-red-700"></p>
         <p id="formOk" class="hidden rounded-xl bg-pine-50 px-4 py-3 text-sm font-medium text-pine-800"></p>
 
@@ -766,6 +776,7 @@
       if (!d.entrada || !d.salida || d.salida <= d.entrada) error = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
       else if (!(+d.personas >= 1 && +d.personas <= max)) error = `Este alojamiento admite hasta ${max} personas.`;
       else if (!d.nombre.trim() || !d.telefono.trim()) error = 'Indica tu nombre y teléfono.';
+      else if (!d.privacidad) error = 'Acepta la política de privacidad para enviar la solicitud.';
       $('#formError').textContent = error;
       $('#formError').classList.toggle('hidden', !error);
       $('#formOk').classList.add('hidden');

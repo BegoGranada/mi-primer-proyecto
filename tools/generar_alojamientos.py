@@ -23,6 +23,21 @@ UPLOADS = 'https://cabanaslospinos.com/wp-content/uploads/'
 # Nº de registro oficial de turismo: es el mismo para todo el complejo (confirmado por Begoña)
 REGISTRO = 'A/JA/00117'
 
+# Textos legales: datos del titular (según los textos legales de cabanaslospinos.com)
+TITULAR = {
+    'nombre': 'Isabel Moreno Sánchez',
+    'nif': '[NIF]',
+    'domicilio': 'C/ Arroyo Los Ubios, 14 · 23478 Arroyo Frío, La Iruela (Jaén)',
+    'email': 'info@cabanaslospinos.com',
+    'telefono': '686 23 58 88',
+    'web': 'https://cabanaslospinos.com',
+    'actualizado': 'septiembre de 2026',
+}
+LEGALES = [('aviso-legal.html', 'Aviso legal'), ('privacidad.html', 'Política de privacidad'),
+           ('cookies.html', 'Política de cookies'), ('condiciones-reserva.html', 'Condiciones de reserva')]
+LEGALES_PIE = ('    <nav class="mx-auto mt-6 flex max-w-7xl flex-wrap justify-center gap-x-5 gap-y-2 border-t border-white/10 px-4 pt-5 text-xs text-cream/50" aria-label="Textos legales">\n'
+               + ''.join(f'      <a href="{h}" class="hover:text-cream">{t}</a>\n' for h, t in LEGALES) + '    </nav>')
+
 CARPETAS = ['2026/07', '2026/06', '2026/05', '2026/04', '2026/03']
 
 
@@ -375,6 +390,10 @@ def pagina(a, cfg, css):
           <p class="text-sm">Mascotas: No se aceptan.</p>
           <label class="block"><span class="text-sm font-medium">Comentarios (opcional):</span>
             <textarea name="comentarios" rows="3" placeholder="¿Necesitas comentarnos algo?" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0"></textarea></label>
+          <label class="flex items-start gap-3 text-sm text-cream/90">
+            <input type="checkbox" name="privacidad" required class="mt-0.5 h-5 w-5 accent-wood-500" />
+            <span>He leído la <a href="privacidad.html" target="_blank" class="font-semibold underline">política de privacidad</a> y acepto que se usen mis datos para responder a mi solicitud.</span></label>
+          <p class="-mt-3 text-xs leading-relaxed text-cream/60">Responsable: Isabel Moreno Sánchez. Finalidad: responder a tu solicitud de reserva. Legitimación: tu consentimiento. No se ceden datos a terceros salvo obligación legal. Puedes ejercer tus derechos en info@cabanaslospinos.com.</p>
           <p data-error class="hidden rounded-lg bg-red-900/40 px-4 py-3 text-sm font-medium text-red-100"></p>
           <p data-ok class="hidden rounded-lg bg-pine-700/80 px-4 py-3 text-sm font-medium text-cream"></p>
           <div class="grid gap-3 pt-2 sm:grid-cols-2">
@@ -533,6 +552,7 @@ def pagina(a, cfg, css):
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a><br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
     </div>
+{LEGALES_PIE}
   </footer>
 
   <button data-open-booking class="fixed inset-x-4 bottom-4 z-30 rounded-full bg-wood-500 py-4 font-semibold text-white shadow-2xl shadow-wood-700/40 sm:hidden">Reservar {e(a["nombre"])}</button>
@@ -621,6 +641,7 @@ def pagina(a, cfg, css):
       else if (!d.telefono.trim()) err = 'Indica tu teléfono.';
       else if (!d.entrada || !d.salida || d.salida <= d.entrada) err = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
       else if (!(+d.personas >= 1 && +d.personas <= max)) err = `Este alojamiento admite hasta ${{max}} personas.`;
+      else if (!d.privacidad) err = 'Acepta la política de privacidad para enviar la solicitud.';
       caja.textContent = err; caja.classList.toggle('hidden', !err);
       if (err) return;
       const msg = `Hola, me gustaría reservar:\\n• Alojamiento: ${{d.alojamiento}}\\n• Entrada: ${{d.entrada}} (15:00 h)\\n• Salida: ${{d.salida}} (10:00 h)\\n• Personas: ${{d.personas}}\\n• Nombre: ${{d.nombre}}\\n• Email: ${{d.email}}\\n• Teléfono: ${{d.telefono}}` + (d.comentarios ? `\\n• Comentarios: ${{d.comentarios}}` : '');
@@ -780,6 +801,7 @@ def pagina_noticia(n, cfg, css):
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a><br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
     </div>
+{LEGALES_PIE}
   </footer>
 
   <script>
@@ -989,6 +1011,7 @@ def pagina_entorno(cfg, css):
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a><br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
     </div>
+{LEGALES_PIE}
   </footer>
 
   <script>
@@ -1024,8 +1047,168 @@ def pagina_entorno(cfg, css):
 '''
 
 
+# ---------------------------------------------------------------------------
+# TEXTOS LEGALES (LSSI-CE, RGPD y LOPDGDD). Texto base: revisar con la
+# asesoría del titular y completar los datos entre corchetes.
+# ---------------------------------------------------------------------------
+def _h2(t):
+    return f'<h2 class="pt-6 font-serif text-3xl font-semibold text-pine-900">{t}</h2>'
+
+
+def _lista(items):
+    return '<ul class="list-disc space-y-1.5 pl-6">' + ''.join(f'<li>{i}</li>' for i in items) + '</ul>'
+
+
+def pagina_legal(cfg, css, archivo, titulo, descripcion, cuerpo):
+    T = TITULAR
+    otros = ''.join(f'<a href="{h}" class="rounded-full border border-stone-150 px-4 py-2 {"bg-pine-800 text-cream" if h == archivo else "text-pine-800 hover:bg-white"}">{t}</a>' for h, t in LEGALES)
+    return f'''<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- Página GENERADA por tools/generar_alojamientos.py: edita los textos allí -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{e(titulo)} · Cabañas de Madera Los Pinos</title>
+  <meta name="description" content="{e(descripcion)}" />
+  <meta name="theme-color" content="#1a261b" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  {cfg}
+  {css}
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+{cabecera('')}
+
+  <main>
+    <section class="bg-pine-900 pb-14 pt-36 text-center text-cream">
+      <nav aria-label="Ruta" class="mb-5 text-xs uppercase tracking-[.2em] text-cream/70"><a href="index.html" class="hover:text-cream">Inicio</a> <span class="mx-2">/</span> {e(titulo)}</nav>
+      <h1 class="font-serif text-5xl font-semibold sm:text-6xl">{e(titulo)}</h1>
+      <p class="mt-3 text-sm text-cream/60">Última actualización: {e(T["actualizado"])}</p>
+    </section>
+    <section class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+      <p class="rounded-2xl border border-wood-300/60 bg-wood-300/15 px-4 py-3 text-sm text-pine-800">Web en modo demostración: completa los datos entre corchetes y revisa el texto con tu asesoría antes de publicar.</p>
+      <div class="mt-8 space-y-4 leading-relaxed text-pine-700/90">{cuerpo}</div>
+      <nav class="mt-14 flex flex-wrap gap-3 border-t border-stone-150 pt-6 text-sm" aria-label="Otros textos legales">{otros}</nav>
+    </section>
+  </main>
+
+  <footer class="bg-pine-900 pb-10 pt-10 text-sm text-cream/60">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo src="{LOGO_H}" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
+      <p><a href="mailto:{T["email"]}" class="hover:text-cream">{T["email"]}</a> · <a href="tel:+34686235888" class="hover:text-cream">{T["telefono"]}</a></p>
+    </div>
+{LEGALES_PIE}
+  </footer>
+
+  <script>
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+    $$('img[data-logo]').forEach(img => {{
+      const ok = () => {{ img.classList.remove('hidden'); img.parentElement.querySelectorAll('[data-logo-fallback]').forEach(x => x.classList.add('hidden')); }};
+      if (img.complete && img.naturalWidth) ok(); else {{ img.onload = ok; img.onerror = () => img.remove(); }}
+    }});
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu'), header = $('#siteHeader');
+    menuBtn.addEventListener('click', () => menuBtn.setAttribute('aria-expanded', !mobileMenu.classList.toggle('hidden')));
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
+    addEventListener('scroll', onScroll, {{ passive: true }}); onScroll();
+    document.addEventListener('click', ev => {{
+      if (ev.target.closest('[data-open-booking]')) {{ ev.preventDefault(); location.href = 'index.html#alojamientos'; }}
+    }});
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+'''
+
+
+def textos_legales():
+    T = TITULAR
+    mail = f'<a class="font-semibold text-wood-600 underline" href="mailto:{T["email"]}">{T["email"]}</a>'
+    aviso = f'''
+      {_h2('1. Datos del titular')}
+      <p>En cumplimiento del artículo 10 de la Ley 34/2002, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), estos son los datos del titular de esta web:</p>
+      {_lista([f'<b>Titular:</b> {e(T["nombre"])}', f'<b>NIF:</b> {e(T["nif"])}', '<b>Nombre comercial:</b> Cabañas de Madera Los Pinos',
+               f'<b>Domicilio:</b> {e(T["domicilio"])}', f'<b>Correo electrónico:</b> {mail}', f'<b>Teléfono:</b> {e(T["telefono"])}',
+               f'<b>Web:</b> {e(T["web"])}', f'<b>Registro de Turismo de Andalucía:</b> {REGISTRO}'])}
+      {_h2('2. Objeto y condiciones de uso')}
+      <p>Esta web informa sobre los alojamientos rurales de Cabañas de Madera Los Pinos, sus instalaciones, servicios, precios orientativos, entorno y formas de contacto, y permite enviar solicitudes de reserva. La información es orientativa y no constituye una oferta contractual vinculante hasta que la reserva se confirma.</p>
+      <p>Al usar la web te comprometes a hacerlo de buena fe y conforme a la ley, sin dañar la web ni los derechos del titular o de terceros.</p>
+      {_h2('3. Propiedad intelectual e industrial')}
+      <p>Los textos, fotografías, logotipos y el diseño de esta web pertenecen a {e(T["nombre"])} o se usan con autorización de sus titulares. Quedan reservados todos los derechos; no pueden reproducirse sin permiso.</p>
+      {_h2('4. Enlaces a otras webs')}
+      <p>La web enlaza a servicios de terceros (WhatsApp, YouTube, Google Maps y otras webs de interés turístico). El titular no se hace responsable de sus contenidos ni de sus políticas.</p>
+      {_h2('5. Responsabilidad')}
+      <p>El titular procura que la información esté al día, pero no garantiza la ausencia de errores ni la disponibilidad continua de la web, y no responde de los daños derivados de su uso indebido.</p>
+      {_h2('6. Legislación aplicable')}
+      <p>Este aviso se rige por la legislación española. En las controversias con consumidores serán competentes los juzgados y tribunales de su domicilio.</p>'''
+    privacidad = f'''
+      <p>Tratamos tus datos personales conforme al Reglamento (UE) 2016/679 (RGPD) y a la Ley Orgánica 3/2018 (LOPDGDD).</p>
+      {_h2('1. Responsable del tratamiento')}
+      {_lista([f'<b>Titular:</b> {e(T["nombre"])} · NIF {e(T["nif"])}', f'<b>Dirección:</b> {e(T["domicilio"])}', f'<b>Web:</b> {e(T["web"])}', f'<b>Correo electrónico:</b> {mail}'])}
+      {_h2('2. Qué datos tratamos')}
+      <p>A través de los formularios de reserva: nombre, teléfono, correo electrónico (si lo indicas), alojamiento, fechas, número de personas y los comentarios que quieras añadir. Si nos escribes por WhatsApp, teléfono o email, los datos que nos facilites.</p>
+      <p>Si confirmas una estancia, la normativa de registro de viajeros (Real Decreto 933/2021) nos obliga a recoger además los datos de identidad de los huéspedes y a comunicarlos al Ministerio del Interior (SES.Hospedajes).</p>
+      {_h2('3. Para qué usamos tus datos')}
+      {_lista(['Atender tus consultas y solicitudes de disponibilidad o reserva.',
+               'Gestionar tu reserva y mantener las comunicaciones relacionadas con tu estancia.',
+               'Cumplir las obligaciones legales de registro de viajeros y de facturación.'])}
+      <p>No usamos tus datos para enviarte publicidad ni boletines, salvo que lo consientas expresamente.</p>
+      {_h2('4. Legitimación')}
+      <p>Tu consentimiento al enviar el formulario y aceptar esta política (art. 6.1.a RGPD), que puedes retirar en cualquier momento; la gestión de la reserva que tú solicitas (art. 6.1.b RGPD); y el cumplimiento de obligaciones legales (art. 6.1.c RGPD) en el registro de viajeros y la facturación.</p>
+      {_h2('5. Conservación')}
+      <p>Durante el tiempo necesario para atender tu solicitud y, después, durante los plazos legales: tres años para el registro de viajeros (RD 933/2021) y los que marque la normativa fiscal para la facturación.</p>
+      {_h2('6. Destinatarios')}
+      <p>No cedemos tus datos a terceros salvo obligación legal (por ejemplo, la comunicación de viajeros al Ministerio del Interior). Pueden acceder a ellos los proveedores técnicos que nos prestan servicio (alojamiento web, correo y, si lo usas, WhatsApp), con las garantías del RGPD; algunos pueden tratar datos fuera del Espacio Económico Europeo amparados en decisiones de adecuación o cláusulas contractuales tipo.</p>
+      {_h2('7. Tus derechos')}
+      <p>Puedes solicitar el acceso, la rectificación, la supresión, la limitación u oposición al tratamiento y la portabilidad de tus datos, y retirar tu consentimiento, escribiendo a {mail}. También puedes reclamar ante la Agencia Española de Protección de Datos (<a class="font-semibold text-wood-600 underline" href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>).</p>
+      {_h2('8. Seguridad')}
+      <p>Aplicamos medidas técnicas y organizativas razonables para proteger tus datos frente a pérdidas o accesos no autorizados.</p>'''
+    cookies = f'''
+      <p>Esta política explica qué cookies y tecnologías parecidas usa esta web, conforme al artículo 22.2 de la LSSI-CE y a la guía de la Agencia Española de Protección de Datos.</p>
+      {_h2('1. ¿Usamos cookies de seguimiento?')}
+      <p><b>No.</b> Esta web no usa cookies propias de análisis ni de publicidad.</p>
+      {_h2('2. Vídeo de la portada')}
+      <p>El vídeo de la portada se reproduce con el modo de privacidad mejorada de YouTube (youtube-nocookie.com), que no instala cookies de seguimiento hasta que interactúas con el reproductor. Si lo haces, se aplica la política de privacidad de Google.</p>
+      {_h2('3. Almacenamiento técnico')}
+      <p>La web puede guardar en tu navegador lo imprescindible para funcionar (por ejemplo, el acceso al área de propietarios). Es almacenamiento técnico, exento de consentimiento, y puedes borrarlo desde tu navegador.</p>
+      {_h2('4. Servicios de terceros')}
+      <p>Cargamos las tipografías desde Google Fonts y una librería de estilos desde un servidor externo (CDN). Estos servicios reciben tu dirección IP para enviarte los archivos, pero no instalamos con ellos cookies de seguimiento. Los enlaces a WhatsApp o Google Maps te llevan a sus webs, con sus propias políticas.</p>
+      {_h2('5. Cómo gestionar las cookies')}
+      <p>Puedes ver, bloquear o borrar las cookies desde la configuración de tu navegador (Chrome, Safari, Firefox, Edge). Si incorporamos cookies no técnicas, te pediremos antes tu consentimiento.</p>'''
+    condiciones = f'''
+      <p>Estas condiciones se aplican a las reservas de los alojamientos de Cabañas de Madera Los Pinos (Registro de Turismo de Andalucía {REGISTRO}).</p>
+      {_h2('1. Cómo se reserva')}
+      <p>Los formularios de la web, WhatsApp, el teléfono o el email envían una <b>solicitud</b>. La reserva queda hecha cuando te la confirmamos por escrito, con el alojamiento, las fechas, el número de personas y el precio total.</p>
+      {_h2('2. Precios y pago')}
+      <p>Los precios publicados son por noche y alojamiento, varían según la temporada y se confirman al reservar. Incluyen IVA.</p>
+      <p><b>Señal y forma de pago:</b> [indicar el importe o porcentaje de la señal, cómo se paga y cuándo se abona el resto].</p>
+      {_h2('3. Cancelaciones y cambios')}
+      <p>[Indicar la política de cancelación: plazos, devolución de la señal y cambios de fecha.]</p>
+      {_h2('4. Llegada y salida')}
+      {_lista(['Entrada a partir de las 15:00 h y salida antes de las 10:00 h.',
+               'A la llegada hay que presentar el DNI, NIE o pasaporte de todos los huéspedes, como exige el registro de viajeros (RD 933/2021).',
+               'La capacidad máxima de cada alojamiento no puede superarse.'])}
+      {_h2('5. Normas de los alojamientos')}
+      {_lista(['No se aceptan mascotas.', 'No se permite fumar dentro de los alojamientos.',
+               'Te pedimos respetar el descanso de los demás huéspedes y el entorno natural.'])}
+      {_h2('6. Hojas de reclamaciones')}
+      <p>Hay hojas de quejas y reclamaciones a disposición de los clientes, conforme a la normativa de la Junta de Andalucía. También puedes escribirnos a {mail}.</p>'''
+    return [('aviso-legal.html', 'Aviso legal', 'Aviso legal de la web de Cabañas de Madera Los Pinos, Arroyo Frío.', aviso),
+            ('privacidad.html', 'Política de privacidad', 'Cómo trata Cabañas de Madera Los Pinos los datos de reservas y consultas.', privacidad),
+            ('cookies.html', 'Política de cookies', 'Política de cookies de la web de Cabañas de Madera Los Pinos.', cookies),
+            ('condiciones-reserva.html', 'Condiciones de reserva', 'Condiciones de reserva de los alojamientos de Cabañas de Madera Los Pinos.', condiciones)]
+
+
 def main():
     cfg, css = extraer_tema()
+    for archivo, titulo, desc, cuerpo in textos_legales():
+        (RAIZ / archivo).write_text(pagina_legal(cfg, css, archivo, titulo, desc, cuerpo), encoding='utf-8')
+        print('✓', archivo)
     (RAIZ / 'entorno.html').write_text(pagina_entorno(cfg, css), encoding='utf-8')
     print('✓ entorno.html')
     for a in ALOJAMIENTOS:

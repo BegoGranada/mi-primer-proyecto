@@ -288,6 +288,10 @@
           <p class="text-sm">Mascotas: No se aceptan.</p>
           <label class="block"><span class="text-sm font-medium">Comentarios (opcional):</span>
             <textarea name="comentarios" rows="3" placeholder="¿Necesitas comentarnos algo?" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0"></textarea></label>
+          <label class="flex items-start gap-3 text-sm text-cream/90">
+            <input type="checkbox" name="privacidad" required class="mt-0.5 h-5 w-5 accent-wood-500" />
+            <span>He leído la <a href="privacidad.html" target="_blank" class="font-semibold underline">política de privacidad</a> y acepto que se usen mis datos para responder a mi solicitud.</span></label>
+          <p class="-mt-3 text-xs leading-relaxed text-cream/60">Responsable: Isabel Moreno Sánchez. Finalidad: responder a tu solicitud de reserva. Legitimación: tu consentimiento. No se ceden datos a terceros salvo obligación legal. Puedes ejercer tus derechos en info@cabanaslospinos.com.</p>
           <p data-error class="hidden rounded-lg bg-red-900/40 px-4 py-3 text-sm font-medium text-red-100"></p>
           <p data-ok class="hidden rounded-lg bg-pine-700/80 px-4 py-3 text-sm font-medium text-cream"></p>
           <div class="grid gap-3 pt-2 sm:grid-cols-2">
@@ -351,6 +355,12 @@
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a><br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
     </div>
+    <nav class="mx-auto mt-6 flex max-w-7xl flex-wrap justify-center gap-x-5 gap-y-2 border-t border-white/10 px-4 pt-5 text-xs text-cream/50" aria-label="Textos legales">
+      <a href="aviso-legal.html" class="hover:text-cream">Aviso legal</a>
+      <a href="privacidad.html" class="hover:text-cream">Política de privacidad</a>
+      <a href="cookies.html" class="hover:text-cream">Política de cookies</a>
+      <a href="condiciones-reserva.html" class="hover:text-cream">Condiciones de reserva</a>
+    </nav>
   </footer>
 
   <button data-open-booking class="fixed inset-x-4 bottom-4 z-30 rounded-full bg-wood-500 py-4 font-semibold text-white shadow-2xl shadow-wood-700/40 sm:hidden">Reservar Mirador de las Palomas</button>
@@ -383,6 +393,10 @@
           <p class="text-sm">Mascotas: No se aceptan.</p>
           <label class="block"><span class="text-sm font-medium">Comentarios (opcional):</span>
             <textarea name="comentarios" rows="3" placeholder="¿Necesitas comentarnos algo?" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0"></textarea></label>
+          <label class="flex items-start gap-3 text-sm text-cream/90">
+            <input type="checkbox" name="privacidad" required class="mt-0.5 h-5 w-5 accent-wood-500" />
+            <span>He leído la <a href="privacidad.html" target="_blank" class="font-semibold underline">política de privacidad</a> y acepto que se usen mis datos para responder a mi solicitud.</span></label>
+          <p class="-mt-3 text-xs leading-relaxed text-cream/60">Responsable: Isabel Moreno Sánchez. Finalidad: responder a tu solicitud de reserva. Legitimación: tu consentimiento. No se ceden datos a terceros salvo obligación legal. Puedes ejercer tus derechos en info@cabanaslospinos.com.</p>
           <p data-error class="hidden rounded-lg bg-red-900/40 px-4 py-3 text-sm font-medium text-red-100"></p>
           <p data-ok class="hidden rounded-lg bg-pine-700/80 px-4 py-3 text-sm font-medium text-cream"></p>
           <div class="grid gap-3 pt-2 sm:grid-cols-2">
@@ -466,6 +480,7 @@
       else if (!d.telefono.trim()) err = 'Indica tu teléfono.';
       else if (!d.entrada || !d.salida || d.salida <= d.entrada) err = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
       else if (!(+d.personas >= 1 && +d.personas <= max)) err = `Este alojamiento admite hasta ${max} personas.`;
+      else if (!d.privacidad) err = 'Acepta la política de privacidad para enviar la solicitud.';
       caja.textContent = err; caja.classList.toggle('hidden', !err);
       if (err) return;
       const msg = `Hola, me gustaría reservar:\n• Alojamiento: ${d.alojamiento}\n• Entrada: ${d.entrada} (15:00 h)\n• Salida: ${d.salida} (10:00 h)\n• Personas: ${d.personas}\n• Nombre: ${d.nombre}\n• Email: ${d.email}\n• Teléfono: ${d.telefono}` + (d.comentarios ? `\n• Comentarios: ${d.comentarios}` : '');
