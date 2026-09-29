@@ -100,8 +100,11 @@ ALOJAMIENTOS = [
                       'calefacción y aire acondicionado.']),
     dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto=['puntal_enebrillo1.webp', 'portada3.webp'],
          max=4, precio='90 – 150 €', habs='2 habitaciones',
-         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
-         wifi=True, extras=[],
+         camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
+                'Habitaciones separadas'],
+         wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
+         registro='A/JA/00117',
+         lema='Disfrute de la Sierra de Cazorla',
          # Fotos reales de la web original (pestaña Red de la página de Puntal del Enebrillo).
          # Su página carga puntal_enebrillo1.webp donde Montemalo carga portada2 y
          # Las Albercas portada5; portada3 queda de respaldo.
@@ -112,10 +115,11 @@ ALOJAMIENTOS = [
                   '20260326_133358.webp', '20260326_133319.webp', '20260326_132954.webp',
                   '20260326_133002.webp', '20260326_133049.webp', '20260326_132951.webp',
                   '20260517_113616.webp', '20260326_132933.webp', '20260517_113623.webp'],
-         descripcion=['Puntal del Enebrillo es una cabaña de madera para 4 personas que toma su nombre '
-                      'de uno de los parajes de la sierra.',
-                      'Dos habitaciones con cama de 135 y todo el equipamiento necesario para disfrutar '
-                      'de una escapada tranquila en Arroyo Frío.']),
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['Con 2 habitaciones puede alojar a 4 personas en 2 camas de matrimonio en 2 habitaciones '
+                      'separadas. Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, nevera, lavadora y '
+                      'horno-microondas, terraza privada, acceso a piscina y barbacoa compartidas (en temporada), '
+                      'calefacción y aire acondicionado.']),
     dict(slug='barranco-de-las-iglesias', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto=['barranco1.webp', 'portada6.webp'],
          max=8, precio='130 – 180 €', habs='2 pisos · 3 habitaciones + buhardilla',
          camas=['3 habitaciones repartidas en 2 pisos', 'Buhardilla con 4 camas individuales'],
