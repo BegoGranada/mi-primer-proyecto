@@ -64,7 +64,7 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # EDITAR: las descripciones pueden sustituirse por los textos originales.
 # ---------------------------------------------------------------------------
 ALOJAMIENTOS = [
-    dict(slug='montemalo', nombre='Montemalo', tipo='Cabaña de madera', foto='portada2.webp',
+    dict(slug='montemalo', lema='Cabaña ideal para 2 parejas', nombre='Montemalo', tipo='Cabaña de madera', foto='portada2.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
                 'Habitaciones separadas'],
@@ -77,10 +77,11 @@ ALOJAMIENTOS = [
                   '20260521_190722.webp', '20260521_190658.webp', '20260521_190757.webp',
                   '20260521_190423.webp'],
          # Texto REAL de la web original (extraído por Begoña, 29 sept 2026)
-         descripcion=['Cabaña ideal para parejas (con opción de alojar a 4 personas en 2 camas de matrimonio '
-                      'en 2 habitaciones separadas). Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, '
-                      'nevera, lavadora y horno-microondas, terraza privada y acceso a piscina y barbacoa '
-                      'compartidas (en temporada). Dispone de calefacción y aire acondicionado.']),
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['Con 2 habitaciones puede alojar a 4 personas en 2 camas de matrimonio en 2 habitaciones '
+                      'separadas. Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, nevera, lavadora y '
+                      'horno-microondas, terraza privada, acceso a piscina y barbacoa compartidas (en temporada), '
+                      'calefacción y aire acondicionado.']),
     dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada5.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
@@ -120,10 +121,11 @@ ALOJAMIENTOS = [
                       'separadas. Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, nevera, lavadora y '
                       'horno-microondas, terraza privada, acceso a piscina y barbacoa compartidas (en temporada), '
                       'calefacción y aire acondicionado.']),
-    dict(slug='barranco-de-las-iglesias', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto=['barranco1.webp', 'portada6.webp'],
-         max=8, precio='130 – 180 €', habs='2 pisos · 3 habitaciones + buhardilla',
-         camas=['3 habitaciones repartidas en 2 pisos', 'Buhardilla con 4 camas individuales'],
-         wifi=True, extras=['Dos pisos'],
+    dict(slug='barranco-de-las-iglesias', lema='Cabaña ideal para familias y grupos', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto=['barranco1.webp', 'portada6.webp'],
+         max=8, precio='130 – 180 €', habs='2 plantas · 3 habitaciones · 2 baños',
+         camas=['2 habitaciones con cama de matrimonio', 'Buhardilla con 4 camas individuales'],
+         wifi=True, extras=['2 baños: uno con ducha de diseño y otro con bañera y ducha', 'Vistas al jardín',
+                             'Terraza privada', 'Horno-microondas', 'Dos plantas'],
          # Fotos reales de la web original (pestaña Red de la página de Barranco de las Iglesias).
          # Su página carga barranco1.webp (como Puntal carga puntal_enebrillo1); portada6 de respaldo.
          cabecera='cabecera_barranco.webp',
@@ -133,14 +135,16 @@ ALOJAMIENTOS = [
                   '20260326_134455.webp', '20260326_134424.webp', '20260326_134102.webp',
                   '20260517_111331.webp', '20260326_134325.webp', '20260326_134449.webp',
                   '20260326_134109.webp', '20260326_134008.webp', '20260326_134013.webp'],
-         descripcion=['Barranco de las Iglesias es nuestra cabaña más grande: dos pisos pensados para '
-                      'grupos y familias numerosas de hasta 8 personas.',
-                      'Tres habitaciones y una amplia buhardilla con 4 camas individuales, ideal para que '
-                      'los más pequeños tengan su propio espacio.']),
-    dict(slug='cabeza-rubia', nombre='Cabeza Rubia', tipo='Cabaña de madera', foto=['principal_cabezarubia.webp', 'portada7.webp'],
-         max=2, precio='50 – 80 €', habs='1 habitación',
-         camas=['Habitación: cama de 135 cm'],
-         wifi=True, extras=[],
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['Es la cabaña más grande, con 2 plantas. Tiene 3 habitaciones con camas individuales y de '
+                      'matrimonio. Puede alojar hasta 8 personas. Cuenta con 2 baños (uno con ducha de diseño y otro '
+                      'con bañera y ducha), vistas al jardín, TV, nevera, lavadora y horno-microondas, terraza '
+                      'privada, 3 habitaciones (2 con cama de matrimonio y una buhardilla con 4 camas individuales), '
+                      'acceso a piscina y barbacoa compartidas (en temporada), calefacción y aire acondicionado.']),
+    dict(slug='cabeza-rubia', lema='Cabaña ideal para una pareja', nombre='Cabeza Rubia', tipo='Cabaña de madera', foto=['principal_cabezarubia.webp', 'portada7.webp'],
+         max=2, precio='50 – 80 €', habs='Estudio',
+         camas=['1 cama de matrimonio en el salón (estudio)'],
+         wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
          # Fotos reales de la web original (pestaña Red de la página de Cabeza Rubia).
          # Su página carga principal_cabezarubia.webp; portada7 de respaldo.
          cabecera='cabecera_cabezarubia.webp',
@@ -148,10 +152,11 @@ ALOJAMIENTOS = [
                   '20260517_112341.webp', '20260517_112043.webp', '20260517_112007.webp',
                   '20260517_111825.webp', '20260517_112304.webp', '20260517_112227.webp',
                   '20260517_111808.webp', '20260517_111725.webp', '20260517_111904.webp'],
-         descripcion=['Cabeza Rubia es una cabaña de madera para 2 personas, perfecta para una escapada '
-                      'en pareja entre pinos.',
-                      'Una habitación con cama de 135, cocina, baño privado y la tranquilidad de Arroyo Frío '
-                      'a las puertas del Parque Natural.']),
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['Se trata de una cabaña sencilla, a modo de estudio, con 1 cama de matrimonio en el salón, '
+                      'perfecta para una pareja. Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, nevera, '
+                      'lavadora y horno-microondas, terraza privada, acceso a piscina y barbacoa compartidas (en '
+                      'temporada), calefacción y aire acondicionado.']),
     dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada', lema='Casa con terraza privada',
          foto=['principal_losPineros.webp'],
          max=3, precio='65 – 80 €', habs='1 habitación',
@@ -190,7 +195,7 @@ ALOJAMIENTOS = [
          # Fotos REALES verificadas en la pestaña Red: su página carga portada8.webp (post-714.css)
          foto=['portada8.webp'],
          max=8, precio='70 – 180 €', habs='3 plantas · 4 habitaciones · 2 baños',
-         camas=['2 habitaciones con camas de matrimonio', 'Resto de habitaciones con camas individuales'],
+         camas=['2 habitaciones con camas de matrimonio', '2 habitaciones con 2 camas individuales cada una'],
          wifi=False,
          extras=['2 baños con ducha', 'Amplio salón', 'Chimenea de leña (leña no incluida)',
                  'Aire acondicionado (frío/calor) en todas las estancias', 'Horno-microondas'],
@@ -206,10 +211,12 @@ ALOJAMIENTOS = [
                   '20260604_131703.webp', '20260508_200052.webp', '20260508_200111.webp',
                   '20260508_200223.webp'],
          # Texto REAL de la web original
-         descripcion=['Tiene 3 plantas con 4 habitaciones y 2 baños, con capacidad para 8 personas. Amplio salón '
-                      'y ubicado en una zona residencial. Cuenta con 2 baños con ducha, TV, nevera, lavadora y '
-                      'horno-microondas, 2 habitaciones con camas de matrimonio, chimenea de leña (leña no '
-                      'incluida) y aire acondicionado (frío/calor) en todas las estancias.']),
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['En realidad tiene 3 plantas con 4 habitaciones y 2 baños, con capacidad para 8 personas. Amplio '
+                      'salón y ubicado en una zona residencial. Cuenta con 2 baños con ducha, TV, nevera, lavadora y '
+                      'horno-microondas, 2 habitaciones con camas de matrimonio, 2 habitaciones con 2 camas '
+                      'individuales cada una, chimenea de leña (leña no incluida) y aire acondicionado (frío/calor) '
+                      'en todas las estancias.']),
 ]
 
 COMUNES = [('🛁', 'Baño privado'), ('🍳', 'Cocina'), ('📺', 'TV'), ('❄️', 'Aire acondicionado'),
