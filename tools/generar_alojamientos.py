@@ -24,6 +24,8 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
 # registro: nº de registro oficial de turismo (opcional; se muestra si existe)
+# galeria: lista de URLs completas de fotos (opcional). Si está vacía, la
+#          sección 'Galería' no se genera. Admite rutas relativas a WP.
 # EDITAR: las descripciones pueden sustituirse por los textos originales.
 # ---------------------------------------------------------------------------
 ALOJAMIENTOS = [
@@ -33,6 +35,9 @@ ALOJAMIENTOS = [
                 'Habitaciones separadas'],
          wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
          registro='A/JA/00117',
+         # EDITAR: pega aquí las 6 URLs reales del mosaico de Montemalo
+         # (p. ej. WP + 'montemalo-1.webp' o la URL completa)
+         galeria=[],
          # Texto REAL de la web original (extraído por Begoña, 29 sept 2026)
          descripcion=['Cabaña ideal para parejas (con opción de alojar a 4 personas en 2 camas de matrimonio '
                       'en 2 habitaciones separadas). Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, '
@@ -205,6 +210,25 @@ def pagina(a, cfg, css):
                             'info': f'{o["max"]} personas · {o["habs"]} · {o["precio"]}/noche'}
                            for o in ALOJAMIENTOS], ensure_ascii=False)
     registro = a.get('registro')
+    fotos_gal = [u if u.startswith('http') else WP + u for u in a.get('galeria', [])]
+    items_gal = '\n'.join(
+        f'          <a href="{e(u)}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg shadow-md" data-gal>'
+        f'<img src="{e(u)}" alt="{e(nombre_full)} — foto {i}" loading="lazy" '
+        f'class="rounded-lg shadow-md hover:scale-105 transition-transform duration-300 object-cover w-full h-64" '
+        f'onerror="this.closest(\'[data-gal]\').remove()"></a>'
+        for i, u in enumerate(fotos_gal, 1))
+    galeria = f'''
+
+    <!-- =================== GALERÍA (fotos reales) =================== -->
+    <section id="galeria" class="bg-white py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Galería</p>
+        <h2 class="mt-2 font-serif text-4xl font-semibold">Fotos de {e(nombre_full)}</h2>
+        <div class="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+{items_gal}
+        </div>
+      </div>
+    </section>''' if fotos_gal else ''
     reg_aside = (f'\n            <p class="mt-4 border-t border-white/10 pt-4 text-center text-xs uppercase tracking-widest text-cream/60">Nº de registro: {e(registro)}</p>' if registro else '')
     reg_normas = (f'\n        <p class="mt-6 text-sm text-pine-700/70">Número de registro oficial de turismo: <strong class="font-semibold text-pine-800">{e(registro)}</strong></p>' if registro else '')
     descripcion_meta = f'{nombre_full}: {a["tipo"].lower()} para {a["max"]} personas en Arroyo Frío, Sierra de Cazorla. {a["precio"]}/noche.'
@@ -303,6 +327,7 @@ def pagina(a, cfg, css):
       </div>
     </section>
 
+    {galeria}
     <!-- =================== SERVICIOS =================== -->
     <section class="bg-stone-150 py-20 sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
