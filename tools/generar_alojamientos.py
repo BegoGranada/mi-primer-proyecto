@@ -67,6 +67,13 @@ ALOJAMIENTOS = [
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
          wifi=True, extras=[],
+         # Fotos reales de la web original (pestaña Red de la página de Las Albercas)
+         cabecera='cabecera_lasAlbercas.webp',
+         galeria=['20260517_112533.webp', '20260517_112643.webp', '20260517_112829.webp',
+                  '20260517_112801.webp', '20260521_190928.webp', '20260517_113227.webp',
+                  '20260517_113233.webp', '20260517_112837.webp', '20260517_113138.webp',
+                  '20260517_112736.webp', '20260517_112943.webp', '20260517_113000.webp',
+                  '20260517_113038.webp', '20260517_113157.webp'],
          descripcion=['Las Albercas es una cabaña de madera para 4 personas rodeada de pinos, '
                       'en el corazón de la Sierra de Cazorla.',
                       'Con dos habitaciones de cama de 135, cocina equipada y baño privado, es una base '
