@@ -63,7 +63,7 @@ ALOJAMIENTOS = [
                       'en 2 habitaciones separadas). Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, '
                       'nevera, lavadora y horno-microondas, terraza privada y acceso a piscina y barbacoa '
                       'compartidas (en temporada). Dispone de calefacción y aire acondicionado.']),
-    dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada3.webp',
+    dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada5.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
          wifi=True, extras=[],
@@ -78,7 +78,7 @@ ALOJAMIENTOS = [
                       'en el corazón de la Sierra de Cazorla.',
                       'Con dos habitaciones de cama de 135, cocina equipada y baño privado, es una base '
                       'cómoda para descubrir las rutas del Parque Natural.']),
-    dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto='portada5.webp',
+    dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto='portada3.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
          wifi=True, extras=[],
