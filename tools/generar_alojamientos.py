@@ -622,11 +622,182 @@ def pagina(a, cfg, css):
 '''
 
 
+# ---------------------------------------------------------------------------
+# NOTICIAS (texto REAL de la web original). Las fotos de septiembre se buscan
+# primero en 2026/09 y 2026/08, y después en CARPETAS.
+# ---------------------------------------------------------------------------
+CARPETAS_NOTICIAS = ['2026/09', '2026/08'] + CARPETAS
+
+NOTICIAS = [
+    dict(slug='la-berrea-en-cazorla', titulo='La berrea en Cazorla',
+         fecha='2026-09-23', fecha_txt='23 de septiembre de 2026',
+         cabecera='img_header.webp',
+         resumen='El espectáculo del otoño que tienes que escuchar. Hay sonidos que se escuchan. '
+                 'Y otros que se sienten. Cuando llega septiembre, la Sierra de Cazorla cambia de ritmo…',
+         # Cuerpo del artículo: ('h2'|'h3'|'p'|'img'|'cta', contenido). En 'p' se admite <strong>.
+         cuerpo=[
+             ('img', 'berrea1-1200x675.webp', 'Ciervo asomando entre la vegetación de la Sierra de Cazorla'),
+             ('h2', 'El espectáculo del otoño que tienes que escuchar'),
+             ('h3', 'Hay sonidos que se escuchan. Y otros que se sienten'),
+             ('p', 'Cuando llega septiembre, la Sierra de Cazorla cambia de ritmo. Los días comienzan a ser más '
+                   'frescos, los bosques se preparan para el otoño y, entre pinos y montañas, comienza uno de los '
+                   'espectáculos naturales más impresionantes de nuestra sierra: <strong>la berrea del ciervo</strong>.'),
+             ('img', 'berrea_ppal-1200x500.webp', 'Ciervo bramando durante la berrea'),
+             ('p', 'Durante la época de celo, los machos de ciervo lanzan sus característicos y profundos bramidos '
+                   'para atraer a las hembras y marcar su territorio. En la Sierra de Cazorla, estos sonidos pueden '
+                   'escucharse entre septiembre y octubre, convirtiendo una escapada a la naturaleza en una '
+                   'experiencia difícil de olvidar.'),
+             ('h2', 'Una experiencia para vivir sin prisas'),
+             ('p', 'La mejor forma de disfrutar de la berrea es acercarse a la naturaleza con calma y respeto. Al '
+                   'amanecer o al caer la tarde, cuando la actividad de los animales aumenta, la sierra adquiere una '
+                   'atmósfera muy especial.'),
+             ('p', 'Y después de una jornada recorriendo el Parque Natural, ¿qué mejor que volver a una '
+                   '<strong>cabaña de madera en Arroyo Frío</strong>?'),
+             ('p', 'En <strong>Cabañas Los Pinos</strong> te alojarás en pleno corazón de la Sierra de Cazorla, '
+                   'rodeado de naturaleza y con todo lo necesario para disfrutar de una escapada de otoño.'),
+             ('p', '🍂 <strong>Este otoño, ven a escuchar la sierra</strong>'),
+             ('p', 'Si tienes pendiente vivir la berrea, <strong>septiembre y octubre son un momento perfecto para '
+                   'descubrir Cazorla de una forma diferente</strong>.'),
+             ('p', 'Naturaleza, senderos, ciervos, aire puro y el sonido de la sierra al caer la tarde.'),
+             ('p', '<strong>Prepara tu escapada y ven a vivir la berrea en Cazorla desde Cabañas Los Pinos, '
+                   'en Arroyo Frío.</strong>'),
+             ('img', 'berrea2-1200x802.webp', 'Ciervos en la Sierra de Cazorla al caer la tarde'),
+             ('cta', '👉 ¿Te vienes a escucharla?'),
+         ]),
+]
+
+
+def rutas_noticia(nombre):
+    return [f'{UPLOADS}{c}/{nombre}' for c in CARPETAS_NOTICIAS]
+
+
+def pagina_noticia(n, cfg, css):
+    bloques = []
+    for b in n['cuerpo']:
+        tipo = b[0]
+        if tipo == 'h2':
+            bloques.append(f'        <h2 class="mt-14 font-serif text-4xl font-semibold leading-tight sm:text-5xl">{e(b[1])}</h2>')
+        elif tipo == 'h3':
+            bloques.append(f'        <h3 class="mt-3 font-serif text-2xl font-semibold text-pine-800">{e(b[1])}</h3>')
+        elif tipo == 'p':
+            bloques.append(f'        <p class="mt-5 text-lg leading-relaxed text-pine-700/90">{b[1]}</p>')  # admite <strong>
+        elif tipo == 'img':
+            bloques.append(f'        <figure class="mt-10 overflow-hidden rounded-3xl shadow-soft">'
+                           f'<img data-srcs="{e("|".join(rutas_noticia(b[1])))}" alt="{e(b[2])}" loading="lazy" '
+                           f'class="w-full object-cover"></figure>')
+        elif tipo == 'cta':
+            bloques.append(f'''        <div class="mt-14 rounded-3xl bg-pine-800 p-8 text-center text-cream sm:p-12">
+          <p class="font-serif text-3xl font-semibold sm:text-4xl">{e(b[1])}</p>
+          <p class="mt-3 text-cream/75">Elige tu cabaña en Arroyo Frío y reserva directamente con nosotros.</p>
+          <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <a href="index.html#alojamientos" class="rounded-full bg-wood-500 px-8 py-4 font-semibold text-white transition hover:bg-wood-600">Ver alojamientos</a>
+            <a href="https://wa.me/34686235888?text={e('Hola, me interesa una escapada para la berrea')}" target="_blank" rel="noopener" class="rounded-full border border-cream/40 px-8 py-4 font-semibold transition hover:bg-cream/10">WhatsApp directo</a>
+          </div>
+        </div>''')
+    cuerpo = '\n'.join(bloques)
+    hero = '|'.join(rutas_noticia(n['cabecera']))
+    return f'''<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- ============================================================
+       Noticia: {n["titulo"]} — Cabañas de Madera Los Pinos
+       Página GENERADA por tools/generar_alojamientos.py (lista NOTICIAS):
+       edita los datos allí y vuelve a ejecutarlo, no a mano.
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{e(n["titulo"])} · Cabañas de Madera Los Pinos · Arroyo Frío</title>
+  <meta name="description" content="{e(n["resumen"])}" />
+  <meta name="theme-color" content="#1a261b" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  {cfg}
+  {css}
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+{cabecera('')}
+
+  <main>
+    <!-- =================== CABECERA DE LA NOTICIA =================== -->
+    <section class="relative flex min-h-[70svh] items-center justify-center overflow-hidden text-center">
+      <div id="heroFoto" class="foto-pendiente absolute inset-0" data-src="{e(hero)}"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-pine-900/60 via-pine-900/35 to-pine-900/80"></div>
+      <div class="relative mx-auto max-w-4xl px-4 pt-24">
+        <nav aria-label="Ruta" class="mb-6 text-xs uppercase tracking-[.2em] text-cream/70">
+          <a href="index.html" class="hover:text-cream">Inicio</a> <span class="mx-2">/</span>
+          <a href="index.html#noticias" class="hover:text-cream">Noticias</a>
+        </nav>
+        <p class="text-sm font-medium uppercase tracking-[.3em] text-wood-300"><time datetime="{n["fecha"]}">{e(n["fecha_txt"])}</time></p>
+        <h1 class="mt-4 font-serif text-5xl font-semibold leading-[1.05] text-white drop-shadow-lg sm:text-7xl">{e(n["titulo"])}</h1>
+      </div>
+    </section>
+
+    <!-- =================== ARTÍCULO =================== -->
+    <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+{cuerpo}
+      <p class="mt-14 border-t border-stone-150 pt-6 text-sm text-pine-700/70">
+        <a href="index.html#noticias" class="font-semibold text-wood-600 hover:underline">← Volver a noticias</a>
+      </p>
+    </article>
+  </main>
+
+  <!-- =================== PIE (igual que la portada) =================== -->
+  <footer class="bg-pine-900 pb-10 pt-10 text-sm text-cream/60">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo src="{LOGO_V}" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
+      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+    // Cabecera: prueba las rutas candidatas; si ninguna carga, queda la textura de madera
+    (function () {{
+      const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
+      const img = new Image(); img.alt = ''; img.className = 'h-full w-full object-cover';
+      img.onload = () => {{ box.classList.remove('foto-pendiente'); box.replaceChildren(img); }};
+      img.onerror = () => {{ if (srcs.length) img.src = srcs.shift(); }};
+      img.src = srcs.shift();
+    }})();
+    // Fotos del artículo: prueban sus rutas; si ninguna carga, se retiran
+    $$('figure img[data-srcs]').forEach(img => {{
+      const srcs = img.dataset.srcs.split('|');
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : img.closest('figure').remove();
+      img.src = srcs.shift();
+    }});
+    $$('img[data-logo]').forEach(img => {{
+      const ok = () => {{ img.classList.remove('hidden'); img.parentElement.querySelectorAll('[data-logo-fallback]').forEach(x => x.classList.add('hidden')); }};
+      if (img.complete && img.naturalWidth) ok(); else {{ img.onload = ok; img.onerror = () => img.remove(); }}
+    }});
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu'), header = $('#siteHeader');
+    menuBtn.addEventListener('click', () => menuBtn.setAttribute('aria-expanded', !mobileMenu.classList.toggle('hidden')));
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
+    addEventListener('scroll', onScroll, {{ passive: true }}); onScroll();
+    // "Reservas" del menú: lleva a los alojamientos de la portada
+    document.addEventListener('click', ev => {{
+      if (ev.target.closest('[data-open-booking]')) {{ ev.preventDefault(); location.href = 'index.html#alojamientos'; }}
+    }});
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+'''
+
+
 def main():
     cfg, css = extraer_tema()
     for a in ALOJAMIENTOS:
         (RAIZ / f'{a["slug"]}.html').write_text(pagina(a, cfg, css), encoding='utf-8')
         print('✓', f'{a["slug"]}.html')
+    for n in NOTICIAS:
+        (RAIZ / f'{n["slug"]}.html').write_text(pagina_noticia(n, cfg, css), encoding='utf-8')
+        print('✓', f'{n["slug"]}.html (noticia)')
 
 
 if __name__ == '__main__':

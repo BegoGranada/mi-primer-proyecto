@@ -389,22 +389,23 @@
     </section>
 
     <!-- =================== 8. NOTICIAS =================== -->
-    <!-- Noticia REAL de la web original (29 sept 2026). Su foto se configura en FOTOS.noticia1 -->
+    <!-- Noticia REAL de la web original. Artículo completo en la-berrea-en-cazorla.html (generado por tools/generar_alojamientos.py) -->
     <section id="noticias" class="py-24 sm:py-32">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="reveal">
           <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Noticias</p>
           <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Novedades de Los Pinos</h2>
         </div>
-        <article class="reveal group mt-12 grid overflow-hidden rounded-3xl border border-stone-150 bg-white shadow-soft md:grid-cols-2">
+        <a href="la-berrea-en-cazorla.html" class="reveal group mt-12 grid overflow-hidden rounded-3xl border border-stone-150 bg-white shadow-soft transition hover:-translate-y-1 hover:border-wood-300 md:grid-cols-2">
           <div data-foto="noticia1" data-alt="Ciervo en la Sierra de Cazorla durante la berrea" class="aspect-[4/3] w-full overflow-hidden md:aspect-auto md:min-h-[22rem]"></div>
           <div class="flex flex-col justify-center p-8 sm:p-12">
             <p class="text-xs uppercase tracking-widest text-wood-600"><time datetime="2026-09-23">23 de septiembre de 2026</time></p>
             <h3 class="mt-3 font-serif text-4xl font-semibold leading-tight sm:text-5xl">La berrea en Cazorla</h3>
             <p class="mt-4 text-lg font-medium text-pine-800">El espectáculo del otoño que tienes que escuchar</p>
             <p class="mt-3 text-pine-700/80">Hay sonidos que se escuchan. Y otros que se sienten. Cuando llega septiembre, la Sierra de Cazorla cambia…</p>
+            <span class="mt-6 inline-flex items-center gap-2 font-semibold text-wood-600">Leer más <span class="transition group-hover:translate-x-1">→</span></span>
           </div>
-        </article>
+        </a>
       </div>
     </section>
 
@@ -577,8 +578,9 @@
       // El Senderista: su página original carga portada8.webp (no estaba en 2026/06)
       duplexSenderista:   ['2026/07', '2026/06', '2026/05'].map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/portada8.webp`),
       // Fondo del bloque "Reservas" (reutiliza la portada)
-      // Noticia 'La berrea en Cazorla' — EDITAR: nombre real de su foto (sin él, se muestra el logo)
-      noticia1:           '',
+      // Noticia 'La berrea en Cazorla': foto principal real (publicada en septiembre)
+      noticia1:           ['2026/09', '2026/08', '2026/07', '2026/06']
+                            .map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/berrea_ppal-1200x500.webp`),
       reservas:           WP + 'portada1.webp'
     };
 
