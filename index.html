@@ -147,7 +147,9 @@
       <!-- Capa 2 — Vídeo de YouTube de fondo.
            El <iframe> se genera en el script a partir de HERO_VIDEO (ver "VÍDEO DE PORTADA").
            Para cambiar el vídeo, edita SOLO HERO_VIDEO.id -->
-      <div id="heroVideo" class="yt-bg" aria-hidden="true"></div>
+      <!-- Nota: object-cover no afecta a un <iframe>; el recorte tipo "cover" 16:9
+           lo hace la clase .yt-bg (ver <style>). La capa oscura de abajo va por encima. -->
+      <div id="heroVideo" class="yt-bg absolute inset-0 w-full h-full object-cover pointer-events-none" aria-hidden="true"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-pine-900/70 via-pine-900/40 to-pine-900/85"></div>
 
       <div class="relative mx-auto w-full max-w-7xl px-4 pb-20 pt-32 sm:px-6 lg:px-8">
@@ -510,10 +512,10 @@
           El ID es lo que va tras "v=" en la URL de YouTube:
           https://www.youtube.com/watch?v=XXXXXXXXXXX  →  id: 'XXXXXXXXXXX'
        Deja id: '' para desactivar el vídeo y usar solo FOTOS.hero.
-       PROVISIONAL: "Pine forest from above drone Video 4K"
+       Vídeo oficial del cliente (canal de YouTube de Cabañas Los Pinos).
        ============================================================= */
     const HERO_VIDEO = {
-      id: 'eBguPm4obJg',
+      id: 'PEEVLN-j5Rk',
       params: {
         autoplay: 1,        // reproducción automática
         mute: 1,            // silenciado (obligatorio para que el navegador permita el autoplay)
@@ -622,6 +624,7 @@
       if (!HERO_VIDEO.id || reducir) return box.remove();
       const qs = new URLSearchParams({ ...HERO_VIDEO.params, playlist: HERO_VIDEO.id });
       const iframe = document.createElement('iframe');
+      // Resultado: .../embed/<id>?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&...&playlist=<id>
       iframe.src = `https://www.youtube-nocookie.com/embed/${HERO_VIDEO.id}?${qs}`;
       iframe.title = 'Vídeo de fondo de Cabañas Los Pinos';
       iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
