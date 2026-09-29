@@ -23,17 +23,21 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # ---------------------------------------------------------------------------
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
+# registro: nº de registro oficial de turismo (opcional; se muestra si existe)
 # EDITAR: las descripciones pueden sustituirse por los textos originales.
 # ---------------------------------------------------------------------------
 ALOJAMIENTOS = [
     dict(slug='montemalo', nombre='Montemalo', tipo='Cabaña de madera', foto='portada2.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
-         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
-         wifi=True, extras=[],
-         descripcion=['Montemalo es una cabaña de madera para 4 personas en pleno pinar de Arroyo Frío, '
-                      'dentro del Parque Natural Sierra de Cazorla, Segura y Las Villas.',
-                      'Sus dos habitaciones con cama de 135 la hacen perfecta para dos parejas o para una familia '
-                      'que busca calma, naturaleza y todas las comodidades de casa.']),
+         camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
+                'Habitaciones separadas'],
+         wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
+         registro='A/JA/00117',
+         # Texto REAL de la web original (extraído por Begoña, 29 sept 2026)
+         descripcion=['Cabaña ideal para parejas (con opción de alojar a 4 personas en 2 camas de matrimonio '
+                      'en 2 habitaciones separadas). Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, '
+                      'nevera, lavadora y horno-microondas, terraza privada y acceso a piscina y barbacoa '
+                      'compartidas (en temporada). Dispone de calefacción y aire acondicionado.']),
     dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada3.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
@@ -180,7 +184,7 @@ def pagina(a, cfg, css):
     nombre_full = titulo_completo(a)
     foto = WP + a['foto'] if a['foto'] else ''
     servicios = COMUNES + ([('📶', 'Wi-Fi')] if a['wifi'] else []) \
-        + [('🌿', x) for x in a['extras']] \
+        + [('✨', x) for x in a['extras']] \
         + [('🏊', 'Piscina (según temporada)'), ('🍖', 'Barbacoa exterior (según temporada)'),
            ('🧭', 'Asesoramiento turístico')]
     li_serv = '\n'.join(
@@ -200,6 +204,9 @@ def pagina(a, cfg, css):
     datos_js = json.dumps([{'nombre': titulo_completo(o), 'max': o['max'],
                             'info': f'{o["max"]} personas · {o["habs"]} · {o["precio"]}/noche'}
                            for o in ALOJAMIENTOS], ensure_ascii=False)
+    registro = a.get('registro')
+    reg_aside = (f'\n            <p class="mt-4 border-t border-white/10 pt-4 text-center text-xs uppercase tracking-widest text-cream/60">Nº de registro: {e(registro)}</p>' if registro else '')
+    reg_normas = (f'\n        <p class="mt-6 text-sm text-pine-700/70">Número de registro oficial de turismo: <strong class="font-semibold text-pine-800">{e(registro)}</strong></p>' if registro else '')
     descripcion_meta = f'{nombre_full}: {a["tipo"].lower()} para {a["max"]} personas en Arroyo Frío, Sierra de Cazorla. {a["precio"]}/noche.'
 
     return f'''<!DOCTYPE html>
@@ -290,7 +297,7 @@ def pagina(a, cfg, css):
             <p class="mt-1 text-sm text-cream/60">Según temporada · hasta {a["max"]} personas</p>
             <button data-open-booking class="mt-6 w-full rounded-full bg-wood-500 py-4 font-semibold text-white transition hover:bg-wood-600">Reservar ahora</button>
             <a href="https://wa.me/34686235888?text={e('Hola, me interesa ' + nombre_full)}" target="_blank" rel="noopener" class="mt-3 block w-full rounded-full border border-cream/40 py-3 text-center font-medium transition hover:bg-cream/10">WhatsApp directo</a>
-            <p class="mt-6 text-center text-sm text-cream/70">o llámanos al <a href="tel:+34686235888" class="font-semibold text-cream underline">686 23 58 88</a></p>
+            <p class="mt-6 text-center text-sm text-cream/70">o llámanos al <a href="tel:+34686235888" class="font-semibold text-cream underline">686 23 58 88</a></p>{reg_aside}
           </div>
         </aside>
       </div>
@@ -316,7 +323,7 @@ def pagina(a, cfg, css):
           <div class="rounded-3xl border border-stone-150 bg-white p-6 shadow-soft"><p class="text-xs uppercase tracking-widest text-pine-700/60">Salida</p><p class="font-serif text-3xl font-semibold">10:00 h</p></div>
           <div class="rounded-3xl border border-red-200 bg-red-50/60 p-6"><p class="text-xs uppercase tracking-widest text-red-800/70">Mascotas</p><p class="font-serif text-2xl font-semibold text-red-900">No se aceptan</p></div>
           <div class="rounded-3xl border border-red-200 bg-red-50/60 p-6"><p class="text-xs uppercase tracking-widest text-red-800/70">Tabaco</p><p class="font-serif text-2xl font-semibold text-red-900">No fumar dentro</p></div>
-        </div>
+        </div>{reg_normas}
       </div>
     </section>
 
