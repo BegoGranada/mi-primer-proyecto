@@ -54,6 +54,7 @@
     #p-calendario, #p-reservas, #p-precios, #p-finanzas { touch-action: pan-y; }
     .nav-activo .nav-ico { background: #f4e7d7; transform: translateY(-2px); }
     .nav-ico { transition: transform .2s, background .2s; }
+    header [data-ir].nav-activo { background: rgba(255,255,255,.14); color: #d9b48a; }
     .gbarra { transition: height .45s cubic-bezier(.2,.8,.2,1); }
     .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
     input, select, textarea { font-size: 16px; }  /* evita el zoom automático en iPhone */
@@ -68,8 +69,14 @@
       <div class="text-center">
         <p class="text-4xl" aria-hidden="true">🌲</p>
         <h1 class="mt-2 font-serif text-4xl font-semibold">Cabañas Los Pinos</h1>
-        <p class="mt-1 text-sm uppercase tracking-[.25em] text-wood-600">Gestor de reservas</p>
+        <p class="mt-1 text-sm uppercase tracking-[.25em] text-wood-600">Área de propietarios</p>
       </div>
+      <ul class="mt-6 grid grid-cols-4 gap-2 text-center text-[11px] font-medium text-pine-700/80" aria-label="Qué incluye">
+        <li class="rounded-2xl bg-white px-1 py-3 shadow-soft"><span class="block text-xl">📅</span>Calendario</li>
+        <li class="rounded-2xl bg-white px-1 py-3 shadow-soft"><span class="block text-xl">📋</span>Reservas</li>
+        <li class="rounded-2xl bg-white px-1 py-3 shadow-soft"><span class="block text-xl">💶</span>Precios</li>
+        <li class="rounded-2xl bg-white px-1 py-3 shadow-soft"><span class="block text-xl">📊</span>Finanzas</li>
+      </ul>
       <form id="formLogin" class="mt-8 space-y-4 rounded-3xl bg-white p-6 shadow-soft" novalidate>
         <div id="avisoDemo" class="hidden rounded-2xl bg-wood-100 p-4 text-sm text-wood-700">
           <strong>Modo demostración.</strong> Todavía no hay base de datos conectada: los datos son de ejemplo y se guardan solo en este navegador.
@@ -102,6 +109,13 @@
             <p id="lblModo" class="text-[11px] uppercase tracking-widest text-cream/60">Gestor de reservas</p>
           </div>
         </div>
+        <!-- Pestañas en pantallas anchas (en el móvil, barra inferior) -->
+        <nav class="hidden items-center gap-1 text-sm font-medium lg:flex" aria-label="Secciones">
+          <button data-ir="calendario" class="rounded-full px-4 py-2 hover:bg-white/10">📅 Calendario</button>
+          <button data-ir="reservas" class="rounded-full px-4 py-2 hover:bg-white/10">📋 Reservas</button>
+          <button data-ir="precios" class="rounded-full px-4 py-2 hover:bg-white/10">💶 Precios</button>
+          <button data-ir="finanzas" class="rounded-full px-4 py-2 hover:bg-white/10">📊 Finanzas</button>
+        </nav>
         <div class="flex items-center gap-1">
           <a href="index.html" class="rounded-full p-2.5 hover:bg-white/10" aria-label="Ir a la web" title="Ir a la web">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-7 9 7M5 10v10h14V10"/></svg>
@@ -884,7 +898,17 @@
       tarjeta(D.reservas.filter(r => r.estado === 'pendiente').length, 'Pendientes', 'bg-wood-100 text-wood-700', 'pendientes');
     const np = D.reservas.filter(partePendiente).length;
     if (np) $('#resumenHoy').innerHTML += `<button data-filtro-ir="partes" class="col-span-3 rounded-2xl bg-red-50 p-3 text-left text-sm font-semibold text-red-800 shadow-soft">📨 ${np} parte${np === 1 ? '' : 's'} de viajeros por comunicar a SES.Hospedajes · plazo 24 h desde la entrada</button>`;
+    // Acceso directo a Finanzas con el balance del mes en curso
+    const ym = h.slice(0, 7), ing = reparto(ym).ingresos, gas = suma(gastosMes(ym)), neto = ing - gas;
+    const limpiezasPend = D.reservas.filter(r => r.estado === 'confirmada' && r.salida.startsWith(ym) && r.salida <= h && !limpiezaDe(r)).length;
+    $('#resumenHoy').innerHTML += `<button data-ir-finanzas class="col-span-3 flex items-center justify-between gap-3 rounded-2xl bg-pine-900 p-4 text-left text-cream shadow-soft">
+      <span class="min-w-0"><span class="block text-xs uppercase tracking-widest text-cream/60">📊 Finanzas del mes</span>
+        <span class="block text-2xl font-semibold ${neto < 0 ? 'text-red-300' : ''}">${euros0(neto)} <span class="text-sm font-normal text-cream/70">de beneficio neto</span></span>
+        <span class="block text-xs text-cream/70">Ingresos ${euros0(ing)} · Gastos ${euros0(gas)}</span>
+        ${limpiezasPend ? `<span class="block text-xs font-semibold text-wood-300">🧹 ${limpiezasPend} limpieza${limpiezasPend === 1 ? '' : 's'} por apuntar</span>` : ''}</span>
+      <span class="shrink-0 rounded-full bg-wood-500 px-4 py-2 text-sm font-semibold">Ver ›</span></button>`;
     $$('[data-filtro-ir]').forEach(b => b.addEventListener('click', () => { filtro = b.dataset.filtroIr; ir('reservas'); pintarReservas(); }));
+    $('[data-ir-finanzas]').addEventListener('click', () => ir('finanzas'));
   }
   function pintarCalendario() {
     const [y, m] = mesVista.split('-').map(Number);
