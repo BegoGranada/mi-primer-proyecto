@@ -39,7 +39,11 @@ def rutas_foto(foto):
     lista = foto if isinstance(foto, list) else ([foto] if foto else [])
     out = []
     for f in lista:
-        out += [WP + f] if (f.startswith('portada') and '/' not in f) else rutas(f)
+        if f.startswith('portada') and '/' not in f:
+            # Casi todas las portadas están en 2026/06; si no, se prueban las demás carpetas
+            out += [WP + f] + [u for u in rutas(f) if u != WP + f]
+        else:
+            out += rutas(f)
     return out
 LOGO_H = WP + 'logo_clp_trans_horizontal.webp'
 LOGO_V = WP + 'logo_clp_vertical.webp'
@@ -174,9 +178,8 @@ ALOJAMIENTOS = [
                       'lavadora y horno-microondas, terraza privada con vistas, chimenea de leña (leña no incluida) '
                       'y aire acondicionado (frío/calor) en todas las estancias.']),
     dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas',
-         # ⚠️ Nombres NO verificados (no se veían en la captura): se deducen por analogía con
-         # el resto de alojamientos. Si no existen, el hero muestra la textura con el logo.
-         foto=['principal_senderista.webp'],
+         # Fotos REALES verificadas en la pestaña Red: su página carga portada8.webp (post-714.css)
+         foto=['portada8.webp'],
          max=8, precio='70 – 180 €', habs='3 plantas · 4 habitaciones · 2 baños',
          camas=['2 habitaciones con camas de matrimonio', 'Resto de habitaciones con camas individuales'],
          wifi=False,
