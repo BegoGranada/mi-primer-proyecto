@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- ============================================================
+       Gestor de reservas · Cabañas de Madera Los Pinos
+       App para el propietario (pensada para el móvil).
+
+       · Datos: Supabase (supabase/esquema.sql) si config.js está relleno;
+         si no, MODO DEMOSTRACIÓN con datos de ejemplo en este navegador.
+       · Pantallas: Calendario · Reservas · Nueva (+) · Precios
+       · El agente de WhatsApp usará las mismas tablas y las funciones
+         disponibilidad() y crear_solicitud() (ver docs/gestor-reservas.md).
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#1a261b" />
+  <title>Gestor de reservas · Cabañas Los Pinos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pine:  { 50:'#f3f6f2', 100:'#e1e9df', 300:'#9fb59b', 500:'#4f6b4b', 700:'#2f4430', 800:'#243425', 900:'#1a261b' },
+            wood:  { 100:'#f4e7d7', 300:'#d9b48a', 500:'#b07a45', 600:'#96622f', 700:'#7a4e25' },
+            cream: '#faf6ef',
+            stone: { 150:'#ece7df' }
+          },
+          fontFamily: { serif: ['"Cormorant Garamond"', 'Georgia', 'serif'], sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: { soft: '0 10px 40px -12px rgba(26,38,27,.25)' }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { --cw: 44px; }                /* ancho de cada día en el calendario */
+    body { -webkit-tap-highlight-color: transparent; }
+    .dia { width: var(--cw); min-width: var(--cw); }
+    .barra { position: absolute; top: 6px; bottom: 6px; border-radius: 9999px; overflow: hidden;
+             white-space: nowrap; text-overflow: ellipsis; font-size: 11px; font-weight: 600; padding: 0 8px;
+             display: flex; align-items: center; cursor: pointer; }
+    .barra.pendiente { background: repeating-linear-gradient(135deg,#d9b48a 0 6px,#e8c9a3 6px 12px); color:#5a3a1a; border:1.5px dashed #96622f; }
+    .barra.confirmada { background:#2f4430; color:#faf6ef; }
+    .pantalla { display: none; } .pantalla.activa { display: block; }
+    .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+    input, select, textarea { font-size: 16px; }  /* evita el zoom automático en iPhone */
+  </style>
+</head>
+
+<body class="min-h-screen bg-cream font-sans text-pine-900 antialiased">
+
+  <!-- =================== ACCESO =================== -->
+  <section id="vistaLogin" class="flex min-h-screen items-center justify-center px-4 py-10">
+    <div class="w-full max-w-sm">
+      <div class="text-center">
+        <p class="text-4xl" aria-hidden="true">🌲</p>
+        <h1 class="mt-2 font-serif text-4xl font-semibold">Cabañas Los Pinos</h1>
+        <p class="mt-1 text-sm uppercase tracking-[.25em] text-wood-600">Gestor de reservas</p>
+      </div>
+      <form id="formLogin" class="mt-8 space-y-4 rounded-3xl bg-white p-6 shadow-soft" novalidate>
+        <div id="avisoDemo" class="hidden rounded-2xl bg-wood-100 p-4 text-sm text-wood-700">
+          <strong>Modo demostración.</strong> Todavía no hay base de datos conectada: los datos son de ejemplo y se guardan solo en este navegador.
+        </div>
+        <div id="camposLogin" class="space-y-4">
+          <label class="block"><span class="text-sm font-medium">Correo</span>
+            <input name="email" type="email" autocomplete="username" required class="mt-1 w-full rounded-xl border border-stone-150 px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+          <label class="block"><span class="text-sm font-medium">Contraseña</span>
+            <input name="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded-xl border border-stone-150 px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        </div>
+        <p id="errorLogin" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800"></p>
+        <button id="btnLogin" type="submit" class="w-full rounded-full bg-pine-700 py-4 font-semibold text-white transition hover:bg-pine-800">Entrar</button>
+        <button id="btnResetDemo" type="button" class="hidden w-full text-sm text-pine-700/70 underline">Restablecer datos de ejemplo</button>
+      </form>
+      <p class="mt-6 text-center text-sm"><a href="index.html" class="text-pine-700/70 hover:underline">← Volver a la web</a></p>
+    </div>
+  </section>
+
+  <!-- =================== APLICACIÓN =================== -->
+  <div id="vistaApp" class="hidden pb-28">
+    <header class="sticky top-0 z-30 bg-pine-900 text-cream shadow-lg">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+        <div class="min-w-0">
+          <p class="truncate font-serif text-xl font-semibold leading-tight">Cabañas Los Pinos</p>
+          <p id="lblModo" class="text-[11px] uppercase tracking-widest text-cream/60">Gestor de reservas</p>
+        </div>
+        <div class="flex items-center gap-1">
+          <button id="btnRefrescar" class="rounded-full p-2.5 hover:bg-white/10" aria-label="Actualizar" title="Actualizar">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.6 15A7 7 0 0 0 18.4 17M18.4 9A7 7 0 0 0 5.6 7"/></svg>
+          </button>
+          <button id="btnSalir" class="rounded-full px-3 py-2 text-sm hover:bg-white/10">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 pt-5">
+
+      <!-- ---------- CALENDARIO ---------- -->
+      <section id="p-calendario" class="pantalla activa">
+        <div id="resumenHoy" class="grid grid-cols-3 gap-3"></div>
+
+        <div class="mt-6 flex items-center justify-between">
+          <button data-mes="-1" class="rounded-full bg-white px-4 py-2 text-lg shadow-soft" aria-label="Mes anterior">‹</button>
+          <div class="text-center">
+            <p id="lblMes" class="font-serif text-2xl font-semibold"></p>
+            <button id="btnHoy" class="text-xs font-semibold uppercase tracking-widest text-wood-600">Hoy</button>
+          </div>
+          <button data-mes="1" class="rounded-full bg-white px-4 py-2 text-lg shadow-soft" aria-label="Mes siguiente">›</button>
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-3xl border border-stone-150 bg-white shadow-soft">
+          <div class="flex">
+            <!-- Columna fija con los alojamientos -->
+            <div id="calNombres" class="z-10 w-32 shrink-0 border-r border-stone-150 bg-white sm:w-48"></div>
+            <!-- Días (desplazable en horizontal) -->
+            <div id="calScroll" class="scroll-x flex-1"><div id="calRejilla"></div></div>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-4 text-xs text-pine-700/70">
+          <span class="flex items-center gap-2"><span class="inline-block h-3 w-6 rounded-full bg-pine-700"></span>Confirmada</span>
+          <span class="flex items-center gap-2"><span class="inline-block h-3 w-6 rounded-full border border-dashed border-wood-600 bg-wood-300"></span>Pendiente</span>
+          <span>Toca un día libre para crear una reserva · toca una barra para abrirla</span>
+        </div>
+      </section>
+
+      <!-- ---------- RESERVAS ---------- -->
+      <section id="p-reservas" class="pantalla">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 class="font-serif text-3xl font-semibold">Reservas</h2>
+          <input id="buscar" type="search" placeholder="Buscar por nombre o teléfono…" class="w-full rounded-full border border-stone-150 bg-white px-5 py-3 sm:w-72" />
+        </div>
+        <div id="filtros" class="scroll-x mt-4 flex gap-2 pb-1"></div>
+        <div id="listaReservas" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+      </section>
+
+      <!-- ---------- PRECIOS ---------- -->
+      <section id="p-precios" class="pantalla">
+        <h2 class="font-serif text-3xl font-semibold">Precios y temporadas</h2>
+        <p class="mt-1 text-sm text-pine-700/75">El precio de cada noche es el de la temporada en la que cae; fuera de temporada se aplica el precio base.</p>
+
+        <!-- Calculadora rápida para dar presupuestos por teléfono -->
+        <div class="mt-6 rounded-3xl bg-pine-800 p-5 text-cream shadow-soft">
+          <p class="font-semibold">🧮 Calcular un presupuesto</p>
+          <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <select id="calcAloj" class="rounded-xl border-0 bg-white/10 px-3 py-3 text-cream [&>option]:text-pine-900"></select>
+            <input id="calcEntrada" type="date" class="rounded-xl border-0 bg-white/10 px-3 py-3 text-cream [color-scheme:dark]" />
+            <input id="calcSalida" type="date" class="rounded-xl border-0 bg-white/10 px-3 py-3 text-cream [color-scheme:dark]" />
+            <p id="calcTotal" class="flex items-center justify-center rounded-xl bg-wood-500 px-3 py-3 text-center font-semibold">—</p>
+          </div>
+        </div>
+
+        <h3 class="mt-8 font-serif text-2xl font-semibold">Precio base por noche</h3>
+        <div id="listaBase" class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2"></div>
+
+        <div class="mt-8 flex items-center justify-between">
+          <h3 class="font-serif text-2xl font-semibold">Temporadas</h3>
+          <button id="btnNuevaTemporada" class="rounded-full bg-wood-500 px-4 py-2 text-sm font-semibold text-white">+ Temporada</button>
+        </div>
+        <div id="listaTemporadas" class="mt-3 space-y-4"></div>
+      </section>
+    </main>
+
+    <!-- Navegación inferior -->
+    <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-150 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label="Secciones">
+      <div class="mx-auto grid max-w-md grid-cols-4 text-[11px] font-medium text-pine-700/70">
+        <button data-ir="calendario" class="flex flex-col items-center gap-1 py-3"><span class="text-xl">📅</span>Calendario</button>
+        <button data-ir="reservas" class="relative flex flex-col items-center gap-1 py-3"><span class="text-xl">📋</span>Reservas
+          <span id="badgePendientes" class="absolute right-4 top-1.5 hidden min-w-[20px] rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white"></span></button>
+        <button id="btnNueva" class="flex flex-col items-center gap-1 py-2"><span class="grid h-11 w-11 place-items-center rounded-full bg-wood-500 text-2xl text-white shadow-lg">+</span>Nueva</button>
+        <button data-ir="precios" class="flex flex-col items-center gap-1 py-3"><span class="text-xl">💶</span>Precios</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- =================== FICHA DE RESERVA (hoja inferior) =================== -->
+  <div id="hoja" class="fixed inset-0 z-50 hidden items-end justify-center bg-pine-900/60 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo">
+    <div class="max-h-[94svh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-cream p-5 shadow-2xl sm:rounded-3xl sm:p-7">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p id="hojaSub" class="text-xs font-semibold uppercase tracking-widest text-wood-600">Reserva</p>
+          <h2 id="hojaTitulo" class="font-serif text-3xl font-semibold">Nueva reserva</h2>
+        </div>
+        <button data-cerrar class="rounded-full p-2 hover:bg-pine-50" aria-label="Cerrar">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <form id="formReserva" class="mt-5 space-y-4" novalidate>
+        <input type="hidden" name="id" />
+        <label class="block"><span class="text-sm font-medium">Alojamiento</span>
+          <select name="alojamiento_id" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3"></select></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Entrada</span>
+            <input name="entrada" type="date" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3" /></label>
+          <label class="block"><span class="text-sm font-medium">Salida</span>
+            <input name="salida" type="date" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3" /></label>
+        </div>
+        <p id="infoNoches" class="-mt-2 text-xs text-pine-700/70"></p>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Personas</span>
+            <input name="personas" type="number" min="1" value="2" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+          <label class="block"><span class="text-sm font-medium">Estado</span>
+            <select name="estado" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3">
+              <option value="pendiente">🟡 Pendiente</option><option value="confirmada">🟢 Confirmada</option><option value="cancelada">⚪ Cancelada</option>
+            </select></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Nombre del huésped</span>
+          <input name="nombre" required autocomplete="off" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Teléfono</span>
+            <input name="telefono" type="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+          <label class="block"><span class="text-sm font-medium">Origen</span>
+            <select name="origen" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3">
+              <option value="manual">✍️ Manual</option><option value="telefono">📞 Teléfono</option><option value="whatsapp">💬 WhatsApp</option>
+              <option value="agente">🤖 Agente IA</option><option value="web">🌐 Web</option><option value="email">✉️ Email</option>
+            </select></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Email</span>
+          <input name="email" type="email" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Precio total (€)</span>
+            <input name="precio_total" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" />
+            <button type="button" id="btnRecalcular" class="mt-1 text-xs font-semibold text-wood-600">↻ Recalcular con las tarifas</button></label>
+          <label class="block"><span class="text-sm font-medium">Pagado (€)</span>
+            <input name="pagado" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Notas</span>
+          <textarea name="notas" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" placeholder="Cuna, hora de llegada, alergias…"></textarea></label>
+
+        <p id="avisoSolape" class="hidden rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900"></p>
+        <p id="errorReserva" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800"></p>
+
+        <div class="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+          <button type="submit" class="rounded-full bg-pine-700 py-4 font-semibold text-white transition hover:bg-pine-800">Guardar</button>
+          <button type="button" id="btnConfirmarGuardar" class="rounded-full bg-wood-500 py-4 font-semibold text-white transition hover:bg-wood-600">Confirmar y guardar</button>
+        </div>
+        <div id="accionesExistente" class="hidden grid-cols-3 gap-2">
+          <a id="accWhatsApp" target="_blank" rel="noopener" class="rounded-full border border-pine-700/20 py-3 text-center text-sm font-semibold">💬 WhatsApp</a>
+          <a id="accLlamar" class="rounded-full border border-pine-700/20 py-3 text-center text-sm font-semibold">📞 Llamar</a>
+          <button type="button" id="accEliminar" class="rounded-full border border-red-300 py-3 text-sm font-semibold text-red-700">🗑 Eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Aviso flotante -->
+  <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 opacity-0 transition">
+    <p class="rounded-full bg-pine-900 px-5 py-3 text-sm font-medium text-cream shadow-2xl"></p>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+  /* =====================================================================
+     UTILIDADES DE FECHAS (siempre 'AAAA-MM-DD', en UTC para evitar líos
+     con el horario de verano)
+     ===================================================================== */
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const s2d = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const d2s = d => d.toISOString().slice(0, 10);
+  const sumar = (s, n) => { const d = s2d(s); d.setUTCDate(d.getUTCDate() + n); return d2s(d); };
+  const noches = (a, b) => Math.round((s2d(b) - s2d(a)) / 864e5);
+  const hoyS = () => { const n = new Date(); return d2s(new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()))); };
+  const fCorta = s => s2d(s).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const fLarga = s => s2d(s).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const euros = n => (n == null || n === '' ? '—' : Number(n).toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }));
+  const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + Math.random().toString(16).slice(2));
+  const toast = msg => { const t = $('#toast'); t.firstElementChild.textContent = msg; t.style.opacity = 1; clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, 2600); };
+
+  /* =====================================================================
+     DATOS: dos "motores" con la misma interfaz
+       · Supabase  → si config.js tiene URL y clave
+       · Demo      → datos de ejemplo en localStorage
+     ===================================================================== */
+  const CFG = window.LOSPINOS_CONFIG || {};
+  const MODO = CFG.supabaseUrl && CFG.supabaseAnonKey ? 'supabase' : 'demo';
+
+  const ALOJ_BASE = [
+    ['montemalo', 'Cabaña Montemalo', 'Cabaña de madera', 4, 90, 150],
+    ['las-albercas', 'Cabaña Las Albercas', 'Cabaña de madera', 4, 90, 150],
+    ['puntal-del-enebrillo', 'Cabaña Puntal del Enebrillo', 'Cabaña de madera', 4, 90, 150],
+    ['barranco-de-las-iglesias', 'Cabaña Barranco de las Iglesias', 'Cabaña de madera', 8, 130, 180],
+    ['cabeza-rubia', 'Cabaña Cabeza Rubia', 'Cabaña de madera', 2, 50, 80],
+    ['casa-los-pineros', 'Casa Los Pineros', 'Casa', 3, 65, 80],
+    ['mirador-de-las-palomas', 'Apartamento Mirador de las Palomas', 'Apartamento', 4, 90, 120],
+    ['el-senderista', 'Dúplex El Senderista', 'Dúplex', 8, 70, 180]
+  ];
+
+  const Demo = {
+    CLAVE: 'lospinos-gestor-demo-v1',
+    cargar() {
+      try { const d = JSON.parse(localStorage.getItem(this.CLAVE)); if (d && d.alojamientos) return d; } catch (e) {}
+      return this.semilla();
+    },
+    guardarTodo(d) { try { localStorage.setItem(this.CLAVE, JSON.stringify(d)); } catch (e) {} },
+    semilla() {
+      const y = new Date().getFullYear(), h = hoyS();
+      const d = {
+        alojamientos: ALOJ_BASE.map(([id, nombre, tipo, capacidad, base], i) => ({ id, nombre, tipo, capacidad, precio_base: base, orden: i + 1, activo: true })),
+        temporadas: [{ id: 1, nombre: 'Temporada alta (verano)', desde: `${y}-07-01`, hasta: `${y}-08-31`, color: '#b07a45' }],
+        tarifas: ALOJ_BASE.map(a => ({ alojamiento_id: a[0], temporada_id: 1, precio_noche: a[5] })),
+        reservas: []
+      };
+      const R = (aloj, e, s, pers, nombre, tel, origen, estado, pagadoPct, notas) => {
+        const entrada = sumar(h, e), salida = sumar(h, s);
+        const total = precioEstancia(aloj, entrada, salida, d);
+        d.reservas.push({ id: uuid(), alojamiento_id: aloj, entrada, salida, personas: pers, nombre, telefono: tel, email: '',
+          origen, estado, precio_total: total, pagado: Math.round(total * pagadoPct), notas: notas || '', creado_en: new Date().toISOString() });
+      };
+      R('montemalo', -2, 2, 4, 'Familia García', '600111222', 'whatsapp', 'confirmada', 0.5, 'Llegan sobre las 18:00');
+      R('casa-los-pineros', 0, 3, 2, 'Lucía y Marcos', '611222333', 'telefono', 'confirmada', 1);
+      R('mirador-de-las-palomas', -3, 0, 4, 'Pedro Ruiz', '622333444', 'web', 'confirmada', 1);
+      R('barranco-de-las-iglesias', 1, 4, 8, 'Grupo amigos Úbeda', '633444555', 'telefono', 'confirmada', 0.3, 'Piden cuna');
+      R('las-albercas', 5, 8, 3, 'Carmen López', '644555666', 'email', 'confirmada', 0.5);
+      R('puntal-del-enebrillo', 18, 22, 4, 'Javier Moreno', '655666777', 'manual', 'confirmada', 0);
+      R('cabeza-rubia', 10, 12, 2, 'Ana Martín', '666777888', 'web', 'pendiente', 0, 'Solicitud desde la web');
+      R('el-senderista', 14, 17, 7, 'Club senderista Jaén', '677888999', 'agente', 'pendiente', 0, 'Solicitud recogida por el agente de WhatsApp');
+      this.guardarTodo(d);
+      return d;
+    },
+    async entrar() { return true; },
+    async salir() {},
+    async sesion() { return sessionStorage.getItem('lospinos-demo-sesion') === '1'; },
+    async listar() { return this.cargar(); },
+    async guardarReserva(r) {
+      const d = this.cargar();
+      if (r.estado === 'confirmada') {
+        const choque = d.reservas.find(x => x.id !== r.id && x.alojamiento_id === r.alojamiento_id && x.estado === 'confirmada' && x.entrada < r.salida && r.entrada < x.salida);
+        if (choque) throw new Error(`Ya hay una reserva confirmada en esas fechas (${choque.nombre}).`);
+      }
+      if (r.id) d.reservas = d.reservas.map(x => x.id === r.id ? { ...x, ...r } : x);
+      else d.reservas.push({ ...r, id: uuid(), creado_en: new Date().toISOString() });
+      this.guardarTodo(d);
+    },
+    async eliminarReserva(id) { const d = this.cargar(); d.reservas = d.reservas.filter(x => x.id !== id); this.guardarTodo(d); },
+    async guardarPrecioBase(id, precio) { const d = this.cargar(); d.alojamientos.find(a => a.id === id).precio_base = precio; this.guardarTodo(d); },
+    async guardarTemporada(t) {
+      const d = this.cargar();
+      if (t.id) d.temporadas = d.temporadas.map(x => x.id === t.id ? { ...x, ...t } : x);
+      else { t.id = Math.max(0, ...d.temporadas.map(x => x.id)) + 1; d.temporadas.push(t); }
+      this.guardarTodo(d); return t.id;
+    },
+    async eliminarTemporada(id) { const d = this.cargar(); d.temporadas = d.temporadas.filter(x => x.id !== id); d.tarifas = d.tarifas.filter(x => x.temporada_id !== id); this.guardarTodo(d); },
+    async guardarTarifa(aloj, temp, precio) {
+      const d = this.cargar();
+      d.tarifas = d.tarifas.filter(x => !(x.alojamiento_id === aloj && x.temporada_id === temp));
+      if (precio !== null) d.tarifas.push({ alojamiento_id: aloj, temporada_id: temp, precio_noche: precio });
+      this.guardarTodo(d);
+    }
+  };
+
+  const Supa = {
+    cli: null,
+    async iniciar() {
+      if (this.cli) return;
+      await new Promise((ok, ko) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; s.onload = ok; s.onerror = () => ko(new Error('No se pudo cargar Supabase')); document.head.appendChild(s); });
+      this.cli = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
+    },
+    err(e) {
+      if (!e) return;
+      if (e.code === '23P01') throw new Error('Ya hay una reserva confirmada en esas fechas para este alojamiento.');
+      throw new Error(e.message || 'Error de la base de datos');
+    },
+    async entrar(email, password) { await this.iniciar(); const { error } = await this.cli.auth.signInWithPassword({ email, password }); if (error) throw new Error('Correo o contraseña incorrectos'); return true; },
+    async salir() { await this.iniciar(); await this.cli.auth.signOut(); },
+    async sesion() { await this.iniciar(); const { data } = await this.cli.auth.getSession(); return !!data.session; },
+    async listar() {
+      const desde = sumar(hoyS(), -400);
+      const [a, t, f, r] = await Promise.all([
+        this.cli.from('alojamientos').select('*').order('orden'),
+        this.cli.from('temporadas').select('*').order('desde'),
+        this.cli.from('tarifas').select('*'),
+        this.cli.from('reservas').select('*').gte('salida', desde).order('entrada')
+      ]);
+      [a, t, f, r].forEach(x => this.err(x.error));
+      return { alojamientos: a.data, temporadas: t.data, tarifas: f.data, reservas: r.data };
+    },
+    async guardarReserva(r) {
+      const { id, ...campos } = r;
+      const q = id ? this.cli.from('reservas').update(campos).eq('id', id) : this.cli.from('reservas').insert(campos);
+      this.err((await q).error);
+    },
+    async eliminarReserva(id) { this.err((await this.cli.from('reservas').delete().eq('id', id)).error); },
+    async guardarPrecioBase(id, precio) { this.err((await this.cli.from('alojamientos').update({ precio_base: precio }).eq('id', id)).error); },
+    async guardarTemporada(t) {
+      const { id, ...campos } = t;
+      if (id) { this.err((await this.cli.from('temporadas').update(campos).eq('id', id)).error); return id; }
+      const { data, error } = await this.cli.from('temporadas').insert(campos).select('id').single(); this.err(error); return data.id;
+    },
+    async eliminarTemporada(id) { this.err((await this.cli.from('temporadas').delete().eq('id', id)).error); },
+    async guardarTarifa(aloj, temp, precio) {
+      if (precio === null) this.err((await this.cli.from('tarifas').delete().match({ alojamiento_id: aloj, temporada_id: temp })).error);
+      else this.err((await this.cli.from('tarifas').upsert({ alojamiento_id: aloj, temporada_id: temp, precio_noche: precio }, { onConflict: 'alojamiento_id,temporada_id' })).error);
+    }
+  };
+
+  const API = MODO === 'supabase' ? Supa : Demo;
+  let D = { alojamientos: [], temporadas: [], tarifas: [], reservas: [] };
+  const alojamiento = id => D.alojamientos.find(a => a.id === id) || {};
+
+  /* Mismo cálculo que la función SQL precio_estancia(): noche a noche, la tarifa
+     de la temporada que la contiene (la más alta si hay varias) o el precio base. */
+  function precioEstancia(aloj, entrada, salida, datos = D) {
+    const a = datos.alojamientos.find(x => x.id === aloj); if (!a || !entrada || !salida || salida <= entrada) return null;
+    let total = 0;
+    for (let n = entrada; n < salida; n = sumar(n, 1)) {
+      let p = null;
+      for (const t of datos.temporadas) if (n >= t.desde && n <= t.hasta) {
+        const tf = datos.tarifas.find(x => x.alojamiento_id === aloj && x.temporada_id === t.id);
+        if (tf && (p === null || +tf.precio_noche > p)) p = +tf.precio_noche;
+      }
+      total += p ?? +a.precio_base;
+    }
+    return Math.round(total * 100) / 100;
+  }
+
+  async function recargar(silencioso) {
+    try { D = await API.listar(); pintarTodo(); if (!silencioso) toast('Datos actualizados'); }
+    catch (e) { toast('⚠️ ' + e.message); }
+  }
+
+  /* =====================================================================
+     ACCESO
+     ===================================================================== */
+  async function mostrarApp() {
+    $('#vistaLogin').classList.add('hidden'); $('#vistaApp').classList.remove('hidden');
+    $('#lblModo').textContent = MODO === 'demo' ? 'Modo demostración' : 'Gestor de reservas';
+    await recargar(true);
+  }
+  if (MODO === 'demo') {
+    $('#avisoDemo').classList.remove('hidden'); $('#camposLogin').classList.add('hidden');
+    $('#btnLogin').textContent = 'Entrar en la demostración'; $('#btnResetDemo').classList.remove('hidden');
+  }
+  $('#btnResetDemo').addEventListener('click', () => { localStorage.removeItem(Demo.CLAVE); Demo.semilla(); toast('Datos de ejemplo restablecidos'); });
+  $('#formLogin').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const f = new FormData(ev.target), err = $('#errorLogin');
+    err.classList.add('hidden');
+    try {
+      if (MODO === 'demo') sessionStorage.setItem('lospinos-demo-sesion', '1');
+      else await API.entrar(f.get('email'), f.get('password'));
+      mostrarApp();
+    } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+  });
+  $('#btnSalir').addEventListener('click', async () => {
+    sessionStorage.removeItem('lospinos-demo-sesion'); await API.salir();
+    $('#vistaApp').classList.add('hidden'); $('#vistaLogin').classList.remove('hidden');
+  });
+  (async () => { try { if (await API.sesion()) mostrarApp(); } catch (e) { $('#errorLogin').textContent = e.message; $('#errorLogin').classList.remove('hidden'); } })();
+
+  /* =====================================================================
+     NAVEGACIÓN
+     ===================================================================== */
+  function ir(p) {
+    $$('.pantalla').forEach(x => x.classList.toggle('activa', x.id === 'p-' + p));
+    $$('[data-ir]').forEach(b => b.classList.toggle('text-wood-600', b.dataset.ir === p));
+    scrollTo(0, 0);
+  }
+  $$('[data-ir]').forEach(b => b.addEventListener('click', () => ir(b.dataset.ir)));
+  $('#btnRefrescar').addEventListener('click', () => recargar());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#vistaApp').classList.contains('hidden')) recargar(true); });
+
+  function pintarTodo() { pintarResumen(); pintarCalendario(); pintarReservas(); pintarPrecios(); pintarBadge(); }
+  const activas = () => D.reservas.filter(r => r.estado !== 'cancelada');
+  function pintarBadge() {
+    const n = D.reservas.filter(r => r.estado === 'pendiente').length, b = $('#badgePendientes');
+    b.textContent = n; b.classList.toggle('hidden', !n);
+  }
+
+  /* =====================================================================
+     CALENDARIO
+     ===================================================================== */
+  let mesVista = hoyS().slice(0, 7); // 'AAAA-MM'
+  function pintarResumen() {
+    const h = hoyS(), conf = D.reservas.filter(r => r.estado === 'confirmada');
+    const tarjeta = (n, t, c, ir) => `<button ${ir ? `data-filtro-ir="${ir}"` : ''} class="rounded-2xl ${c} p-3 text-left shadow-soft"><p class="text-3xl font-semibold">${n}</p><p class="text-xs font-medium opacity-80">${t}</p></button>`;
+    $('#resumenHoy').innerHTML =
+      tarjeta(conf.filter(r => r.entrada === h).length, 'Entradas hoy', 'bg-pine-700 text-cream', 'hoy') +
+      tarjeta(conf.filter(r => r.salida === h).length, 'Salidas hoy', 'bg-white', 'hoy') +
+      tarjeta(D.reservas.filter(r => r.estado === 'pendiente').length, 'Pendientes', 'bg-wood-100 text-wood-700', 'pendientes');
+    $$('[data-filtro-ir]').forEach(b => b.addEventListener('click', () => { filtro = b.dataset.filtroIr; ir('reservas'); pintarReservas(); }));
+  }
+  function pintarCalendario() {
+    const [y, m] = mesVista.split('-').map(Number);
+    const ini = `${mesVista}-01`, diasMes = new Date(Date.UTC(y, m, 0)).getUTCDate(), fin = sumar(ini, diasMes); // fin excluido
+    const mesTxt = s2d(ini).toLocaleDateString('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    $('#lblMes').textContent = mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1);
+    const h = hoyS(), dias = [...Array(diasMes)].map((_, i) => sumar(ini, i));
+    const cabDia = dias.map(d => {
+      const dd = s2d(d), finde = [0, 6].includes(dd.getUTCDay());
+      return `<div class="dia flex h-12 flex-col items-center justify-center border-r border-stone-150 text-[11px] ${d === h ? 'bg-wood-500 text-white' : finde ? 'bg-pine-50' : ''}">
+        <span class="uppercase opacity-70">${dd.toLocaleDateString('es-ES', { weekday: 'narrow', timeZone: 'UTC' })}</span><span class="text-sm font-semibold">${dd.getUTCDate()}</span></div>`;
+    }).join('');
+    $('#calNombres').innerHTML = `<div class="flex h-12 items-center border-b border-stone-150 px-3 text-[11px] font-semibold uppercase tracking-widest text-pine-700/60">Alojamiento</div>` +
+      D.alojamientos.filter(a => a.activo !== false).map(a => `<div class="flex h-14 flex-col justify-center border-b border-stone-150 px-3 last:border-0">
+        <p class="truncate text-[13px] font-semibold leading-tight sm:text-sm" title="${esc(a.nombre)}">${esc(a.nombre.replace(/^(Cabaña|Casa|Apartamento|Dúplex) /, ''))}</p>
+        <p class="text-[11px] text-pine-700/60">${esc(a.tipo)} · ${a.capacidad} pax</p></div>`).join('');
+    const filas = D.alojamientos.filter(a => a.activo !== false).map(a => {
+      const celdas = dias.map(d => `<button data-celda="${a.id}|${d}" class="dia h-14 border-r border-stone-150 ${d === h ? 'bg-wood-100/60' : [0, 6].includes(s2d(d).getUTCDay()) ? 'bg-pine-50/60' : ''} hover:bg-wood-100" aria-label="Nueva reserva ${esc(a.nombre)} ${d}"></button>`).join('');
+      const barras = activas().filter(r => r.alojamiento_id === a.id && r.entrada < fin && r.salida > ini).map(r => {
+        const e = r.entrada < ini ? -0.5 : noches(ini, r.entrada), s = r.salida > fin ? diasMes + 0.5 : noches(ini, r.salida);
+        const izq = `calc(${e + 0.5} * var(--cw) + 2px)`, ancho = `calc(${s - e} * var(--cw) - 4px)`;
+        return `<div data-reserva="${r.id}" class="barra ${r.estado}" style="left:${izq};width:${ancho}" title="${esc(r.nombre)} · ${fCorta(r.entrada)} → ${fCorta(r.salida)}">${r.estado === 'pendiente' ? '⏳ ' : ''}${esc(r.nombre)}</div>`;
+      }).join('');
+      return `<div class="relative flex border-b border-stone-150 last:border-0">${celdas}${barras}</div>`;
+    }).join('');
+    $('#calRejilla').innerHTML = `<div class="flex border-b border-stone-150">${cabDia}</div>${filas}`;
+    $('#calRejilla').style.width = `calc(${diasMes} * var(--cw))`;
+    if (mesVista === h.slice(0, 7)) $('#calScroll').scrollLeft = Math.max(0, (s2d(h).getUTCDate() - 3) * 44);
+  }
+  $$('[data-mes]').forEach(b => b.addEventListener('click', () => {
+    const [y, m] = mesVista.split('-').map(Number), d = new Date(Date.UTC(y, m - 1 + +b.dataset.mes, 1));
+    mesVista = d2s(d).slice(0, 7); pintarCalendario();
+  }));
+  $('#btnHoy').addEventListener('click', () => { mesVista = hoyS().slice(0, 7); pintarCalendario(); });
+  $('#calRejilla').addEventListener('click', ev => {
+    const barra = ev.target.closest('[data-reserva]'); if (barra) return abrirReserva(D.reservas.find(r => r.id === barra.dataset.reserva));
+    const c = ev.target.closest('[data-celda]'); if (!c) return;
+    const [aloj, dia] = c.dataset.celda.split('|');
+    abrirReserva(null, { alojamiento_id: aloj, entrada: dia, salida: sumar(dia, 2) });
+  });
+
+  /* =====================================================================
+     LISTA DE RESERVAS
+     ===================================================================== */
+  let filtro = 'proximas';
+  const FILTROS = [
+    ['pendientes', 'Pendientes', r => r.estado === 'pendiente'],
+    ['hoy', 'Hoy', r => r.estado === 'confirmada' && r.entrada <= hoyS() && r.salida >= hoyS()],
+    ['proximas', 'Próximas', r => r.estado !== 'cancelada' && r.salida >= hoyS()],
+    ['pasadas', 'Pasadas', r => r.estado !== 'cancelada' && r.salida < hoyS()],
+    ['canceladas', 'Canceladas', r => r.estado === 'cancelada'],
+    ['todas', 'Todas', () => true]
+  ];
+  const ORIGEN = { web: '🌐 Web', whatsapp: '💬 WhatsApp', agente: '🤖 Agente IA', telefono: '📞 Teléfono', email: '✉️ Email', manual: '✍️ Manual' };
+  const ESTADO = { pendiente: ['Pendiente', 'bg-wood-100 text-wood-700'], confirmada: ['Confirmada', 'bg-pine-100 text-pine-800'], cancelada: ['Cancelada', 'bg-stone-150 text-pine-700/60'] };
+  function pintarReservas() {
+    $('#filtros').innerHTML = FILTROS.map(([k, t, fn]) => {
+      const n = D.reservas.filter(fn).length;
+      return `<button data-filtro="${k}" class="shrink-0 rounded-full px-4 py-2 text-sm font-medium ${filtro === k ? 'bg-pine-700 text-white' : 'bg-white text-pine-800 shadow-soft'}">${t} <span class="opacity-60">${n}</span></button>`;
+    }).join('');
+    const q = $('#buscar').value.trim().toLowerCase(), fn = FILTROS.find(f => f[0] === filtro)[2];
+    const lista = D.reservas.filter(fn).filter(r => !q || `${r.nombre} ${r.telefono || ''} ${r.email || ''}`.toLowerCase().includes(q))
+      .sort((a, b) => filtro === 'pasadas' ? b.entrada.localeCompare(a.entrada) : a.entrada.localeCompare(b.entrada));
+    $('#listaReservas').innerHTML = lista.length ? lista.map(r => {
+      const a = alojamiento(r.alojamiento_id), n = noches(r.entrada, r.salida), [et, ec] = ESTADO[r.estado];
+      const pendiente = (+r.precio_total || 0) - (+r.pagado || 0);
+      return `<article class="rounded-3xl bg-white p-5 shadow-soft">
+        <button data-abrir="${r.id}" class="block w-full text-left">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0"><p class="truncate text-lg font-semibold">${esc(r.nombre)}</p>
+              <p class="truncate text-sm text-pine-700/70">${esc(a.nombre || r.alojamiento_id)}</p></div>
+            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${ec}">${et}</span>
+          </div>
+          <p class="mt-3 text-sm font-medium">${fLarga(r.entrada)} → ${fLarga(r.salida)} · ${n} noche${n === 1 ? '' : 's'} · 👥 ${r.personas}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-pine-700/70">
+            <span>${ORIGEN[r.origen] || r.origen}</span><span>Total ${euros(r.precio_total)}</span>
+            ${r.estado === 'confirmada' && r.precio_total ? `<span class="${pendiente > 0 ? 'font-semibold text-wood-700' : 'text-pine-700'}">${pendiente > 0 ? 'Pendiente ' + euros(pendiente) : '✓ Pagado'}</span>` : ''}
+          </div>
+          ${r.notas ? `<p class="mt-2 line-clamp-2 text-xs italic text-pine-700/60">${esc(r.notas)}</p>` : ''}
+        </button>
+        ${r.estado === 'pendiente' ? `<div class="mt-4 grid grid-cols-3 gap-2">
+          <button data-confirmar="${r.id}" class="rounded-full bg-pine-700 py-2.5 text-sm font-semibold text-white">✓ Confirmar</button>
+          <button data-rechazar="${r.id}" class="rounded-full border border-pine-700/20 py-2.5 text-sm font-semibold">✕ Rechazar</button>
+          ${r.telefono ? `<a href="${enlaceWhatsApp(r)}" target="_blank" rel="noopener" class="rounded-full border border-pine-700/20 py-2.5 text-center text-sm font-semibold">💬 Escribir</a>` : '<span></span>'}
+        </div>` : ''}
+      </article>`;
+    }).join('') : `<p class="rounded-3xl bg-white p-8 text-center text-pine-700/60 shadow-soft md:col-span-2">No hay reservas en esta lista.</p>`;
+  }
+  $('#filtros').addEventListener('click', ev => { const b = ev.target.closest('[data-filtro]'); if (b) { filtro = b.dataset.filtro; pintarReservas(); } });
+  $('#buscar').addEventListener('input', pintarReservas);
+  $('#listaReservas').addEventListener('click', async ev => {
+    const abrir = ev.target.closest('[data-abrir]'); if (abrir) return abrirReserva(D.reservas.find(r => r.id === abrir.dataset.abrir));
+    const c = ev.target.closest('[data-confirmar]'), x = ev.target.closest('[data-rechazar]');
+    if (!c && !x) return;
+    const r = D.reservas.find(y => y.id === (c || x).dataset[c ? 'confirmar' : 'rechazar']);
+    if (x && !confirm(`¿Rechazar la solicitud de ${r.nombre}?`)) return;
+    try { await API.guardarReserva({ ...r, estado: c ? 'confirmada' : 'cancelada' }); await recargar(true); toast(c ? '✓ Reserva confirmada' : 'Solicitud rechazada'); }
+    catch (e) { toast('⚠️ ' + e.message); }
+  });
+
+  /* =====================================================================
+     FICHA DE RESERVA
+     ===================================================================== */
+  const F = $('#formReserva');
+  let precioManual = false;
+  function telIntl(t) { let n = String(t || '').replace(/\D/g, ''); if (n.length === 9) n = '34' + n; return n; }
+  function enlaceWhatsApp(r) {
+    const a = alojamiento(r.alojamiento_id), n = noches(r.entrada, r.salida);
+    const txt = r.estado === 'confirmada'
+      ? `Hola ${r.nombre}, le confirmamos su reserva en ${a.nombre} del ${fLarga(r.entrada)} al ${fLarga(r.salida)} (${n} noche${n === 1 ? '' : 's'}, ${r.personas} personas). Total: ${euros(r.precio_total)}. Entrada a partir de las 15:00 h y salida antes de las 10:00 h. ¡Le esperamos! Cabañas Los Pinos`
+      : `Hola ${r.nombre}, hemos recibido su solicitud para ${a.nombre} del ${fLarga(r.entrada)} al ${fLarga(r.salida)} (${r.personas} personas). El precio total sería ${euros(r.precio_total)}. ¿Le confirmamos la reserva? Cabañas Los Pinos`;
+    return `https://wa.me/${telIntl(r.telefono)}?text=${encodeURIComponent(txt)}`;
+  }
+  F.alojamiento_id.innerHTML = '';
+  function opcionesAloj() { F.alojamiento_id.innerHTML = D.alojamientos.map(a => `<option value="${a.id}">${esc(a.nombre)} (máx. ${a.capacidad})</option>`).join(''); }
+  function actualizarDerivados() {
+    const a = alojamiento(F.alojamiento_id.value), e = F.entrada.value, s = F.salida.value;
+    F.personas.max = a.capacidad || 8;
+    const n = e && s ? noches(e, s) : 0;
+    $('#infoNoches').textContent = n > 0 ? `${n} noche${n === 1 ? '' : 's'} · entrada 15:00 h · salida 10:00 h` : '';
+    if (!precioManual) { const p = precioEstancia(F.alojamiento_id.value, e, s); F.precio_total.value = p ?? ''; }
+    // Aviso de solape (antes de guardar)
+    const id = F.id.value, choque = e && s && D.reservas.find(x => x.id !== id && x.alojamiento_id === F.alojamiento_id.value && x.estado !== 'cancelada' && x.entrada < s && e < x.salida);
+    const av = $('#avisoSolape');
+    av.classList.toggle('hidden', !choque);
+    if (choque) av.innerHTML = `⚠️ Coincide con la reserva <strong>${esc(choque.nombre)}</strong> (${choque.estado}, ${fCorta(choque.entrada)} → ${fCorta(choque.salida)}).`;
+  }
+  ['alojamiento_id', 'entrada', 'salida'].forEach(n => F[n].addEventListener('change', () => {
+    if (n === 'entrada' && F.entrada.value && (!F.salida.value || F.salida.value <= F.entrada.value)) F.salida.value = sumar(F.entrada.value, 1);
+    actualizarDerivados();
+  }));
+  F.precio_total.addEventListener('input', () => { precioManual = true; });
+  $('#btnRecalcular').addEventListener('click', () => { precioManual = false; actualizarDerivados(); });
+
+  function abrirReserva(r, previo = {}) {
+    opcionesAloj(); F.reset(); precioManual = !!r;
+    const v = r || { alojamiento_id: D.alojamientos[0]?.id, entrada: hoyS(), salida: sumar(hoyS(), 2), personas: 2, estado: 'confirmada', origen: 'manual', pagado: 0, ...previo };
+    ['id', 'alojamiento_id', 'entrada', 'salida', 'personas', 'estado', 'origen', 'nombre', 'telefono', 'email', 'precio_total', 'pagado', 'notas'].forEach(k => { F[k].value = v[k] ?? ''; });
+    $('#hojaTitulo').textContent = r ? r.nombre : 'Nueva reserva';
+    $('#hojaSub').textContent = r ? `${ORIGEN[r.origen] || ''} · ${ESTADO[r.estado][0]}` : 'Reserva';
+    $('#btnConfirmarGuardar').classList.toggle('hidden', r?.estado === 'confirmada' || (!r && v.estado === 'confirmada'));
+    const acc = $('#accionesExistente'); acc.classList.toggle('hidden', !r); acc.classList.toggle('grid', !!r);
+    if (r) {
+      $('#accWhatsApp').href = r.telefono ? enlaceWhatsApp(r) : '#'; $('#accWhatsApp').classList.toggle('opacity-40', !r.telefono);
+      $('#accLlamar').href = r.telefono ? `tel:+${telIntl(r.telefono)}` : '#'; $('#accLlamar').classList.toggle('opacity-40', !r.telefono);
+    }
+    $('#errorReserva').classList.add('hidden');
+    actualizarDerivados();
+    $('#hoja').classList.replace('hidden', 'flex'); document.body.style.overflow = 'hidden';
+    setTimeout(() => (r ? F.estado : F.nombre).focus({ preventScroll: true }), 50);
+  }
+  function cerrarHoja() { $('#hoja').classList.replace('flex', 'hidden'); document.body.style.overflow = ''; }
+  $('#btnNueva').addEventListener('click', () => abrirReserva(null));
+  $('#hoja').addEventListener('click', ev => { if (ev.target === $('#hoja') || ev.target.closest('[data-cerrar]')) cerrarHoja(); });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarHoja(); });
+
+  async function guardarFicha(forzarConfirmada) {
+    const f = Object.fromEntries(new FormData(F)), err = $('#errorReserva'), a = alojamiento(f.alojamiento_id);
+    let msg = '';
+    if (!f.nombre.trim()) msg = 'Escribe el nombre del huésped.';
+    else if (!f.entrada || !f.salida || f.salida <= f.entrada) msg = 'La salida debe ser posterior a la entrada.';
+    else if (!(+f.personas >= 1 && +f.personas <= a.capacidad)) msg = `${a.nombre} admite hasta ${a.capacidad} personas.`;
+    if (msg) { err.textContent = msg; err.classList.remove('hidden'); return; }
+    const r = {
+      id: f.id || undefined, alojamiento_id: f.alojamiento_id, entrada: f.entrada, salida: f.salida, personas: +f.personas,
+      nombre: f.nombre.trim(), telefono: f.telefono.trim() || null, email: f.email.trim() || null, origen: f.origen,
+      estado: forzarConfirmada ? 'confirmada' : f.estado, precio_total: f.precio_total === '' ? null : +f.precio_total,
+      pagado: +f.pagado || 0, notas: f.notas.trim() || null
+    };
+    if (!r.id) delete r.id;
+    try { await API.guardarReserva(r); cerrarHoja(); await recargar(true); toast(r.estado === 'confirmada' ? '✓ Reserva confirmada' : 'Reserva guardada'); }
+    catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+  }
+  F.addEventListener('submit', ev => { ev.preventDefault(); guardarFicha(false); });
+  $('#btnConfirmarGuardar').addEventListener('click', () => guardarFicha(true));
+  $('#accEliminar').addEventListener('click', async () => {
+    if (!confirm('¿Eliminar esta reserva definitivamente? (Si solo se anula, mejor márcala como Cancelada)')) return;
+    try { await API.eliminarReserva(F.id.value); cerrarHoja(); await recargar(true); toast('Reserva eliminada'); } catch (e) { toast('⚠️ ' + e.message); }
+  });
+
+  /* =====================================================================
+     PRECIOS Y TEMPORADAS
+     ===================================================================== */
+  function pintarPrecios() {
+    const sel = $('#calcAloj'), v = sel.value;
+    sel.innerHTML = D.alojamientos.map(a => `<option value="${a.id}">${esc(a.nombre)}</option>`).join(''); if (v) sel.value = v;
+    if (!$('#calcEntrada').value) { $('#calcEntrada').value = hoyS(); $('#calcSalida').value = sumar(hoyS(), 2); }
+    calcular();
+    $('#listaBase').innerHTML = D.alojamientos.map(a => `<label class="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-soft">
+      <span class="min-w-0"><span class="block truncate font-medium">${esc(a.nombre)}</span><span class="text-xs text-pine-700/60">${a.capacidad} personas</span></span>
+      <span class="flex items-center gap-1"><input data-base="${a.id}" type="number" min="0" step="1" value="${+a.precio_base}" class="w-20 rounded-lg border border-stone-150 px-2 py-2 text-right" /> €</span></label>`).join('');
+    $('#listaTemporadas').innerHTML = D.temporadas.length ? D.temporadas.map(t => `<div class="rounded-3xl bg-white p-5 shadow-soft" data-temp="${t.id}">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto_auto]">
+        <input data-t="nombre" value="${esc(t.nombre)}" class="rounded-xl border border-stone-150 px-3 py-2.5 font-semibold" aria-label="Nombre de la temporada" />
+        <input data-t="desde" type="date" value="${t.desde}" class="rounded-xl border border-stone-150 px-3 py-2.5" aria-label="Desde" />
+        <input data-t="hasta" type="date" value="${t.hasta}" class="rounded-xl border border-stone-150 px-3 py-2.5" aria-label="Hasta" />
+        <button data-borrar-temp class="rounded-xl border border-red-200 px-3 py-2.5 text-sm text-red-700">Eliminar</button>
+      </div>
+      <p class="mt-4 text-xs font-semibold uppercase tracking-widest text-pine-700/60">Precio por noche en esta temporada (vacío = precio base)</p>
+      <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">${D.alojamientos.map(a => {
+        const tf = D.tarifas.find(x => x.alojamiento_id === a.id && x.temporada_id === t.id);
+        return `<label class="flex items-center justify-between gap-2 rounded-xl bg-cream px-3 py-2 text-sm"><span class="truncate">${esc(a.nombre)}</span>
+          <span class="flex items-center gap-1"><input data-tarifa="${a.id}" type="number" min="0" step="1" value="${tf ? +tf.precio_noche : ''}" placeholder="${+a.precio_base}" class="w-20 rounded-lg border border-stone-150 px-2 py-1.5 text-right" /> €</span></label>`;
+      }).join('')}</div>
+    </div>`).join('') : `<p class="rounded-3xl bg-white p-6 text-center text-pine-700/60 shadow-soft">Sin temporadas: se aplica siempre el precio base.</p>`;
+  }
+  function calcular() {
+    const e = $('#calcEntrada').value, s = $('#calcSalida').value, p = precioEstancia($('#calcAloj').value, e, s);
+    $('#calcTotal').textContent = p == null ? '—' : `${euros(p)} · ${noches(e, s)} noches`;
+  }
+  ['calcAloj', 'calcEntrada', 'calcSalida'].forEach(id => $('#' + id).addEventListener('change', calcular));
+  // Guardado automático al cambiar cualquier precio o temporada
+  $('#p-precios').addEventListener('change', async ev => {
+    const el = ev.target;
+    try {
+      if (el.dataset.base) { await API.guardarPrecioBase(el.dataset.base, Math.max(0, +el.value || 0)); }
+      else if (el.dataset.tarifa) { const t = +el.closest('[data-temp]').dataset.temp; await API.guardarTarifa(el.dataset.tarifa, t, el.value === '' ? null : Math.max(0, +el.value)); }
+      else if (el.dataset.t) {
+        const box = el.closest('[data-temp]'), t = { id: +box.dataset.temp };
+        $$('[data-t]', box).forEach(i => t[i.dataset.t] = i.value);
+        if (!t.nombre.trim() || !t.desde || !t.hasta || t.hasta < t.desde) return toast('⚠️ Revisa el nombre y las fechas de la temporada');
+        await API.guardarTemporada(t);
+      } else return;
+      await recargar(true); toast('✓ Precio guardado');
+    } catch (e) { toast('⚠️ ' + e.message); }
+  });
+  $('#p-precios').addEventListener('click', async ev => {
+    const b = ev.target.closest('[data-borrar-temp]'); if (!b) return;
+    const box = b.closest('[data-temp]');
+    if (!confirm('¿Eliminar esta temporada y sus precios?')) return;
+    try { await API.eliminarTemporada(+box.dataset.temp); await recargar(true); toast('Temporada eliminada'); } catch (e) { toast('⚠️ ' + e.message); }
+  });
+  $('#btnNuevaTemporada').addEventListener('click', async () => {
+    const y = new Date().getFullYear();
+    try { await API.guardarTemporada({ nombre: 'Nueva temporada', desde: `${y}-12-05`, hasta: `${y}-12-08`, color: '#b07a45' }); await recargar(true); toast('Temporada creada: ajusta nombre, fechas y precios'); }
+    catch (e) { toast('⚠️ ' + e.message); }
+  });
+  </script>
+</body>
+</html>

@@ -458,7 +458,7 @@
   <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
       <img data-logo="logoHorizontal" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
-      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><a href="gestor.html" class="text-cream/40 hover:text-cream">Acceso propietarios</a></p>
       <p>Entrada 15:00 h · Salida 10:00 h · No mascotas · No fumar dentro<br><span class="text-cream/50">Nº de registro: A/JA/00117</span></p>
     </div>
   </footer>
@@ -504,6 +504,7 @@
 
         <p class="rounded-xl bg-pine-50 px-4 py-3 text-xs text-pine-700">Entrada 15:00 h · Salida 10:00 h · No se aceptan mascotas · No se permite fumar dentro</p>
         <p id="formError" class="hidden text-sm font-medium text-red-700"></p>
+        <p id="formOk" class="hidden rounded-xl bg-pine-50 px-4 py-3 text-sm font-medium text-pine-800"></p>
 
         <div class="grid gap-3 pt-2 sm:grid-cols-2">
           <button type="submit" data-via="whatsapp" class="rounded-full bg-pine-700 px-6 py-3.5 font-semibold text-white transition hover:bg-pine-800">Enviar por WhatsApp</button>
@@ -515,6 +516,8 @@
   </div>
 
   <!-- =================== SCRIPTS =================== -->
+  <script src="config.js"></script>
+  <script src="js/solicitudes.js"></script>
   <script>
     /* =============================================================
        VÍDEO DE PORTADA (YouTube)
@@ -744,7 +747,13 @@
     $$('#bookingForm input[type="date"]').forEach(i => i.min = hoy);
 
     // Envío: compone el mensaje y abre WhatsApp o el correo
-    $('#bookingForm').addEventListener('submit', e => {
+    // Slug de cada alojamiento (el mismo id que en la base de datos del gestor)
+    const SLUGS = Object.fromEntries([...CABANAS.map(c => [`Cabaña ${c.nombre}`, c.slug]),
+      ['Casa Los Pineros', 'casa-los-pineros'], ['Apartamento Mirador de Las Palomas', 'mirador-de-las-palomas'], ['Dúplex El Senderista', 'el-senderista']]);
+    const SOL = window.LosPinosSolicitudes || { activo: false };
+    if (SOL.activo) $$('#bookingForm [data-via="email"]').forEach(b => b.textContent = 'Enviar solicitud');
+
+    $('#bookingForm').addEventListener('submit', async e => {
       e.preventDefault();
       const d = Object.fromEntries(new FormData(e.target));
       const max = ALOJAMIENTOS[d.alojamiento].max;
@@ -754,10 +763,27 @@
       else if (!d.nombre.trim() || !d.telefono.trim()) error = 'Indica tu nombre y teléfono.';
       $('#formError').textContent = error;
       $('#formError').classList.toggle('hidden', !error);
+      $('#formOk').classList.add('hidden');
       if (error) return;
 
+      const via = (e.submitter && e.submitter.dataset.via) || 'email';
       const msg = `Hola, me gustaría reservar:\n• Alojamiento: ${d.alojamiento}\n• Entrada: ${d.entrada} (15:00 h)\n• Salida: ${d.salida} (10:00 h)\n• Personas: ${d.personas}\n• Nombre: ${d.nombre}\n• Teléfono: ${d.telefono}` + (d.comentarios ? `\n• Comentarios: ${d.comentarios}` : '');
-      if ((e.submitter && e.submitter.dataset.via) === 'whatsapp') {
+      // Con el gestor conectado, la solicitud queda registrada como "pendiente"
+      if (SOL.activo) {
+        const ventanaWA = via === 'whatsapp' ? window.open('', '_blank') : null;  // se abre ya para que el navegador no la bloquee
+        try {
+          await SOL.enviar({ ...d, alojamiento: SLUGS[d.alojamiento], origen: via === 'whatsapp' ? 'whatsapp' : 'web' });
+          $('#formOk').textContent = '✓ Solicitud recibida. Te responderemos lo antes posible con la disponibilidad y el precio total.';
+          $('#formOk').classList.remove('hidden');
+          if (ventanaWA) ventanaWA.location = `https://wa.me/34686235888?text=${encodeURIComponent(msg)}`;
+          else e.target.reset();
+        } catch (err) {
+          if (ventanaWA) ventanaWA.close();
+          $('#formError').textContent = err.message; $('#formError').classList.remove('hidden');
+        }
+        return;
+      }
+      if (via === 'whatsapp') {
         window.open(`https://wa.me/34686235888?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
       } else {
         location.href = `mailto:info@cabanaslospinos.com?subject=${encodeURIComponent('Solicitud de reserva – ' + d.alojamiento)}&body=${encodeURIComponent(msg)}`;

@@ -371,6 +371,7 @@ def pagina(a, cfg, css):
           <label class="block"><span class="text-sm font-medium">Comentarios (opcional):</span>
             <textarea name="comentarios" rows="3" placeholder="¿Necesitas comentarnos algo?" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0"></textarea></label>
           <p data-error class="hidden rounded-lg bg-red-900/40 px-4 py-3 text-sm font-medium text-red-100"></p>
+          <p data-ok class="hidden rounded-lg bg-pine-700/80 px-4 py-3 text-sm font-medium text-cream"></p>
           <div class="grid gap-3 pt-2 sm:grid-cols-2">
             <button type="submit" data-via="email" class="rounded-full bg-wood-500 px-6 py-4 font-semibold text-white transition hover:bg-wood-600">Enviar solicitud por email</button>
             <button type="submit" data-via="whatsapp" class="rounded-full border border-cream/40 px-6 py-4 font-semibold text-cream transition hover:bg-cream/10">Enviar por WhatsApp</button>
@@ -543,8 +544,11 @@ def pagina(a, cfg, css):
 {form_modal}    </div>
   </div>
 
+  <script src="config.js"></script>
+  <script src="js/solicitudes.js"></script>
   <script>
     const ACTUAL = {json.dumps(nombre_full, ensure_ascii=False)};
+    const SLUG = {json.dumps(a['slug'])};  // id del alojamiento en la base de datos del gestor
     const ALOJAMIENTOS = {datos_js};
     const $ = (s, el = document) => el.querySelector(s);
     const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -599,9 +603,12 @@ def pagina(a, cfg, css):
     document.addEventListener('keydown', ev => {{ if (ev.key === 'Escape') cerrar(); }});
     const now = new Date(), hoy = new Date(now - now.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
     $$('form[data-reserva] input[type="date"]').forEach(i => i.min = hoy);
-    $$('form[data-reserva]').forEach(form => form.addEventListener('submit', ev => {{
+    const SOL = window.LosPinosSolicitudes || {{ activo: false }};
+    if (SOL.activo) $$('form[data-reserva] [data-via="email"]').forEach(b => b.textContent = 'Enviar solicitud');
+    $$('form[data-reserva]').forEach(form => form.addEventListener('submit', async ev => {{
       ev.preventDefault();
-      const d = Object.fromEntries(new FormData(form)), caja = form.querySelector('[data-error]');
+      const d = Object.fromEntries(new FormData(form)), caja = form.querySelector('[data-error]'), ok = form.querySelector('[data-ok]');
+      ok.classList.add('hidden');
       const max = ALOJAMIENTOS.find(x => x.nombre === d.alojamiento).max;
       let err = '';
       if (!d.nombre.trim()) err = 'Indica tu nombre.';
@@ -612,7 +619,23 @@ def pagina(a, cfg, css):
       caja.textContent = err; caja.classList.toggle('hidden', !err);
       if (err) return;
       const msg = `Hola, me gustaría reservar:\\n• Alojamiento: ${{d.alojamiento}}\\n• Entrada: ${{d.entrada}} (15:00 h)\\n• Salida: ${{d.salida}} (10:00 h)\\n• Personas: ${{d.personas}}\\n• Nombre: ${{d.nombre}}\\n• Email: ${{d.email}}\\n• Teléfono: ${{d.telefono}}` + (d.comentarios ? `\\n• Comentarios: ${{d.comentarios}}` : '');
-      if (ev.submitter && ev.submitter.dataset.via === 'whatsapp') window.open(`https://wa.me/34686235888?text=${{encodeURIComponent(msg)}}`, '_blank', 'noopener');
+      const via = (ev.submitter && ev.submitter.dataset.via) || 'email';
+      // Con el gestor conectado, la solicitud queda registrada como "pendiente"
+      if (SOL.activo) {{
+        const ventanaWA = via === 'whatsapp' ? window.open('', '_blank') : null;  // se abre ya para que el navegador no la bloquee
+        try {{
+          await SOL.enviar({{ ...d, alojamiento: SLUG, origen: via === 'whatsapp' ? 'whatsapp' : 'web' }});
+          ok.textContent = '✓ Solicitud recibida. Le responderemos en la mayor brevedad posible con la disponibilidad, el precio total y las instrucciones para formalizar la reserva.';
+          ok.classList.remove('hidden');
+          if (ventanaWA) ventanaWA.location = `https://wa.me/34686235888?text=${{encodeURIComponent(msg)}}`;
+          else form.reset();
+        }} catch (e) {{
+          if (ventanaWA) ventanaWA.close();
+          caja.textContent = e.message; caja.classList.remove('hidden');
+        }}
+        return;
+      }}
+      if (via === 'whatsapp') window.open(`https://wa.me/34686235888?text=${{encodeURIComponent(msg)}}`, '_blank', 'noopener');
       else location.href = `mailto:info@cabanaslospinos.com?subject=${{encodeURIComponent('Solicitud de reserva – ' + d.alojamiento)}}&body=${{encodeURIComponent(msg)}}`;
     }}));
     $('#year').textContent = new Date().getFullYear();
