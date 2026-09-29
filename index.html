@@ -67,6 +67,14 @@
     .foto-pendiente{background:
       repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px),
       linear-gradient(135deg,#2f4430,#7a4e25)}
+    /* Vídeo de YouTube como fondo: cubre el hero sin bandas negras (16:9) */
+    .yt-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+    .yt-bg iframe{position:absolute;top:50%;left:50%;border:0;
+      width:100vw;height:56.25vw;min-width:177.78svh;min-height:100svh;
+      transform:translate(-50%,-50%) scale(1.15); /* scale oculta los bordes/título de YouTube */
+      opacity:0;transition:opacity 1.2s ease}
+    .yt-bg iframe.is-ready{opacity:1}
+    @media (prefers-reduced-motion: reduce){.yt-bg{display:none}}
   </style>
 </head>
 
@@ -132,8 +140,14 @@
   <main>
     <!-- =================== 3. HERO / INICIO =================== -->
     <section id="inicio" class="relative flex min-h-[100svh] items-center overflow-hidden">
-      <!-- Foto de fondo: FOTOS.hero -->
+      <!-- Capa 1 — Foto de respaldo (FOTOS.hero): se ve mientras carga el vídeo,
+           si YouTube está bloqueado o si el usuario prefiere movimiento reducido -->
       <div data-foto="hero" data-alt="Cabañas de Madera Los Pinos en Arroyo Frío" data-bg class="absolute inset-0"></div>
+
+      <!-- Capa 2 — Vídeo de YouTube de fondo.
+           El <iframe> se genera en el script a partir de HERO_VIDEO (ver "VÍDEO DE PORTADA").
+           Para cambiar el vídeo, edita SOLO HERO_VIDEO.id -->
+      <div id="heroVideo" class="yt-bg" aria-hidden="true"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-pine-900/70 via-pine-900/40 to-pine-900/85"></div>
 
       <div class="relative mx-auto w-full max-w-7xl px-4 pb-20 pt-32 sm:px-6 lg:px-8">
@@ -491,23 +505,51 @@
   <!-- =================== SCRIPTS =================== -->
   <script>
     /* =============================================================
-       FOTOS — pega aquí las URLs ORIGINALES de cabanaslospinos.com
-       (p. ej. "https://cabanaslospinos.com/wp-content/uploads/....jpg").
-       Si una clave está vacía se muestra un marco "Foto pendiente".
+       VÍDEO DE PORTADA (YouTube)
+       👉 Para usar el vídeo del cliente cambia SOLO "id".
+          El ID es lo que va tras "v=" en la URL de YouTube:
+          https://www.youtube.com/watch?v=XXXXXXXXXXX  →  id: 'XXXXXXXXXXX'
+       Deja id: '' para desactivar el vídeo y usar solo FOTOS.hero.
+       PROVISIONAL: "Pine forest from above drone Video 4K"
        ============================================================= */
+    const HERO_VIDEO = {
+      id: 'eBguPm4obJg',
+      params: {
+        autoplay: 1,        // reproducción automática
+        mute: 1,            // silenciado (obligatorio para que el navegador permita el autoplay)
+        loop: 1,            // bucle continuo (YouTube exige además playlist=<mismo id>, se añade solo)
+        controls: 0,        // sin controles
+        showinfo: 0,        // YouTube ya no lo usa desde 2018; se mantiene por compatibilidad
+        modestbranding: 1,  // logo de YouTube mínimo
+        rel: 0,             // vídeos relacionados solo del mismo canal
+        playsinline: 1,     // reproduce dentro de la página en iPhone (sin pantalla completa)
+        disablekb: 1,       // sin atajos de teclado
+        iv_load_policy: 3   // sin anotaciones
+      }
+    };
+
+    /* =============================================================
+       FOTOS — rutas PROVISIONALES con la estructura estándar de
+       WordPress (wp-content/uploads/AAAA/MM/archivo.jpg).
+       ⚠️ Los nombres NO están verificados contra el servidor original:
+       sustitúyelos por las URLs reales que salgan en la consola.
+       Si una ruta no existe (404), la página muestra automáticamente
+       el marco "Foto pendiente" en vez de una imagen rota.
+       ============================================================= */
+    const WP = 'https://cabanaslospinos.com/wp-content/uploads/';
     const FOTOS = {
-      hero:               '',
-      cabana1:            '',
-      cabana2:            '',
-      cabana3:            '',
-      cabana4:            '',
-      cabana5:            '',
-      casaPineros:        '',
-      apartamentoMirador: '',
-      duplexSenderista:   '',
-      entorno1:           '',
-      entorno2:           '',
-      reservas:           ''
+      hero:               WP + 'cabanas-los-pinos-arroyo-frio-portada.jpg',
+      cabana1:            WP + 'cabana-madera-1-exterior.jpg',
+      cabana2:            WP + 'cabana-madera-2-exterior.jpg',
+      cabana3:            WP + 'cabana-madera-3-exterior.jpg',
+      cabana4:            WP + 'cabana-madera-4-exterior.jpg',
+      cabana5:            WP + 'cabana-madera-5-exterior.jpg',
+      casaPineros:        WP + 'casa-los-pineros-terraza.jpg',
+      apartamentoMirador: WP + 'apartamento-mirador-de-las-palomas-terraza.jpg',
+      duplexSenderista:   WP + 'duplex-el-senderista.jpg',
+      entorno1:           WP + 'entorno-arroyo-frio-sierra-de-cazorla.jpg',
+      entorno2:           WP + 'piscina-cabanas-los-pinos.jpg',
+      reservas:           WP + 'cabanas-los-pinos-exterior-pinar.jpg'
     };
 
     /* ---------- Alojamientos (datos oficiales) ----------
@@ -554,18 +596,40 @@
         `<li class="rounded-full bg-pine-50 px-3 py-1 font-medium text-pine-700">${f.trim()}</li>`).join('');
     });
 
-    // Pinta cada hueco de foto: <img> si hay URL, marco "Foto pendiente" si no
+    // Pinta cada hueco de foto: <img> si hay URL; si no hay URL o la imagen
+    // falla al cargar (404), muestra el marco "Foto pendiente"
+    const fotoPendiente = el => {
+      el.classList.add('foto-pendiente', 'grid', 'place-items-center');
+      el.innerHTML = el.hasAttribute('data-bg') ? '' :
+        `<span class="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-widest text-cream/70">Foto pendiente</span>`;
+    };
     $$('[data-foto]').forEach(el => {
       const url = FOTOS[el.dataset.foto];
-      if (url) {
-        el.innerHTML = `<img src="${url}" alt="${el.dataset.alt || ''}" loading="${el.hasAttribute('data-bg') ? 'eager' : 'lazy'}"
-          class="h-full w-full object-cover transition duration-700 group-hover:scale-105" />`;
-      } else {
-        el.classList.add('foto-pendiente', 'grid', 'place-items-center');
-        if (!el.hasAttribute('data-bg')) el.innerHTML =
-          `<span class="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-widest text-cream/70">Foto pendiente</span>`;
-      }
+      if (!url) return fotoPendiente(el);
+      const img = new Image();
+      img.src = url;
+      img.alt = el.dataset.alt || '';
+      img.loading = el.hasAttribute('data-bg') ? 'eager' : 'lazy';
+      img.className = 'h-full w-full object-cover transition duration-700 group-hover:scale-105';
+      img.onerror = () => fotoPendiente(el);
+      el.replaceChildren(img);
     });
+
+    // Vídeo de portada: construye el <iframe> de YouTube a partir de HERO_VIDEO
+    (function montarVideoPortada() {
+      const box = $('#heroVideo');
+      const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!HERO_VIDEO.id || reducir) return box.remove();
+      const qs = new URLSearchParams({ ...HERO_VIDEO.params, playlist: HERO_VIDEO.id });
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${HERO_VIDEO.id}?${qs}`;
+      iframe.title = 'Vídeo de fondo de Cabañas Los Pinos';
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      iframe.tabIndex = -1;
+      // Fundido de entrada cuando carga (la foto de respaldo se ve mientras tanto)
+      iframe.addEventListener('load', () => setTimeout(() => iframe.classList.add('is-ready'), 600));
+      box.appendChild(iframe);
+    })();
 
     // Selector del formulario
     const sel = $('#fAlojamiento');
