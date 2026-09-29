@@ -124,10 +124,17 @@ ALOJAMIENTOS = [
                       'grupos y familias numerosas de hasta 8 personas.',
                       'Tres habitaciones y una amplia buhardilla con 4 camas individuales, ideal para que '
                       'los más pequeños tengan su propio espacio.']),
-    dict(slug='cabeza-rubia', nombre='Cabeza Rubia', tipo='Cabaña de madera', foto='portada7.webp',
+    dict(slug='cabeza-rubia', nombre='Cabeza Rubia', tipo='Cabaña de madera', foto=['principal_cabezarubia.webp', 'portada7.webp'],
          max=2, precio='50 – 80 €', habs='1 habitación',
          camas=['Habitación: cama de 135 cm'],
          wifi=True, extras=[],
+         # Fotos reales de la web original (pestaña Red de la página de Cabeza Rubia).
+         # Su página carga principal_cabezarubia.webp; portada7 de respaldo.
+         cabecera='cabecera_cabezarubia.webp',
+         galeria=['20260517_112251.webp', '20260517_111649.webp', '20260517_112049.webp',
+                  '20260517_112341.webp', '20260517_112043.webp', '20260517_112007.webp',
+                  '20260517_111825.webp', '20260517_112304.webp', '20260517_112227.webp',
+                  '20260517_111808.webp', '20260517_111725.webp', '20260517_111904.webp'],
          descripcion=['Cabeza Rubia es una cabaña de madera para 2 personas, perfecta para una escapada '
                       'en pareja entre pinos.',
                       'Una habitación con cama de 135, cocina, baño privado y la tranquilidad de Arroyo Frío '
