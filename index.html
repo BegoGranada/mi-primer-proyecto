@@ -111,7 +111,7 @@
             </div>
           </div>
         </li>
-        <li><a href="#entorno" class="hover:text-wood-300">Entorno</a></li>
+        <li><a href="entorno.html" class="hover:text-wood-300">Entorno</a></li>
         <li><a href="#noticias" class="hover:text-wood-300">Noticias</a></li>
         <li><a href="#contacto" class="hover:text-wood-300">Contacto</a></li>
         <li><a href="#reservas" class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</a></li>
@@ -139,7 +139,7 @@
             <li><a href="el-senderista.html" class="block py-2">Dúplex El Senderista</a></li>
           </ul>
         </li>
-        <li><a href="#entorno" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
+        <li><a href="entorno.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
         <li><a href="#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
         <li><a href="#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
         <li><a href="#reservas" class="block rounded-lg px-3 py-3 hover:bg-white/5">Reservas</a></li>
@@ -366,24 +366,26 @@
     </section>
 
     <!-- =================== 7. ENTORNO =================== -->
+    <!-- Resumen con texto REAL; la página completa es entorno.html (generada por tools/generar_alojamientos.py) -->
     <section id="entorno" class="relative overflow-hidden bg-stone-150 py-24 sm:py-32">
       <div class="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
         <div class="reveal">
           <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Entorno</p>
-          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">En el corazón de la Sierra de Cazorla</h2>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Unas palabras sobre el entorno</h2>
           <p class="mt-6 text-pine-700/85">
-            Arroyo Frío (La Iruela, Jaén) está en pleno Parque Natural Sierra de Cazorla, Segura y Las Villas,
-            el espacio protegido más grande de España. Te asesoramos para que aproveches cada día: rutas, aventura y gastronomía.
+            Más de 214.000 hectáreas de Parque Natural Sierra de Cazorla, Segura y Las Villas. Somos nativos del lugar:
+            te indicamos rutas que poca gente conoce, los mejores sitios para comer y todo lo que hay que ver.
           </p>
           <ul class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🥾</span><p class="mt-2 font-semibold">Rutas</p><p class="text-sm text-pine-700/70">Senderos del Parque Natural</p></li>
-            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🧗</span><p class="mt-2 font-semibold">Aventura</p><p class="text-sm text-pine-700/70">Actividades en la naturaleza</p></li>
-            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🍷</span><p class="mt-2 font-semibold">Gastronomía</p><p class="text-sm text-pine-700/70">Cocina serrana de Jaén</p></li>
+            <li><a href="entorno.html#rutas" class="block h-full rounded-2xl bg-white p-5 shadow-soft transition hover:-translate-y-1"><span class="text-2xl" aria-hidden="true">🥾</span><p class="mt-2 font-semibold">Rutas</p><p class="text-sm text-pine-700/70">Senderismo y bici, con tracks GPX</p></a></li>
+            <li><a href="entorno.html#gastronomia" class="block h-full rounded-2xl bg-white p-5 shadow-soft transition hover:-translate-y-1"><span class="text-2xl" aria-hidden="true">🍲</span><p class="mt-2 font-semibold">Gastronomía</p><p class="text-sm text-pine-700/70">Gachamigas, ajo pringue, trucha…</p></a></li>
+            <li><a href="entorno.html#cultura" class="block h-full rounded-2xl bg-white p-5 shadow-soft transition hover:-translate-y-1"><span class="text-2xl" aria-hidden="true">🏰</span><p class="mt-2 font-semibold">Cultura</p><p class="text-sm text-pine-700/70">Torre del Vinagre, castillos, oleoturismo</p></a></li>
           </ul>
+          <a href="entorno.html" class="mt-8 inline-flex items-center gap-2 font-semibold text-wood-600 hover:underline">Descubrir el entorno <span aria-hidden="true">→</span></a>
         </div>
         <div class="reveal grid grid-cols-2 gap-4">
-          <div data-foto="entorno1" data-alt="Entorno de Arroyo Frío" class="aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
-          <div data-foto="entorno2" data-alt="Sierra de Cazorla" class="mt-12 aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+          <div data-foto="entorno1" data-alt="Sendas de Mackay, Sierra de Cazorla" class="aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+          <div data-foto="entorno2" data-alt="Poyos de la Mesa, Sierra de Cazorla" class="mt-12 aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
         </div>
       </div>
     </section>
@@ -569,8 +571,12 @@
                             .map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/principal_cabezarubia.webp`)
                             .concat(WP + 'portada7.webp'),
       // Entorno / galería
-      entorno1:           WP + 'portada9.webp',
-      entorno2:           '',                       // EDITAR: segunda foto de entorno
+      // Entorno: fotos reales de la página /entorno/ de la web original (carpeta sin confirmar)
+      entorno1:           ['2026/09', '2026/08', '2026/07', '2026/06', '2026/05']
+                            .map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/Senda-de-Mackay-768x768.webp`)
+                            .concat(WP + 'portada9.webp'),
+      entorno2:           ['2026/09', '2026/08', '2026/07', '2026/06', '2026/05']
+                            .map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/Poyos-de-la-Mesa-768x768.webp`),
       // Alojamientos singulares — EDITAR cuando tengamos sus fotos propias
       // Fotos principales reales (las que cargan sus páginas originales); carpeta sin confirmar
       casaPineros:        ['2026/07', '2026/06', '2026/05'].map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/principal_losPineros.webp`),

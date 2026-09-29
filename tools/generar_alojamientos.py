@@ -275,7 +275,7 @@ def cabecera(actual):
             </div>
           </div>
         </li>
-        <li><a href="index.html#entorno" class="hover:text-wood-300">Entorno</a></li>
+        <li><a href="entorno.html" class="hover:text-wood-300">Entorno</a></li>
         <li><a href="index.html#noticias" class="hover:text-wood-300">Noticias</a></li>
         <li><a href="index.html#contacto" class="hover:text-wood-300">Contacto</a></li>
         <li><button data-open-booking class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</button></li>
@@ -295,7 +295,7 @@ def cabecera(actual):
 {menu_alojamientos(actual, movil=True)}
           </ul>
         </li>
-        <li><a href="index.html#entorno" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
+        <li><a href="entorno.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
         <li><a href="index.html#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
         <li><a href="index.html#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
         <li class="pt-2"><button data-open-booking class="w-full rounded-full bg-wood-500 px-5 py-3 font-semibold text-white">Reservar ahora</button></li>
@@ -790,8 +790,216 @@ def pagina_noticia(n, cfg, css):
 '''
 
 
+# ---------------------------------------------------------------------------
+# ENTORNO (texto REAL de la web original, página /entorno/). Solo se han
+# corregido erratas evidentes. Cada bloque: foto y párrafos a la izquierda;
+# entradilla, texto, lista y segunda foto a la derecha (como el original).
+# ---------------------------------------------------------------------------
+ENTORNO_CABECERA = 'Entorno-Sierra-de-Cazorla.webp'
+ENTORNO = [
+    dict(id='rutas', titulo='Las mejores rutas de la Sierra',
+         foto_izq=('Senda-de-Mackay-768x768.webp', 'Sendero de las Sendas de Mackay entre rocas y pinos'),
+         foto_der=('Poyos-de-la-Mesa-768x768.webp', 'Paredes de roca y bosque en los Poyos de la Mesa'),
+         parrafos=['El parque Natural de la Sierra de Cazorla, Segura y Las Villas tiene muchos años de historia, hay '
+                   'cientos y cientos de rutas que conectan cortijos y antiguas casas forestales.',
+                   'Descubra las sendas de Mackay, poblados que fueron referencia antaño y ahora están abandonados, '
+                   'refugios para pernoctar, lugares donde bañarse, zonas para buscar setas, ir de pesca y disfrutar '
+                   'de paisajes paradisiacos…',
+                   'Son más de 214.000 hectáreas de parque, muchas rutas se pueden comenzar desde Arroyo Frío, pero '
+                   'tampoco está de más coger el coche y caminar por las zonas más apartadas, inhóspitas y menos '
+                   'conocidas de este paraíso interior.',
+                   'Pregunte según le interese, bicicleta, senderismo, barranquismo, leyendas o simplemente pasear '
+                   'para ver animales salvajes, estamos aquí para que disfrute de la naturaleza en su máximo exponente.'],
+         entradilla='Pregúntenos por las rutas para bicicleta o senderismo, para todos los niveles.',
+         texto='No sólo existen 2 rutas en la sierra, somos nativos del lugar, podemos indicarte rutas que poca gente '
+               'conoce. Sólo en los alrededores de Arroyo Frío puedes realizar decenas de rutas, paseos, subir '
+               'barrancos, escapada con bicicleta, ríos, cascadas y pozas cercanas… ¿Quieres más? Hay cientos de '
+               'rutas, conoce las Sendas de Mackay, pueblos abandonados, date un baño en pozas paradisiacas, sube a '
+               'las cimas más altas… tú pones el límite.',
+         lista=['Borosa, Cerrada de Utrero, Navillas, Peñón de Juan Díaz, Linarejos, pozas de la Central Eléctrica, '
+                'Tranco del Perro, Tranco del Lobo, Senda de Los Pescadores, Los Centenares… hay mucha sierra por '
+                'descubrir',
+                'Disponemos de tracks GPX para tu dispositivo, no te vas a perder',
+                'Pregunta y te asesoraremos: km, desnivel, horas, edades recomendadas, paisajes según temporada…']),
+    dict(id='gastronomia', titulo='Sobre la gastronomía del lugar',
+         foto_izq=('Ajo-Pringue-768x768.webp', 'Plato de ajo pringue, cocina típica de la sierra'),
+         foto_der=('Cordero-Segureno-768x768.webp', 'Cordero segureño asado'),
+         parrafos=['En la Sierra hay una grandísima variedad de platos típicos.',
+                   'Si desea cocinar, le podemos explicar cómo hacerlo, si desea que se lo sirvan le podemos indicar '
+                   'los mejores lugares para cada tipo de guiso o carne a la brasa.',
+                   'No sólo en Arroyo Frío, hay lugares apartados (Nava de San Pedro, El Cabrero, Pontones…) y otros '
+                   'pueblos cercanos con una cocina excelente y muy bien valorada por el turismo.'],
+         entradilla='Podemos recomendar los mejores bares de tapas y restaurantes de comida casera.',
+         texto='Nos preocupamos por mantener las recetas de nuestros abuelos y generaciones anteriores, en Arroyo Frío '
+               'hay muchos bares y restaurantes, churrerías, y supermercados con productos de la sierra (aceite, '
+               'embutidos, carne de monte, miel, chocolates…)',
+         lista=['Gachas, migas y gachamigas', 'Andrajos o talarines', 'Trucha común de nuestros ríos',
+                'Ajo pringue, ajo atao, rin-ran…', 'Carnes de ciervo, gamo, jabalí, cordero segureño…']),
+    dict(id='cultura', titulo='Interés cultural',
+         foto_izq=('Torre-Del-Vinagre-768x768.webp', 'Centro de visitantes Torre del Vinagre'),
+         foto_der=('olearum-480x321.webp', 'Oleoturismo: ¡Sé diferente! ¡Haz oleoturismo!'),
+         parrafos=['Tanto dentro del parque natural como en el valle de entrada, por Cazorla y La Iruela, hay gran '
+                   'número de lugares y actividades didácticas que muestran la historia y costumbres de la sierra.',
+                   'Edificios ya abandonados, otros rehabilitados, descubrir cómo se vivía en la sierra hace un siglo '
+                   'ayuda a entender el lugar.',
+                   '¿Sabía que antiguamente habitaban osos y lobos en el parque? ¿Conoce cómo se llevó a cabo la '
+                   'repoblación forestal? ¿Cómo hacían el pan?',
+                   'Hay muchas historias, leyendas, aventuras y desventuras que explican cómo ha ido evolucionando este '
+                   'lugar, desde que Isabel la Católica reconquistó el sur, este paraíso ha ido creciendo y '
+                   'evolucionando en calidad. No se lo pierda.'],
+         entradilla='¿Quiere conocer las aficiones, costumbres, fauna, flora o historia de la sierra?',
+         texto='El parque natural tiene mucha historia que ofrecer, grandes leyendas, costumbres serranas, muchísima '
+               'fauna y flora, poblados, castillos, casas forestales y gran número de cortijos que eran habitados '
+               'antaño para el cultivo de la tierra y explotación de ganado.',
+         lista=['Torre del Vinagre y Jardín botánico: centro de visitantes con museo de caza, buen lugar para observar '
+                'y aprender sobre la flora del parque. Animales, plantas y árboles endémicos, orquídeas, plantas '
+                'carnívoras… Muy cerca del Río Borosa.',
+                'Parque cinegético Collado del Almendral: animales sueltos en un gran recinto. Hay transporte en tren '
+                'turístico disponible, ideal para ir con niños.',
+                'Castillo de La Iruela, Castillo de la Yedra, Bóveda del Cerezuelo, el antiguo Molino, Pantano del '
+                'Tranco de Beas…',
+                'Oleoturismo: conozca los detalles de los olivares, su cultivo, sus matices y sus sabores en fabulosas '
+                'catas de aceite (<a href="https://olearum.com/" target="_blank" rel="noopener" '
+                'class="font-semibold text-wood-600 underline">olearum.com</a>)']),
+]
+
+
+def pagina_entorno(cfg, css):
+    def foto(f):
+        return (f'<figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="{e("|".join(rutas_noticia(f[0])))}" '
+                f'alt="{e(f[1])}" loading="lazy" class="aspect-square w-full object-cover"></figure>')
+    secciones = []
+    for i, b in enumerate(ENTORNO):
+        fondo = 'bg-white' if i % 2 else ''
+        parrafos = '\n'.join(f'            <p>{e(p)}</p>' for p in b['parrafos'])
+        lista = '\n'.join(f'            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0">'
+                          f'<span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>{t}</span></li>'
+                          for t in b['lista'])  # admite enlace en el texto
+        secciones.append(f'''    <section id="{b["id"]}" class="scroll-mt-24 py-20 sm:py-24 {fondo}">
+      <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div class="space-y-8">
+          <h2 class="font-serif text-4xl font-semibold leading-tight sm:text-5xl">{e(b["titulo"])}</h2>
+          {foto(b["foto_izq"])}
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+{parrafos}
+          </div>
+        </div>
+        <div class="space-y-8 lg:pt-4">
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p class="text-lg font-semibold text-pine-900">{e(b["entradilla"])}</p>
+            <p>{e(b["texto"])}</p>
+          </div>
+          <ul class="space-y-3 rounded-3xl border border-stone-150 bg-cream/60 p-6 text-pine-800">
+{lista}
+          </ul>
+          {foto(b["foto_der"])}
+        </div>
+      </div>
+    </section>''')
+    indice = '\n'.join(f'          <a href="#{b["id"]}" class="rounded-full border border-cream/40 px-5 py-2 text-sm font-medium text-cream transition hover:bg-cream/10">{e(b["titulo"])}</a>' for b in ENTORNO)
+    hero = '|'.join(rutas_noticia(ENTORNO_CABECERA))
+    return f'''<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- ============================================================
+       Entorno — Cabañas de Madera Los Pinos
+       Página GENERADA por tools/generar_alojamientos.py (lista ENTORNO):
+       edita los datos allí y vuelve a ejecutarlo, no a mano.
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entorno: rutas, gastronomía y cultura · Cabañas de Madera Los Pinos · Arroyo Frío</title>
+  <meta name="description" content="Rutas de senderismo y bicicleta, gastronomía serrana e interés cultural en el Parque Natural Sierra de Cazorla, Segura y Las Villas, desde Arroyo Frío." />
+  <meta name="theme-color" content="#1a261b" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  {cfg}
+  {css}
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+{cabecera('')}
+
+  <main>
+    <!-- =================== CABECERA =================== -->
+    <section class="relative flex min-h-[75svh] items-center justify-center overflow-hidden text-center">
+      <div id="heroFoto" class="foto-pendiente absolute inset-0" data-src="{e(hero)}"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-pine-900/60 via-pine-900/35 to-pine-900/80"></div>
+      <div class="relative mx-auto max-w-4xl px-4 pt-24">
+        <nav aria-label="Ruta" class="mb-6 text-xs uppercase tracking-[.2em] text-cream/70">
+          <a href="index.html" class="hover:text-cream">Inicio</a> <span class="mx-2">/</span> Entorno
+        </nav>
+        <h1 class="font-serif text-5xl font-semibold leading-[1.05] text-white drop-shadow-lg sm:text-7xl">Unas palabras sobre el entorno</h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-cream/90">Parque Natural Sierra de Cazorla, Segura y Las Villas</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+{indice}
+        </div>
+      </div>
+    </section>
+
+{chr(10).join(secciones)}
+
+    <!-- =================== LLAMADA A RESERVAR =================== -->
+    <section class="bg-pine-800 py-20 text-center text-cream">
+      <div class="mx-auto max-w-3xl px-4">
+        <p class="font-serif text-4xl font-semibold">Descubre la sierra desde Arroyo Frío</p>
+        <p class="mt-3 text-cream/75">Te asesoramos sobre rutas, gastronomía y cultura durante tu estancia.</p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <a href="index.html#alojamientos" class="rounded-full bg-wood-500 px-8 py-4 font-semibold text-white transition hover:bg-wood-600">Ver alojamientos</a>
+          <a href="https://wa.me/34686235888" target="_blank" rel="noopener" class="rounded-full border border-cream/40 px-8 py-4 font-semibold transition hover:bg-cream/10">WhatsApp directo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-pine-900 pb-10 pt-10 text-sm text-cream/60">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo src="{LOGO_H}" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
+      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+    (function () {{
+      const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
+      const img = new Image(); img.alt = ''; img.className = 'h-full w-full object-cover';
+      img.onload = () => {{ box.classList.remove('foto-pendiente'); box.replaceChildren(img); }};
+      img.onerror = () => {{ if (srcs.length) img.src = srcs.shift(); }};
+      img.src = srcs.shift();
+    }})();
+    $$('figure img[data-srcs]').forEach(img => {{
+      const srcs = img.dataset.srcs.split('|');
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : img.closest('figure').remove();
+      img.src = srcs.shift();
+    }});
+    $$('img[data-logo]').forEach(img => {{
+      const ok = () => {{ img.classList.remove('hidden'); img.parentElement.querySelectorAll('[data-logo-fallback]').forEach(x => x.classList.add('hidden')); }};
+      if (img.complete && img.naturalWidth) ok(); else {{ img.onload = ok; img.onerror = () => img.remove(); }}
+    }});
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu'), header = $('#siteHeader');
+    menuBtn.addEventListener('click', () => menuBtn.setAttribute('aria-expanded', !mobileMenu.classList.toggle('hidden')));
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
+    addEventListener('scroll', onScroll, {{ passive: true }}); onScroll();
+    document.addEventListener('click', ev => {{
+      if (ev.target.closest('[data-open-booking]')) {{ ev.preventDefault(); location.href = 'index.html#alojamientos'; }}
+    }});
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+'''
+
+
 def main():
     cfg, css = extraer_tema()
+    (RAIZ / 'entorno.html').write_text(pagina_entorno(cfg, css), encoding='utf-8')
+    print('✓ entorno.html')
     for a in ALOJAMIENTOS:
         (RAIZ / f'{a["slug"]}.html').write_text(pagina(a, cfg, css), encoding='utf-8')
         print('✓', f'{a["slug"]}.html')

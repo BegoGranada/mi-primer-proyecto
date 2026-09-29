@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- ============================================================
+       Entorno — Cabañas de Madera Los Pinos
+       Página GENERADA por tools/generar_alojamientos.py (lista ENTORNO):
+       edita los datos allí y vuelve a ejecutarlo, no a mano.
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entorno: rutas, gastronomía y cultura · Cabañas de Madera Los Pinos · Arroyo Frío</title>
+  <meta name="description" content="Rutas de senderismo y bicicleta, gastronomía serrana e interés cultural en el Parque Natural Sierra de Cazorla, Segura y Las Villas, desde Arroyo Frío." />
+  <meta name="theme-color" content="#1a261b" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Paleta propia: verdes de pinar, madera y crema
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pine:  { 50:'#f3f6f2', 100:'#e1e9df', 300:'#9fb59b', 500:'#4f6b4b', 700:'#2f4430', 800:'#243425', 900:'#1a261b' },
+            wood:  { 100:'#f4e7d7', 300:'#d9b48a', 500:'#b07a45', 600:'#96622f', 700:'#7a4e25' },
+            cream: '#faf6ef',
+            stone: { 150:'#ece7df' }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans:  ['Inter', 'system-ui', 'sans-serif']
+          },
+          boxShadow: { soft: '0 10px 40px -12px rgba(26,38,27,.25)' }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Aparición suave al hacer scroll */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+    .reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}}
+    /* Header con fondo al hacer scroll */
+    #siteHeader.scrolled{background:rgba(26,38,27,.92);backdrop-filter:blur(10px);box-shadow:0 4px 24px rgba(0,0,0,.18)}
+    /* Hueco de foto sin URL: textura de vetas de madera */
+    .foto-pendiente{background:
+      repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px),
+      linear-gradient(135deg,#2f4430,#7a4e25)}
+    /* Vídeo de YouTube como fondo: cubre el hero sin bandas negras (16:9) */
+    .yt-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+    .yt-bg iframe{position:absolute;top:50%;left:50%;border:0;
+      width:100vw;height:56.25vw;min-width:177.78svh;min-height:100svh;
+      transform:translate(-50%,-50%) scale(1.15); /* scale oculta los bordes/título de YouTube */
+      opacity:0;transition:opacity 1.2s ease}
+    .yt-bg iframe.is-ready{opacity:1}
+    @media (prefers-reduced-motion: reduce){.yt-bg{display:none}}
+  </style>
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+  <!-- =================== CABECERA (igual que la portada) =================== -->
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-40 transition-all duration-300">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8" aria-label="Principal">
+      <a href="index.html" class="flex items-center gap-2 text-cream" aria-label="Cabañas de Madera Los Pinos — Inicio">
+        <img data-logo src="https://cabanaslospinos.com/wp-content/uploads/2026/06/logo_clp_trans_horizontal.webp" alt="Cabañas de Madera Los Pinos" class="hidden h-10 w-auto brightness-0 invert sm:h-12" />
+        <svg data-logo-fallback class="h-8 w-8 text-wood-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6 10h3l-4 6h4l-3 4h12l-3-4h4l-4-6h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
+        <span data-logo-fallback class="font-serif text-xl font-semibold leading-tight tracking-wide sm:text-2xl">Cabañas Los Pinos</span>
+      </a>
+
+      <ul class="hidden items-center gap-8 text-sm font-medium text-cream/90 lg:flex">
+        <li><a href="index.html" class="hover:text-wood-300">Inicio</a></li>
+        <li class="group relative">
+          <a href="index.html#alojamientos" class="inline-flex items-center gap-1 text-wood-300">Alojamientos
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg>
+          </a>
+          <div class="invisible absolute left-1/2 top-full w-80 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div class="rounded-xl bg-cream p-2 text-pine-900 shadow-soft">
+              <a href="montemalo.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Montemalo</a>
+              <a href="las-albercas.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Las Albercas</a>
+              <a href="puntal-del-enebrillo.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Puntal del Enebrillo</a>
+              <a href="barranco-de-las-iglesias.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Barranco de las Iglesias</a>
+              <a href="cabeza-rubia.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Cabeza Rubia</a>
+              <a href="casa-los-pineros.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Casa Los Pineros</a>
+              <a href="mirador-de-las-palomas.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Apartamento Mirador de las Palomas</a>
+              <a href="el-senderista.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Dúplex El Senderista</a>
+            </div>
+          </div>
+        </li>
+        <li><a href="entorno.html" class="hover:text-wood-300">Entorno</a></li>
+        <li><a href="index.html#noticias" class="hover:text-wood-300">Noticias</a></li>
+        <li><a href="index.html#contacto" class="hover:text-wood-300">Contacto</a></li>
+        <li><button data-open-booking class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</button></li>
+      </ul>
+
+      <button id="menuBtn" class="rounded-lg p-2 text-cream lg:hidden" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menú">
+        <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden max-h-[80svh] overflow-y-auto border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
+      <ul class="space-y-1 px-4 py-4 text-cream">
+        <li><a href="index.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Inicio</a></li>
+        <li>
+          <a href="index.html#alojamientos" class="block rounded-lg px-3 py-3 hover:bg-white/5">Alojamientos</a>
+          <ul class="ml-4 border-l border-white/10 pl-3 text-sm text-cream/80">
+            <li><a href="montemalo.html" class="block py-2">Cabaña Montemalo</a></li>
+            <li><a href="las-albercas.html" class="block py-2">Cabaña Las Albercas</a></li>
+            <li><a href="puntal-del-enebrillo.html" class="block py-2">Cabaña Puntal del Enebrillo</a></li>
+            <li><a href="barranco-de-las-iglesias.html" class="block py-2">Cabaña Barranco de las Iglesias</a></li>
+            <li><a href="cabeza-rubia.html" class="block py-2">Cabaña Cabeza Rubia</a></li>
+            <li><a href="casa-los-pineros.html" class="block py-2">Casa Los Pineros</a></li>
+            <li><a href="mirador-de-las-palomas.html" class="block py-2">Apartamento Mirador de las Palomas</a></li>
+            <li><a href="el-senderista.html" class="block py-2">Dúplex El Senderista</a></li>
+          </ul>
+        </li>
+        <li><a href="entorno.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
+        <li><a href="index.html#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
+        <li><a href="index.html#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
+        <li class="pt-2"><button data-open-booking class="w-full rounded-full bg-wood-500 px-5 py-3 font-semibold text-white">Reservar ahora</button></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- =================== CABECERA =================== -->
+    <section class="relative flex min-h-[75svh] items-center justify-center overflow-hidden text-center">
+      <div id="heroFoto" class="foto-pendiente absolute inset-0" data-src="https://cabanaslospinos.com/wp-content/uploads/2026/09/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Entorno-Sierra-de-Cazorla.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Entorno-Sierra-de-Cazorla.webp"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-pine-900/60 via-pine-900/35 to-pine-900/80"></div>
+      <div class="relative mx-auto max-w-4xl px-4 pt-24">
+        <nav aria-label="Ruta" class="mb-6 text-xs uppercase tracking-[.2em] text-cream/70">
+          <a href="index.html" class="hover:text-cream">Inicio</a> <span class="mx-2">/</span> Entorno
+        </nav>
+        <h1 class="font-serif text-5xl font-semibold leading-[1.05] text-white drop-shadow-lg sm:text-7xl">Unas palabras sobre el entorno</h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-cream/90">Parque Natural Sierra de Cazorla, Segura y Las Villas</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a href="#rutas" class="rounded-full border border-cream/40 px-5 py-2 text-sm font-medium text-cream transition hover:bg-cream/10">Las mejores rutas de la Sierra</a>
+          <a href="#gastronomia" class="rounded-full border border-cream/40 px-5 py-2 text-sm font-medium text-cream transition hover:bg-cream/10">Sobre la gastronomía del lugar</a>
+          <a href="#cultura" class="rounded-full border border-cream/40 px-5 py-2 text-sm font-medium text-cream transition hover:bg-cream/10">Interés cultural</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="rutas" class="scroll-mt-24 py-20 sm:py-24 ">
+      <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div class="space-y-8">
+          <h2 class="font-serif text-4xl font-semibold leading-tight sm:text-5xl">Las mejores rutas de la Sierra</h2>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Senda-de-Mackay-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Senda-de-Mackay-768x768.webp" alt="Sendero de las Sendas de Mackay entre rocas y pinos" loading="lazy" class="aspect-square w-full object-cover"></figure>
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p>El parque Natural de la Sierra de Cazorla, Segura y Las Villas tiene muchos años de historia, hay cientos y cientos de rutas que conectan cortijos y antiguas casas forestales.</p>
+            <p>Descubra las sendas de Mackay, poblados que fueron referencia antaño y ahora están abandonados, refugios para pernoctar, lugares donde bañarse, zonas para buscar setas, ir de pesca y disfrutar de paisajes paradisiacos…</p>
+            <p>Son más de 214.000 hectáreas de parque, muchas rutas se pueden comenzar desde Arroyo Frío, pero tampoco está de más coger el coche y caminar por las zonas más apartadas, inhóspitas y menos conocidas de este paraíso interior.</p>
+            <p>Pregunte según le interese, bicicleta, senderismo, barranquismo, leyendas o simplemente pasear para ver animales salvajes, estamos aquí para que disfrute de la naturaleza en su máximo exponente.</p>
+          </div>
+        </div>
+        <div class="space-y-8 lg:pt-4">
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p class="text-lg font-semibold text-pine-900">Pregúntenos por las rutas para bicicleta o senderismo, para todos los niveles.</p>
+            <p>No sólo existen 2 rutas en la sierra, somos nativos del lugar, podemos indicarte rutas que poca gente conoce. Sólo en los alrededores de Arroyo Frío puedes realizar decenas de rutas, paseos, subir barrancos, escapada con bicicleta, ríos, cascadas y pozas cercanas… ¿Quieres más? Hay cientos de rutas, conoce las Sendas de Mackay, pueblos abandonados, date un baño en pozas paradisiacas, sube a las cimas más altas… tú pones el límite.</p>
+          </div>
+          <ul class="space-y-3 rounded-3xl border border-stone-150 bg-cream/60 p-6 text-pine-800">
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Borosa, Cerrada de Utrero, Navillas, Peñón de Juan Díaz, Linarejos, pozas de la Central Eléctrica, Tranco del Perro, Tranco del Lobo, Senda de Los Pescadores, Los Centenares… hay mucha sierra por descubrir</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Disponemos de tracks GPX para tu dispositivo, no te vas a perder</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Pregunta y te asesoraremos: km, desnivel, horas, edades recomendadas, paisajes según temporada…</span></li>
+          </ul>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Poyos-de-la-Mesa-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Poyos-de-la-Mesa-768x768.webp" alt="Paredes de roca y bosque en los Poyos de la Mesa" loading="lazy" class="aspect-square w-full object-cover"></figure>
+        </div>
+      </div>
+    </section>
+    <section id="gastronomia" class="scroll-mt-24 py-20 sm:py-24 bg-white">
+      <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div class="space-y-8">
+          <h2 class="font-serif text-4xl font-semibold leading-tight sm:text-5xl">Sobre la gastronomía del lugar</h2>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Ajo-Pringue-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Ajo-Pringue-768x768.webp" alt="Plato de ajo pringue, cocina típica de la sierra" loading="lazy" class="aspect-square w-full object-cover"></figure>
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p>En la Sierra hay una grandísima variedad de platos típicos.</p>
+            <p>Si desea cocinar, le podemos explicar cómo hacerlo, si desea que se lo sirvan le podemos indicar los mejores lugares para cada tipo de guiso o carne a la brasa.</p>
+            <p>No sólo en Arroyo Frío, hay lugares apartados (Nava de San Pedro, El Cabrero, Pontones…) y otros pueblos cercanos con una cocina excelente y muy bien valorada por el turismo.</p>
+          </div>
+        </div>
+        <div class="space-y-8 lg:pt-4">
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p class="text-lg font-semibold text-pine-900">Podemos recomendar los mejores bares de tapas y restaurantes de comida casera.</p>
+            <p>Nos preocupamos por mantener las recetas de nuestros abuelos y generaciones anteriores, en Arroyo Frío hay muchos bares y restaurantes, churrerías, y supermercados con productos de la sierra (aceite, embutidos, carne de monte, miel, chocolates…)</p>
+          </div>
+          <ul class="space-y-3 rounded-3xl border border-stone-150 bg-cream/60 p-6 text-pine-800">
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Gachas, migas y gachamigas</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Andrajos o talarines</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Trucha común de nuestros ríos</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Ajo pringue, ajo atao, rin-ran…</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Carnes de ciervo, gamo, jabalí, cordero segureño…</span></li>
+          </ul>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Cordero-Segureno-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Cordero-Segureno-768x768.webp" alt="Cordero segureño asado" loading="lazy" class="aspect-square w-full object-cover"></figure>
+        </div>
+      </div>
+    </section>
+    <section id="cultura" class="scroll-mt-24 py-20 sm:py-24 ">
+      <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div class="space-y-8">
+          <h2 class="font-serif text-4xl font-semibold leading-tight sm:text-5xl">Interés cultural</h2>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/Torre-Del-Vinagre-768x768.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/Torre-Del-Vinagre-768x768.webp" alt="Centro de visitantes Torre del Vinagre" loading="lazy" class="aspect-square w-full object-cover"></figure>
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p>Tanto dentro del parque natural como en el valle de entrada, por Cazorla y La Iruela, hay gran número de lugares y actividades didácticas que muestran la historia y costumbres de la sierra.</p>
+            <p>Edificios ya abandonados, otros rehabilitados, descubrir cómo se vivía en la sierra hace un siglo ayuda a entender el lugar.</p>
+            <p>¿Sabía que antiguamente habitaban osos y lobos en el parque? ¿Conoce cómo se llevó a cabo la repoblación forestal? ¿Cómo hacían el pan?</p>
+            <p>Hay muchas historias, leyendas, aventuras y desventuras que explican cómo ha ido evolucionando este lugar, desde que Isabel la Católica reconquistó el sur, este paraíso ha ido creciendo y evolucionando en calidad. No se lo pierda.</p>
+          </div>
+        </div>
+        <div class="space-y-8 lg:pt-4">
+          <div class="space-y-4 leading-relaxed text-pine-700/90">
+            <p class="text-lg font-semibold text-pine-900">¿Quiere conocer las aficiones, costumbres, fauna, flora o historia de la sierra?</p>
+            <p>El parque natural tiene mucha historia que ofrecer, grandes leyendas, costumbres serranas, muchísima fauna y flora, poblados, castillos, casas forestales y gran número de cortijos que eran habitados antaño para el cultivo de la tierra y explotación de ganado.</p>
+          </div>
+          <ul class="space-y-3 rounded-3xl border border-stone-150 bg-cream/60 p-6 text-pine-800">
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Torre del Vinagre y Jardín botánico: centro de visitantes con museo de caza, buen lugar para observar y aprender sobre la flora del parque. Animales, plantas y árboles endémicos, orquídeas, plantas carnívoras… Muy cerca del Río Borosa.</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Parque cinegético Collado del Almendral: animales sueltos en un gran recinto. Hay transporte en tren turístico disponible, ideal para ir con niños.</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Castillo de La Iruela, Castillo de la Yedra, Bóveda del Cerezuelo, el antiguo Molino, Pantano del Tranco de Beas…</span></li>
+            <li class="flex gap-3 border-b border-stone-150 pb-3 last:border-0"><span class="mt-0.5 text-wood-600" aria-hidden="true">✓</span><span>Oleoturismo: conozca los detalles de los olivares, su cultivo, sus matices y sus sabores en fabulosas catas de aceite (<a href="https://olearum.com/" target="_blank" rel="noopener" class="font-semibold text-wood-600 underline">olearum.com</a>)</span></li>
+          </ul>
+          <figure class="overflow-hidden rounded-3xl shadow-soft"><img data-srcs="https://cabanaslospinos.com/wp-content/uploads/2026/09/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/08/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/07/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/06/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/05/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/04/olearum-480x321.webp|https://cabanaslospinos.com/wp-content/uploads/2026/03/olearum-480x321.webp" alt="Oleoturismo: ¡Sé diferente! ¡Haz oleoturismo!" loading="lazy" class="aspect-square w-full object-cover"></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== LLAMADA A RESERVAR =================== -->
+    <section class="bg-pine-800 py-20 text-center text-cream">
+      <div class="mx-auto max-w-3xl px-4">
+        <p class="font-serif text-4xl font-semibold">Descubre la sierra desde Arroyo Frío</p>
+        <p class="mt-3 text-cream/75">Te asesoramos sobre rutas, gastronomía y cultura durante tu estancia.</p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <a href="index.html#alojamientos" class="rounded-full bg-wood-500 px-8 py-4 font-semibold text-white transition hover:bg-wood-600">Ver alojamientos</a>
+          <a href="https://wa.me/34686235888" target="_blank" rel="noopener" class="rounded-full border border-cream/40 px-8 py-4 font-semibold transition hover:bg-cream/10">WhatsApp directo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-pine-900 pb-10 pt-10 text-sm text-cream/60">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo src="https://cabanaslospinos.com/wp-content/uploads/2026/06/logo_clp_trans_horizontal.webp" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: A/JA/00117</span></p>
+      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+    (function () {
+      const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
+      const img = new Image(); img.alt = ''; img.className = 'h-full w-full object-cover';
+      img.onload = () => { box.classList.remove('foto-pendiente'); box.replaceChildren(img); };
+      img.onerror = () => { if (srcs.length) img.src = srcs.shift(); };
+      img.src = srcs.shift();
+    })();
+    $$('figure img[data-srcs]').forEach(img => {
+      const srcs = img.dataset.srcs.split('|');
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : img.closest('figure').remove();
+      img.src = srcs.shift();
+    });
+    $$('img[data-logo]').forEach(img => {
+      const ok = () => { img.classList.remove('hidden'); img.parentElement.querySelectorAll('[data-logo-fallback]').forEach(x => x.classList.add('hidden')); };
+      if (img.complete && img.naturalWidth) ok(); else { img.onload = ok; img.onerror = () => img.remove(); }
+    });
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu'), header = $('#siteHeader');
+    menuBtn.addEventListener('click', () => menuBtn.setAttribute('aria-expanded', !mobileMenu.classList.toggle('hidden')));
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+    document.addEventListener('click', ev => {
+      if (ev.target.closest('[data-open-booking]')) { ev.preventDefault(); location.href = 'index.html#alojamientos'; }
+    });
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
