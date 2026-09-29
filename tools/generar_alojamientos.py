@@ -52,6 +52,7 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
 # registro: nº de registro oficial de turismo (opcional; se muestra si existe)
+# lema: título de la sección de texto, como en la web original (opcional)
 # cabecera: foto específica para el hero (opcional; si no carga se usa 'foto')
 # foto: nombre o lista de nombres de la foto principal (se prueban en orden)
 # galeria: lista de fotos (opcional). Si está vacía, la sección 'Galería' no
@@ -80,8 +81,11 @@ ALOJAMIENTOS = [
                       'compartidas (en temporada). Dispone de calefacción y aire acondicionado.']),
     dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada5.webp',
          max=4, precio='90 – 150 €', habs='2 habitaciones',
-         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
-         wifi=True, extras=[],
+         camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
+                'Habitaciones separadas'],
+         wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
+         registro='A/JA/00117',
+         lema='Paz y relax para 4 personas',
          # Fotos reales de la web original (pestaña Red de la página de Las Albercas)
          cabecera='cabecera_lasAlbercas.webp',
          galeria=['20260517_112533.webp', '20260517_112643.webp', '20260517_112829.webp',
@@ -89,10 +93,11 @@ ALOJAMIENTOS = [
                   '20260517_113233.webp', '20260517_112837.webp', '20260517_113138.webp',
                   '20260517_112736.webp', '20260517_112943.webp', '20260517_113000.webp',
                   '20260517_113038.webp', '20260517_113157.webp'],
-         descripcion=['Las Albercas es una cabaña de madera para 4 personas rodeada de pinos, '
-                      'en el corazón de la Sierra de Cazorla.',
-                      'Con dos habitaciones de cama de 135, cocina equipada y baño privado, es una base '
-                      'cómoda para descubrir las rutas del Parque Natural.']),
+         # Texto REAL de la web original (29 sept 2026)
+         descripcion=['Con 2 habitaciones puede alojar a 4 personas en 2 camas de matrimonio en 2 habitaciones '
+                      'separadas. Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, nevera, lavadora y '
+                      'horno-microondas, terraza privada, acceso a piscina y barbacoa compartidas (en temporada), '
+                      'calefacción y aire acondicionado.']),
     dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto=['puntal_enebrillo1.webp', 'portada3.webp'],
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
@@ -143,7 +148,7 @@ ALOJAMIENTOS = [
                       'en pareja entre pinos.',
                       'Una habitación con cama de 135, cocina, baño privado y la tranquilidad de Arroyo Frío '
                       'a las puertas del Parque Natural.']),
-    dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada',
+    dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada', lema='Casa con terraza privada',
          foto=['principal_losPineros.webp'],
          max=3, precio='65 – 80 €', habs='1 habitación',
          camas=['1 cama de matrimonio', '1 cama individual de 95 cm'],
@@ -159,7 +164,7 @@ ALOJAMIENTOS = [
                       'de matrimonio y una cama individual. Cuenta con 1 baño con ducha, TV, nevera, lavadora y '
                       'horno-microondas, terraza privada, chimenea de leña (leña no incluida), calefacción y aire '
                       'acondicionado.']),
-    dict(slug='mirador-de-las-palomas', nombre='Mirador de las Palomas', tipo='Apartamento con terraza superior',
+    dict(slug='mirador-de-las-palomas', nombre='Mirador de las Palomas', tipo='Apartamento con terraza superior', lema='Apartamento con terraza superior',
          foto=['principal_palomas.webp'],
          max=4, precio='90 – 120 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
@@ -177,7 +182,7 @@ ALOJAMIENTOS = [
                       'vistas al Mirador de las Palomas y a la aldea. Cuenta con 1 baño con ducha, TV, nevera, '
                       'lavadora y horno-microondas, terraza privada con vistas, chimenea de leña (leña no incluida) '
                       'y aire acondicionado (frío/calor) en todas las estancias.']),
-    dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas',
+    dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas', lema='Dúplex de gran capacidad',
          # Fotos REALES verificadas en la pestaña Red: su página carga portada8.webp (post-714.css)
          foto=['portada8.webp'],
          max=8, precio='70 – 180 €', habs='3 plantas · 4 habitaciones · 2 baños',
@@ -406,7 +411,7 @@ def pagina(a, cfg, css):
         <div class="space-y-12 lg:col-span-2">
           <div class="space-y-4 text-lg leading-relaxed text-pine-700/90">
             <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">El alojamiento</p>
-            <h2 class="font-serif text-4xl font-semibold text-pine-900 sm:text-5xl">{e(nombre_full)}</h2>
+            <h2 class="font-serif text-4xl font-semibold text-pine-900 sm:text-5xl">{e(a.get('lema') or nombre_full)}</h2>
 {parrafos}
           </div>
           <div>
