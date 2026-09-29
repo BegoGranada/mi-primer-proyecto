@@ -342,7 +342,11 @@
     // Galería: cada foto prueba sus rutas candidatas; si ninguna carga, se retira
     $$('[data-gal] img').forEach(img => {
       const srcs = img.dataset.srcs.split('|'), enlace = img.closest('[data-gal]');
-      img.onerror = () => srcs.length ? img.src = srcs.shift() : enlace.remove();
+      img.onerror = () => {
+        if (srcs.length) return img.src = srcs.shift();
+        enlace.remove();
+        if (!$$('[data-gal]').length) $('#galeria')?.remove();  // sin fotos: fuera la sección
+      };
       img.onload = () => enlace.href = img.currentSrc || img.src;
       img.src = srcs.shift();
     });

@@ -562,7 +562,11 @@
       // Tarjetas de las 5 cabañas
       cabana1:            WP + 'portada2.webp',
       cabana2:            WP + 'portada5.webp',   // Las Albercas (confirmado por la web original)
-      cabana3:            WP + 'portada3.webp',   // Puntal del Enebrillo
+      // Puntal del Enebrillo: su foto propia (la que carga su página original);
+      // carpeta sin confirmar, se prueban varias y portada3 queda de respaldo
+      cabana3:            ['2026/07', '2026/06', '2026/05']
+                            .map(c => `https://cabanaslospinos.com/wp-content/uploads/${c}/puntal_enebrillo1.webp`)
+                            .concat(WP + 'portada3.webp'),
       cabana4:            WP + 'portada6.webp',
       cabana5:            WP + 'portada7.webp',
       // Entorno / galería
@@ -641,14 +645,15 @@
         onerror="this.outerHTML='<span class=&quot;rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-widest text-cream/70&quot;>Foto pendiente</span>'">`;
     };
     $$('[data-foto]').forEach(el => {
-      const url = FOTOS[el.dataset.foto];
-      if (!url) return fotoPendiente(el);
+      // Cada clave puede ser una URL o una lista de URLs (se prueban en orden)
+      const urls = [].concat(FOTOS[el.dataset.foto] || []);
+      if (!urls.length) return fotoPendiente(el);
       const img = new Image();
-      img.src = url;
+      img.src = urls.shift();
       img.alt = el.dataset.alt || '';
       img.loading = el.hasAttribute('data-bg') ? 'eager' : 'lazy';
       img.className = 'h-full w-full object-cover transition duration-700 group-hover:scale-105';
-      img.onerror = () => fotoPendiente(el);
+      img.onerror = () => urls.length ? img.src = urls.shift() : fotoPendiente(el);
       el.replaceChildren(img);
     });
 

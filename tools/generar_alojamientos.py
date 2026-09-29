@@ -20,7 +20,7 @@ WP = 'https://cabanaslospinos.com/wp-content/uploads/2026/06/'
 UPLOADS = 'https://cabanaslospinos.com/wp-content/uploads/'
 # Carpetas donde se buscan las fotos cuyo nombre no lleva ruta (se prueban
 # en este orden en el navegador y se usa la primera que responda).
-CARPETAS = ['2026/07', '2026/06', '2026/05']
+CARPETAS = ['2026/07', '2026/06', '2026/05', '2026/04', '2026/03']
 
 
 def rutas(nombre):
@@ -31,6 +31,16 @@ def rutas(nombre):
     if '/' in nombre:
         return [UPLOADS + nombre]
     return [f'{UPLOADS}{c}/{nombre}' for c in CARPETAS]
+
+
+def rutas_foto(foto):
+    """'foto' puede ser un nombre o una lista de nombres (se prueban en orden).
+    Las portadaN.webp están confirmadas en 2026/06; el resto usa rutas()."""
+    lista = foto if isinstance(foto, list) else ([foto] if foto else [])
+    out = []
+    for f in lista:
+        out += [WP + f] if (f.startswith('portada') and '/' not in f) else rutas(f)
+    return out
 LOGO_H = WP + 'logo_clp_trans_horizontal.webp'
 LOGO_V = WP + 'logo_clp_vertical.webp'
 
@@ -39,6 +49,7 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
 # registro: nº de registro oficial de turismo (opcional; se muestra si existe)
 # cabecera: foto específica para el hero (opcional; si no carga se usa 'foto')
+# foto: nombre o lista de nombres de la foto principal (se prueban en orden)
 # galeria: lista de fotos (opcional). Si está vacía, la sección 'Galería' no
 #          se genera. Admite URL completa, 'AAAA/MM/archivo' o solo 'archivo'
 #          (se busca en CARPETAS). Las fotos que no carguen se retiran solas.
@@ -78,10 +89,20 @@ ALOJAMIENTOS = [
                       'en el corazón de la Sierra de Cazorla.',
                       'Con dos habitaciones de cama de 135, cocina equipada y baño privado, es una base '
                       'cómoda para descubrir las rutas del Parque Natural.']),
-    dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto='portada3.webp',
+    dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto=['puntal_enebrillo1.webp', 'portada3.webp'],
          max=4, precio='90 – 150 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
          wifi=True, extras=[],
+         # Fotos reales de la web original (pestaña Red de la página de Puntal del Enebrillo).
+         # Su página carga puntal_enebrillo1.webp donde Montemalo carga portada2 y
+         # Las Albercas portada5; portada3 queda de respaldo.
+         cabecera='cabecera_enebrillo.webp',
+         galeria=['20260517_111538.webp', '20260517_111534.webp', '20260517_111517.webp',
+                  '20260326_133532.webp', '20260326_133518.webp', '20260326_133158.webp',
+                  '20260326_133605.webp', '20260326_133252.webp', '20260326_133422.webp',
+                  '20260326_133358.webp', '20260326_133319.webp', '20260326_132954.webp',
+                  '20260326_133002.webp', '20260326_133049.webp', '20260326_132951.webp',
+                  '20260517_113616.webp', '20260326_132933.webp', '20260517_113623.webp'],
          descripcion=['Puntal del Enebrillo es una cabaña de madera para 4 personas que toma su nombre '
                       'de uno de los parajes de la sierra.',
                       'Dos habitaciones con cama de 135 y todo el equipamiento necesario para disfrutar '
@@ -214,7 +235,7 @@ def cabecera(actual):
 
 def pagina(a, cfg, css):
     nombre_full = titulo_completo(a)
-    fotos_hero = (rutas(a['cabecera']) if a.get('cabecera') else []) + ([WP + a['foto']] if a['foto'] else [])
+    fotos_hero = (rutas(a['cabecera']) if a.get('cabecera') else []) + rutas_foto(a['foto'])
     foto = '|'.join(fotos_hero)
     servicios = COMUNES + ([('📶', 'Wi-Fi')] if a['wifi'] else []) \
         + [('✨', x) for x in a['extras']] \
@@ -458,7 +479,11 @@ def pagina(a, cfg, css):
     // Galería: cada foto prueba sus rutas candidatas; si ninguna carga, se retira
     $$('[data-gal] img').forEach(img => {{
       const srcs = img.dataset.srcs.split('|'), enlace = img.closest('[data-gal]');
-      img.onerror = () => srcs.length ? img.src = srcs.shift() : enlace.remove();
+      img.onerror = () => {{
+        if (srcs.length) return img.src = srcs.shift();
+        enlace.remove();
+        if (!$$('[data-gal]').length) $('#galeria')?.remove();  // sin fotos: fuera la sección
+      }};
       img.onload = () => enlace.href = img.currentSrc || img.src;
       img.src = srcs.shift();
     }});
