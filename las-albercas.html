@@ -93,12 +93,16 @@
         <li><a href="entorno.html" class="hover:text-wood-300">Entorno</a></li>
         <li><a href="index.html#noticias" class="hover:text-wood-300">Noticias</a></li>
         <li><a href="index.html#contacto" class="hover:text-wood-300">Contacto</a></li>
+        <li><a href="gestor.html" class="inline-flex items-center gap-1.5 rounded-full border border-cream/40 px-4 py-2 transition hover:bg-white/10" title="Área privada para propietarios"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Propietarios</a></li>
         <li><button data-open-booking class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</button></li>
       </ul>
 
-      <button id="menuBtn" class="rounded-lg p-2 text-cream lg:hidden" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menú">
-        <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
-      </button>
+      <div class="flex items-center gap-1 lg:hidden">
+        <a href="gestor.html" class="rounded-lg p-2 text-cream" aria-label="Área de propietarios" title="Área de propietarios"><svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></a>
+        <button id="menuBtn" class="rounded-lg p-2 text-cream" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menú">
+          <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
     </nav>
 
     <div id="mobileMenu" class="hidden max-h-[80svh] overflow-y-auto border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
@@ -120,6 +124,7 @@
         <li><a href="entorno.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
         <li><a href="index.html#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
         <li><a href="index.html#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
+        <li><a href="gestor.html" class="mt-1 flex items-center gap-2 rounded-lg border border-cream/20 px-3 py-3 hover:bg-white/5"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios <span class="ml-auto text-xs text-cream/50">Gestor de reservas</span></a></li>
         <li class="pt-2"><button data-open-booking class="w-full rounded-full bg-wood-500 px-5 py-3 font-semibold text-white">Reservar ahora</button></li>
       </ul>
     </div>
@@ -344,7 +349,7 @@
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
       <img data-logo src="https://cabanaslospinos.com/wp-content/uploads/2026/06/logo_clp_trans_horizontal.webp" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
-      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
+      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a><br><a href="gestor.html" class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-4 py-2 text-cream/80 transition hover:bg-white/10 hover:text-cream"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Área de propietarios</a></p>
     </div>
   </footer>
 

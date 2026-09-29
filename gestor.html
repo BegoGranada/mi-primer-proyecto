@@ -46,6 +46,15 @@
     .barra.pendiente { background: repeating-linear-gradient(135deg,#d9b48a 0 6px,#e8c9a3 6px 12px); color:#5a3a1a; border:1.5px dashed #96622f; }
     .barra.confirmada { background:#2f4430; color:#faf6ef; }
     .pantalla { display: none; } .pantalla.activa { display: block; }
+    /* Cambio de pestaña: deslizamiento suave en la dirección del gesto */
+    .pantalla.desde-der { animation: entraDer .28s ease-out; } .pantalla.desde-izq { animation: entraIzq .28s ease-out; }
+    @keyframes entraDer { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+    @keyframes entraIzq { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .pantalla.desde-der, .pantalla.desde-izq { animation: none; } }
+    #p-calendario, #p-reservas, #p-precios, #p-finanzas { touch-action: pan-y; }
+    .nav-activo .nav-ico { background: #f4e7d7; transform: translateY(-2px); }
+    .nav-ico { transition: transform .2s, background .2s; }
+    .gbarra { transition: height .45s cubic-bezier(.2,.8,.2,1); }
     .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
     input, select, textarea { font-size: 16px; }  /* evita el zoom automático en iPhone */
   </style>
@@ -83,11 +92,20 @@
   <div id="vistaApp" class="hidden pb-28">
     <header class="sticky top-0 z-30 bg-pine-900 text-cream shadow-lg">
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        <div class="min-w-0">
-          <p class="truncate font-serif text-xl font-semibold leading-tight">Cabañas Los Pinos</p>
-          <p id="lblModo" class="text-[11px] uppercase tracking-widest text-cream/60">Gestor de reservas</p>
+        <div class="flex min-w-0 items-center gap-1">
+          <!-- Atrás: vuelve a la pestaña anterior; en la primera, a la web -->
+          <button id="btnAtras" class="-ml-2 shrink-0 rounded-full p-2 hover:bg-white/10" aria-label="Volver atrás" title="Volver atrás">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <div class="min-w-0">
+            <p class="truncate font-serif text-xl font-semibold leading-tight">Cabañas Los Pinos</p>
+            <p id="lblModo" class="text-[11px] uppercase tracking-widest text-cream/60">Gestor de reservas</p>
+          </div>
         </div>
         <div class="flex items-center gap-1">
+          <a href="index.html" class="rounded-full p-2.5 hover:bg-white/10" aria-label="Ir a la web" title="Ir a la web">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-7 9 7M5 10v10h14V10"/></svg>
+          </a>
           <button id="btnRefrescar" class="rounded-full p-2.5 hover:bg-white/10" aria-label="Actualizar" title="Actualizar">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.6 15A7 7 0 0 0 18.4 17M18.4 9A7 7 0 0 0 5.6 7"/></svg>
           </button>
@@ -130,7 +148,7 @@
       <section id="p-reservas" class="pantalla">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="font-serif text-3xl font-semibold">Reservas</h2>
-          <input id="buscar" type="search" placeholder="Buscar por nombre, teléfono o DNI…" class="w-full rounded-full border border-stone-150 bg-white px-5 py-3 sm:w-72" />
+          <input id="buscar" type="search" placeholder="Buscar por nombre, teléfono, DNI o referencia…" class="w-full rounded-full border border-stone-150 bg-white px-5 py-3 sm:w-72" />
         </div>
         <div id="filtros" class="scroll-x mt-4 flex gap-2 pb-1"></div>
         <div id="listaReservas" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
@@ -161,16 +179,74 @@
         </div>
         <div id="listaTemporadas" class="mt-3 space-y-4"></div>
       </section>
+
+      <!-- ---------- FINANZAS ---------- -->
+      <section id="p-finanzas" class="pantalla">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="font-serif text-3xl font-semibold">Finanzas</h2>
+          <button id="btnNuevoGasto" class="rounded-full bg-wood-500 px-4 py-2 text-sm font-semibold text-white shadow-soft">+ Gasto</button>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <button data-fmes="-1" class="rounded-full bg-white px-4 py-2 text-lg shadow-soft" aria-label="Mes anterior">‹</button>
+          <p id="finMes" class="font-serif text-2xl font-semibold"></p>
+          <button data-fmes="1" class="rounded-full bg-white px-4 py-2 text-lg shadow-soft" aria-label="Mes siguiente">›</button>
+        </div>
+
+        <!-- Balance neto del mes -->
+        <div id="finBalance" class="mt-4 rounded-3xl bg-pine-900 p-5 text-cream shadow-soft"></div>
+
+        <!-- Gráfica ingresos vs gastos (6 meses) -->
+        <div class="mt-4 rounded-3xl bg-white p-5 shadow-soft">
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-semibold">Ingresos vs gastos</p>
+            <div class="flex gap-3 text-xs text-pine-700/70">
+              <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded bg-pine-700"></span>Ingresos</span>
+              <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded bg-wood-500"></span>Gastos</span>
+            </div>
+          </div>
+          <div id="finGrafica" class="mt-4"></div>
+          <p class="mt-2 text-xs text-pine-700/60">Toca un mes para verlo. Ingresos = reservas confirmadas, repartidas por las noches de cada mes.</p>
+        </div>
+
+        <!-- Gastos por categoría -->
+        <div class="mt-4 rounded-3xl bg-white p-5 shadow-soft">
+          <p class="font-semibold">Gastos por categoría</p>
+          <div id="finCategorias" class="mt-3 space-y-3"></div>
+        </div>
+
+        <!-- Limpiezas del mes -->
+        <div class="mt-4 rounded-3xl bg-white p-5 shadow-soft">
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-semibold">🧹 Limpiezas tras cada salida</p>
+            <span id="finLimpiezasEstado" class="text-xs font-semibold"></span>
+          </div>
+          <div id="finLimpiezas" class="mt-3 space-y-2"></div>
+        </div>
+
+        <!-- Por alojamiento -->
+        <div class="mt-4 rounded-3xl bg-white p-5 shadow-soft">
+          <p class="font-semibold">Por alojamiento</p>
+          <div id="finAlojamientos" class="mt-3 space-y-3"></div>
+        </div>
+
+        <!-- Lista de gastos -->
+        <div class="mt-6 flex items-center justify-between gap-3">
+          <h3 class="whitespace-nowrap font-serif text-2xl font-semibold">Gastos del mes</h3>
+          <select id="finFiltroCat" class="w-40 min-w-0 shrink rounded-full border border-stone-150 bg-white px-3 py-2 text-sm"></select>
+        </div>
+        <div id="finGastos" class="mt-3 space-y-2"></div>
+      </section>
     </main>
 
     <!-- Navegación inferior -->
     <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-150 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label="Secciones">
-      <div class="mx-auto grid max-w-md grid-cols-4 text-[11px] font-medium text-pine-700/70">
-        <button data-ir="calendario" class="flex flex-col items-center gap-1 py-3"><span class="text-xl">📅</span>Calendario</button>
-        <button data-ir="reservas" class="relative flex flex-col items-center gap-1 py-3"><span class="text-xl">📋</span>Reservas
-          <span id="badgePendientes" class="absolute right-4 top-1.5 hidden min-w-[20px] rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white"></span></button>
-        <button id="btnNueva" class="flex flex-col items-center gap-1 py-2"><span class="grid h-11 w-11 place-items-center rounded-full bg-wood-500 text-2xl text-white shadow-lg">+</span>Nueva</button>
-        <button data-ir="precios" class="flex flex-col items-center gap-1 py-3"><span class="text-xl">💶</span>Precios</button>
+      <div class="mx-auto grid max-w-lg grid-cols-5 text-[11px] font-medium text-pine-700/70">
+        <button data-ir="calendario" class="flex flex-col items-center gap-0.5 py-2 active:scale-95"><span class="nav-ico grid h-9 w-12 place-items-center rounded-full text-xl">📅</span>Calendario</button>
+        <button data-ir="reservas" class="relative flex flex-col items-center gap-0.5 py-2 active:scale-95"><span class="nav-ico grid h-9 w-12 place-items-center rounded-full text-xl">📋</span>Reservas
+          <span id="badgePendientes" class="absolute right-2 top-1 hidden min-w-[20px] rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white"></span></button>
+        <button id="btnNueva" class="flex flex-col items-center gap-0.5 py-1.5 active:scale-95" aria-label="Nueva reserva"><span class="grid h-11 w-11 place-items-center rounded-full bg-wood-500 text-2xl text-white shadow-lg">+</span>Nueva</button>
+        <button data-ir="precios" class="flex flex-col items-center gap-0.5 py-2 active:scale-95"><span class="nav-ico grid h-9 w-12 place-items-center rounded-full text-xl">💶</span>Precios</button>
+        <button data-ir="finanzas" class="flex flex-col items-center gap-0.5 py-2 active:scale-95"><span class="nav-ico grid h-9 w-12 place-items-center rounded-full text-xl">📊</span>Finanzas</button>
       </div>
     </nav>
   </div>
@@ -209,16 +285,6 @@
         </div>
         <label class="block"><span class="text-sm font-medium">Nombre y apellidos del huésped</span>
           <input name="nombre" required autocomplete="off" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
-        <!-- Documento de identidad: obligatorio para el registro de viajeros en España -->
-        <div class="grid grid-cols-[8rem_1fr] gap-3">
-          <label class="block"><span class="text-sm font-medium">Documento</span>
-            <select name="tipo_documento" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3">
-              <option value="DNI">DNI</option><option value="NIE">NIE</option><option value="Pasaporte">Pasaporte</option>
-            </select></label>
-          <label class="block"><span class="text-sm font-medium">Número <span id="docObligatorio" class="text-red-700">*</span></span>
-            <input name="documento" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="12345678Z" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 uppercase tracking-wider" /></label>
-        </div>
-        <p id="infoDocumento" class="-mt-2 text-xs text-pine-700/70">Obligatorio para confirmar la reserva (registro de viajeros).</p>
         <div class="grid grid-cols-2 gap-3">
           <label class="block"><span class="text-sm font-medium">Teléfono</span>
             <input name="telefono" type="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
@@ -237,6 +303,54 @@
           <label class="block"><span class="text-sm font-medium">Pagado (€)</span>
             <input name="pagado" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
         </div>
+        <!-- ===== Datos del pago (registro de viajeros) ===== -->
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Forma de pago</span>
+            <select name="pago_tipo" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3">
+              <option value="">— Sin indicar —</option><option value="EFECT">Efectivo</option><option value="TARJT">Tarjeta crédito/débito</option>
+              <option value="TRANS">Transferencia</option><option value="MOVIL">Pago por móvil (Bizum…)</option><option value="PLATF">Plataforma de pago</option>
+              <option value="TREG">Tarjeta regalo</option><option value="DESTI">Pago en destino</option><option value="OTRO">Otros</option>
+            </select></label>
+          <label class="block"><span class="text-sm font-medium">Fecha del pago</span>
+            <input name="pago_fecha" type="date" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3" /></label>
+        </div>
+        <div id="pagoDetalle" class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_6rem]">
+          <label class="block"><span class="text-sm font-medium">Titular del medio de pago</span>
+            <input name="pago_titular" autocomplete="off" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+          <label class="block"><span class="text-sm font-medium" id="lblPagoMedio">Identificación del medio</span>
+            <input name="pago_medio" autocomplete="off" placeholder="Últimos 4 dígitos, IBAN, plataforma…" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+          <label class="block" id="bloqueCaducidad"><span class="text-sm font-medium">Caducidad</span>
+            <input name="pago_caducidad" autocomplete="off" inputmode="numeric" placeholder="MM/AA" maxlength="5" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3" /></label>
+        </div>
+        <p class="-mt-2 text-xs text-pine-700/70">De la tarjeta, guarda solo los <strong>4 últimos dígitos</strong>, nunca el número completo ni el CVV.</p>
+
+        <!-- ===== Registro de viajeros · SES.Hospedajes (RD 933/2021) ===== -->
+        <section class="rounded-3xl border border-pine-700/15 bg-white p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-semibold">🧾 Registro de viajeros</p>
+              <p class="text-xs text-pine-700/70">SES.Hospedajes · RD 933/2021 · un parte por cada viajero</p>
+            </div>
+            <span id="estadoRegistro" class="shrink-0 rounded-full bg-pine-50 px-3 py-1 text-xs font-semibold"></span>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <label class="block"><span class="text-xs font-medium">Referencia</span>
+              <input name="referencia" readonly placeholder="Automática" class="mt-1 w-full rounded-xl border border-stone-150 bg-cream px-3 py-2.5 text-sm" /></label>
+            <label class="block"><span class="text-xs font-medium">Fecha de contrato</span>
+              <input name="fecha_contrato" type="date" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-2.5 text-sm" /></label>
+            <label class="block"><span class="text-xs font-medium">Habitaciones</span>
+              <input name="habitaciones" type="number" min="1" max="10" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-2.5 text-sm" /></label>
+            <label class="block"><span class="text-xs font-medium">Internet</span>
+              <select name="internet" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-2.5 text-sm"><option value="si">Sí</option><option value="no">No</option></select></label>
+          </div>
+          <div id="viajeros" class="mt-4 space-y-3"></div>
+          <p class="mt-3 text-xs text-pine-700/70">Menores de 14 años: sin documento. Menores de 18: indicar el parentesco con el titular. El DNI del titular es obligatorio para confirmar; el parte completo, para comunicarlo.</p>
+          <label class="mt-4 flex items-start gap-3 rounded-2xl bg-cream p-3">
+            <input name="parte_comunicado" type="checkbox" class="mt-1 h-5 w-5 accent-pine-700" />
+            <span class="text-sm"><strong>Parte comunicado a SES.Hospedajes</strong><span id="infoComunicado" class="block text-xs text-pine-700/70">Plazo: 24 horas desde la entrada. Conservar 3 años.</span></span>
+          </label>
+        </section>
+
         <label class="block"><span class="text-sm font-medium">Notas</span>
           <textarea name="notas" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" placeholder="Cuna, hora de llegada, alergias…"></textarea></label>
 
@@ -251,7 +365,46 @@
           <a id="accWhatsApp" target="_blank" rel="noopener" class="rounded-full border border-pine-700/20 py-3 text-center text-sm font-semibold">💬 WhatsApp</a>
           <a id="accLlamar" class="rounded-full border border-pine-700/20 py-3 text-center text-sm font-semibold">📞 Llamar</a>
           <button type="button" id="accEliminar" class="rounded-full border border-red-300 py-3 text-sm font-semibold text-red-700">🗑 Eliminar</button>
+          <button type="button" id="accParte" class="col-span-2 rounded-full border border-pine-700/20 py-3 text-sm font-semibold">📄 Parte de viajeros</button>
+          <button type="button" id="accCsv" class="rounded-full border border-pine-700/20 py-3 text-sm font-semibold">⬇️ CSV</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================== FICHA DE GASTO =================== -->
+  <div id="hojaGasto" class="fixed inset-0 z-50 hidden items-end justify-center bg-pine-900/60 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="gastoTitulo">
+    <div class="max-h-[94svh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-cream p-5 shadow-2xl sm:rounded-3xl sm:p-7">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-wood-600">Finanzas</p>
+          <h2 id="gastoTitulo" class="font-serif text-3xl font-semibold">Nuevo gasto</h2>
+        </div>
+        <button data-cerrar-gasto class="rounded-full p-2 hover:bg-pine-50" aria-label="Cerrar">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <form id="formGasto" class="mt-5 space-y-4" novalidate>
+        <input type="hidden" name="id" /><input type="hidden" name="reserva_id" />
+        <div>
+          <span class="text-sm font-medium">Categoría</span>
+          <div id="gastoCats" class="mt-2 grid grid-cols-3 gap-2"></div>
+          <input type="hidden" name="categoria" />
+        </div>
+        <label class="block"><span class="text-sm font-medium">Concepto</span>
+          <input name="concepto" autocomplete="off" placeholder="Ej.: Lavado de sábanas y toallas" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Fecha</span>
+            <input name="fecha" type="date" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3" /></label>
+          <label class="block"><span class="text-sm font-medium">Importe (€)</span>
+            <input name="importe" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 text-right" /></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Alojamiento <span class="font-normal text-pine-700/60">(opcional)</span></span>
+          <select name="alojamiento_id" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3"></select></label>
+        <p id="gastoReserva" class="hidden rounded-xl bg-pine-50 px-4 py-3 text-sm"></p>
+        <p id="errorGasto" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800"></p>
+        <button type="submit" class="w-full rounded-full bg-pine-700 py-4 font-semibold text-white transition hover:bg-pine-800">Guardar gasto</button>
+        <button type="button" id="btnEliminarGasto" class="hidden w-full rounded-full border border-red-300 py-3 text-sm font-semibold text-red-700">🗑 Eliminar gasto</button>
       </form>
     </div>
   </div>
@@ -300,6 +453,81 @@
     return { ok: true, v };
   }
   const docCorto = r => r.documento ? `${r.tipo_documento || 'Doc.'} •••${r.documento.slice(-5)}` : '';
+  const EJEMPLO_DOC = { DNI: '12345678Z', NIE: 'X1234567L', Pasaporte: 'PAB123456' };
+  const EJEMPLO_SOPORTE = { DNI: 'BAA123456', NIE: 'E12345678', Pasaporte: '' };
+
+  /* =====================================================================
+     REGISTRO DE VIAJEROS · SES.Hospedajes (RD 933/2021)
+     Por cada viajero: nombre y apellidos, sexo, nacimiento, nacionalidad,
+     documento (tipo, número, soporte y fecha de expedición), residencia
+     habitual, contacto y, si es menor, parentesco con el titular.
+     Menores de 14 años: sin documento. Plazo de comunicación: 24 h desde la
+     entrada. Conservación: 3 años.
+     ===================================================================== */
+  const SEXOS = [['', '—'], ['H', 'Hombre'], ['M', 'Mujer'], ['O', 'Otro']];
+  const PARENTESCOS = ['Hijo/a', 'Nieto/a', 'Sobrino/a', 'Hermano/a', 'Bisnieto/a', 'Cuñado/a', 'Cónyuge', 'Padre/Madre', 'Abuelo/a', 'Tío/a', 'Suegro/a', 'Yerno/Nuera', 'Tutor/a legal', 'Otro'];
+  const PAGOS = { EFECT: 'Efectivo', TARJT: 'Tarjeta de crédito/débito', TRANS: 'Transferencia', MOVIL: 'Pago por móvil', PLATF: 'Plataforma de pago', TREG: 'Tarjeta regalo', DESTI: 'Pago en destino', OTRO: 'Otros' };
+  const PAISES = ['España', 'Alemania', 'Argentina', 'Austria', 'Bélgica', 'Brasil', 'Bulgaria', 'Canadá', 'Chequia', 'Chile', 'China', 'Colombia', 'Corea del Sur', 'Cuba', 'Dinamarca', 'Ecuador', 'Estados Unidos', 'Finlandia', 'Francia', 'Grecia', 'Hungría', 'India', 'Irlanda', 'Italia', 'Japón', 'Marruecos', 'México', 'Noruega', 'Países Bajos', 'Perú', 'Polonia', 'Portugal', 'Reino Unido', 'Rumanía', 'Suecia', 'Suiza', 'Ucrania', 'Uruguay', 'Venezuela'];
+  const HABS = { 'montemalo': 2, 'las-albercas': 2, 'puntal-del-enebrillo': 2, 'barranco-de-las-iglesias': 3, 'cabeza-rubia': 1, 'casa-los-pineros': 1, 'mirador-de-las-palomas': 2, 'el-senderista': 4 };
+  const SIN_WIFI = ['casa-los-pineros', 'mirador-de-las-palomas', 'el-senderista'];
+  const ETIQUETA = { nombre: 'nombre', apellido1: 'primer apellido', apellido2: 'segundo apellido', sexo: 'sexo', nacimiento: 'fecha de nacimiento',
+    nacionalidad: 'nacionalidad', documento: 'documento', soporte: 'nº de soporte', expedicion: 'fecha de expedición', direccion: 'dirección',
+    cp: 'código postal', localidad: 'localidad', pais: 'país de residencia', contacto: 'teléfono o email', parentesco: 'parentesco' };
+
+  function edad(nac, ref) {
+    if (!nac) return null;
+    const [a, m, d] = nac.split('-').map(Number), [ra, rm, rd] = (ref || hoyS()).split('-').map(Number);
+    return ra - a - (rm < m || (rm === m && rd < d) ? 1 : 0);
+  }
+  const nombreV = v => [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' ');
+  const esEspana = t => /^espa(ñ|n)a$/i.test(String(t || '').trim());
+
+  // Revisa un viajero: qué falta y qué está mal. ref = fecha de entrada.
+  function revisarViajero(v, ref) {
+    const falta = [], errores = [], val = k => String(v[k] || '').trim();
+    const e = edad(v.nacimiento, ref);
+    ['nombre', 'apellido1', 'sexo', 'nacimiento', 'nacionalidad'].forEach(k => { if (!val(k)) falta.push(k); });
+    if (v.tipo_documento === 'DNI' && !val('apellido2')) falta.push('apellido2');
+    if (v.nacimiento && v.nacimiento > hoyS()) errores.push('la fecha de nacimiento no puede ser futura');
+    const pideDoc = e === null || e >= 14;
+    if (val('documento')) { const d = validarDocumento(v.tipo_documento, v.documento); if (!d.ok) errores.push(d.msg.replace(/\.$/, '').toLowerCase()); }
+    else if (pideDoc) falta.push('documento');
+    if (val('documento') || pideDoc) {
+      if (['DNI', 'NIE'].includes(v.tipo_documento)) {
+        const sp = val('soporte').toUpperCase();
+        if (!sp) falta.push('soporte');
+        else if (!(v.tipo_documento === 'DNI' ? /^[A-Z]{3}\d{6}$/ : /^[A-Z]\d{8}$/).test(sp))
+          errores.push(v.tipo_documento === 'DNI' ? 'el nº de soporte del DNI son 3 letras y 6 cifras (p. ej. BAA123456)' : 'el nº de soporte del NIE es una letra y 8 cifras (p. ej. E12345678)');
+      }
+      if (!val('expedicion')) falta.push('expedicion');
+      else if (v.expedicion > hoyS()) errores.push('la fecha de expedición no puede ser futura');
+    }
+    ['direccion', 'localidad', 'pais'].forEach(k => { if (!val(k)) falta.push(k); });
+    if (esEspana(v.pais) && !val('cp')) falta.push('cp');
+    if (e !== null && e < 18) { if (!val('parentesco')) falta.push('parentesco'); }
+    else if (!val('telefono') && !val('email')) falta.push('contacto');
+    return { falta, errores, ok: !falta.length && !errores.length, edad: e };
+  }
+  // Lista de viajeros de una reserva (uno por persona; el 1.º es el titular)
+  function viajerosDe(r) {
+    const base = Array.isArray(r.viajeros) ? r.viajeros : [];
+    return [...Array(Math.max(1, +r.personas || 1))].map((_, i) => {
+      const v = { tipo_documento: 'DNI', ...(base[i] || {}) };
+      if (i === 0) { if (!v.documento && r.documento) { v.documento = r.documento; v.tipo_documento = r.tipo_documento || 'DNI'; } }
+      return v;
+    });
+  }
+  function registro(r) {
+    const lista = viajerosDe(r).map(v => revisarViajero(v, r.entrada));
+    return { total: lista.length, completos: lista.filter(x => x.ok).length, lista };
+  }
+  // Parte que ya debería haberse enviado: confirmada, huéspedes ya llegados y sin comunicar
+  const partePendiente = r => r.estado === 'confirmada' && !r.parte_comunicado_en && r.entrada <= hoyS();
+  function nuevaReferencia(entrada) {
+    const y = (entrada || hoyS()).slice(0, 4), pre = `LP-${y}-`;
+    const n = Math.max(0, ...D.reservas.map(r => r.referencia || '').filter(x => x.startsWith(pre)).map(x => +x.slice(pre.length) || 0));
+    return pre + String(n + 1).padStart(4, '0');
+  }
 
   /* =====================================================================
      DATOS: dos "motores" con la misma interfaz
@@ -321,9 +549,9 @@
   ];
 
   const Demo = {
-    CLAVE: 'lospinos-gestor-demo-v2',   // v2: incluye documento de identidad
+    CLAVE: 'lospinos-gestor-demo-v3',   // v3: registro de viajeros completo (SES.Hospedajes)
     cargar() {
-      try { const d = JSON.parse(localStorage.getItem(this.CLAVE)); if (d && d.alojamientos) return d; } catch (e) {}
+      try { const d = JSON.parse(localStorage.getItem(this.CLAVE)); if (d && d.alojamientos) { d.gastos = d.gastos || []; return d; } } catch (e) {}
       return this.semilla();
     },
     guardarTodo(d) { try { localStorage.setItem(this.CLAVE, JSON.stringify(d)); } catch (e) {} },
@@ -336,22 +564,91 @@
         reservas: []
       };
       const dni = n => String(n).padStart(8, '0') + LETRAS_DNI[n % 23];   // DNI de ejemplo con letra válida
-      const R = (aloj, e, s, pers, nombre, tel, origen, estado, pagadoPct, notas, doc = [null, null]) => {
+      let ref = 0;
+      const R = (aloj, e, s, pers, nombre, tel, origen, estado, pagadoPct, notas, doc = [null, null], extra = {}) => {
         const entrada = sumar(h, e), salida = sumar(h, s);
         const total = precioEstancia(aloj, entrada, salida, d);
         d.reservas.push({ id: uuid(), alojamiento_id: aloj, entrada, salida, personas: pers, nombre, telefono: tel, email: '',
           tipo_documento: doc[0], documento: doc[1],
-          origen, estado, precio_total: total, pagado: Math.round(total * pagadoPct), notas: notas || '', creado_en: new Date().toISOString() });
+          referencia: estado === 'confirmada' ? `LP-${entrada.slice(0, 4)}-${String(++ref).padStart(4, '0')}` : null,
+          fecha_contrato: sumar(h, Math.min(e, 0) - 15), habitaciones: HABS[aloj], internet: !SIN_WIFI.includes(aloj),
+          origen, estado, precio_total: total, pagado: Math.round(total * pagadoPct), notas: notas || '', creado_en: new Date().toISOString(), ...extra });
       };
-      R('montemalo', -2, 2, 4, 'Familia García', '600111222', 'whatsapp', 'confirmada', 0.5, 'Llegan sobre las 18:00', ['DNI', dni(26134871)]);
-      R('casa-los-pineros', 0, 3, 2, 'Lucía y Marcos', '611222333', 'telefono', 'confirmada', 1, '', ['DNI', dni(48291630)]);
-      R('mirador-de-las-palomas', -3, 0, 4, 'Emma Schneider', '+49 151 2345678', 'web', 'confirmada', 1, 'Huéspedes alemanes', ['Pasaporte', 'C01X00T47']);
+      // Viajeros de ejemplo (datos ficticios)
+      const casa = (direccion, cp, localidad, pais = 'España') => ({ direccion, cp, localidad, pais });
+      const V = (nombre, apellido1, apellido2, sexo, nacimiento, nacionalidad, tipo_documento, documento, soporte, expedicion, dir, extra = {}) =>
+        ({ nombre, apellido1, apellido2, sexo, nacimiento, nacionalidad, tipo_documento, documento, soporte, expedicion, ...dir, telefono: '', email: '', parentesco: '', ...extra });
+      // Historial de los últimos meses (para Finanzas): estancias ya cobradas y con el parte comunicado
+      let semillaN = 7; const azar = () => (semillaN = (semillaN * 16807) % 2147483647) / 2147483647;
+      const elegir = a => a[Math.floor(azar() * a.length)], cifras = n => String(Math.floor(azar() * 10 ** n)).padStart(n, '0');
+      const NOMBRES = [['Carlos', 'H'], ['Elena', 'M'], ['Javier', 'H'], ['Marta', 'M'], ['Sergio', 'H'], ['Laura', 'M'], ['Daniel', 'H'], ['Paula', 'M'], ['Raúl', 'H'], ['Nuria', 'M'], ['Alberto', 'H'], ['Cristina', 'M']];
+      const APELLIDOS = ['Martínez', 'Romero', 'Navarro', 'Torres', 'Domínguez', 'Gil', 'Vázquez', 'Serrano', 'Ramos', 'Molina', 'Ortiz', 'Delgado', 'Castro', 'Rubio', 'Marín'];
+      const CIUDADES = [['C/ Real 4', '23400', 'Úbeda'], ['Av. de Madrid 18, 3º', '23003', 'Jaén'], ['C/ Recogidas 9, 1º', '18005', 'Granada'], ['C/ Larios 2', '29005', 'Málaga'],
+        ['C/ Sierpes 30', '41004', 'Sevilla'], ['Paseo de la Castellana 110', '28046', 'Madrid'], ['C/ Cruz Conde 7', '14001', 'Córdoba'], ['Av. del Puerto 45', '46023', 'Valencia']];
+      const inicioHist = d2s(new Date(Date.UTC(+h.slice(0, 4), +h.slice(5, 7) - 6, 1))), limiteHist = sumar(h, -5);
+      d.alojamientos.forEach(a => {
+        let dia = sumar(inicioHist, Math.floor(azar() * 5));
+        for (;;) {
+          const alta = [7, 8, 10, 12].includes(+dia.slice(5, 7)), n = 2 + Math.floor(azar() * (alta ? 5 : 3)), sal = sumar(dia, n);
+          if (sal > limiteHist) break;
+          const pers = Math.min(a.capacidad, 1 + Math.ceil(azar() * a.capacidad)), ci = elegir(CIUDADES), ap = elegir(APELLIDOS);
+          const viajeros = [...Array(pers)].map((_, i) => { const [nom, sx] = elegir(NOMBRES);
+            return V(nom, i === 1 ? elegir(APELLIDOS) : ap, elegir(APELLIDOS), sx, `${1962 + Math.floor(azar() * 38)}-0${1 + Math.floor(azar() * 9)}-1${Math.floor(azar() * 9)}`, 'España', 'DNI',
+              dni(10000000 + Math.floor(azar() * 89999999)), 'B' + 'ACDEFGH'[Math.floor(azar() * 7)] + 'K' + cifras(6), `20${19 + Math.floor(azar() * 5)}-0${1 + Math.floor(azar() * 9)}-15`,
+              casa(...ci), { telefono: '6' + cifras(8) }); });
+          const pt = elegir(['TARJT', 'TARJT', 'TRANS', 'MOVIL', 'EFECT']);
+          R(a.id, noches(h, dia), noches(h, sal), pers, `${viajeros[0].nombre} ${viajeros[0].apellido1}`, viajeros[0].telefono, elegir(['telefono', 'whatsapp', 'web', 'email', 'agente']),
+            'confirmada', 1, '', ['DNI', viajeros[0].documento], { viajeros, pago_tipo: pt, pago_titular: nombreV(viajeros[0]),
+              pago_medio: { TARJT: '•••• ' + cifras(4), TRANS: 'ES•• •••• ' + cifras(4), MOVIL: 'Bizum' }[pt] || null, pago_caducidad: pt === 'TARJT' ? `0${1 + Math.floor(azar() * 9)}/2${7 + Math.floor(azar() * 3)}` : null,
+              pago_fecha: sumar(dia, -3), fecha_contrato: sumar(dia, -(5 + Math.floor(azar() * 30))), parte_comunicado_en: dia });
+          dia = sumar(sal, 1 + Math.floor(azar() * (alta ? 3 : 9)));
+        }
+      });
+      const jaen = casa('C/ Maestra 12, 2º B', '23001', 'Jaén'), berlin = casa('Lindenstraße 8', '10969', 'Berlín', 'Alemania'), granada = casa('Av. de la Constitución 21, 4º A', '18012', 'Granada');
+      R('montemalo', -2, 2, 4, 'Familia García', '600111222', 'whatsapp', 'confirmada', 0.5, 'Llegan sobre las 18:00', ['DNI', dni(26134871)], {
+        viajeros: [
+          V('Antonio', 'García', 'Ruiz', 'H', '1981-04-12', 'España', 'DNI', dni(26134871), 'BAA123456', '2021-06-15', jaen, { telefono: '600111222' }),
+          V('María', 'López', 'Sánchez', 'M', '1983-09-30', 'España', 'DNI', dni(26298455), 'BAB654321', '2022-02-10', jaen, { telefono: '600111223' }),
+          V('Pablo', 'García', 'López', 'H', `${y - 15}-05-20`, 'España', 'DNI', dni(77412398), 'BAC112233', '2023-07-01', jaen, { parentesco: 'Hijo/a' }),
+          V('Lucía', 'García', 'López', 'M', `${y - 9}-11-02`, 'España', 'DNI', '', '', '', jaen, { parentesco: 'Hijo/a' })],
+        pago_tipo: 'TARJT', pago_titular: 'Antonio García Ruiz', pago_medio: '•••• 4821', pago_caducidad: '08/28', pago_fecha: sumar(h, -17),
+        parte_comunicado_en: sumar(h, -2) });
+      R('casa-los-pineros', 0, 3, 2, 'Lucía y Marcos', '611222333', 'telefono', 'confirmada', 1, '', ['DNI', dni(48291630)], {
+        viajeros: [
+          V('Lucía', 'Fernández', 'Ortega', 'M', '1994-02-08', 'España', 'DNI', dni(48291630), 'BHK902114', '2024-03-12', granada, { telefono: '611222333' }),
+          V('Marcos', 'Ruiz', 'Cano', 'H', '1992-07-19', 'España', 'DNI', dni(44120937), '', '', granada, { telefono: '611222334' })],   // faltan soporte y expedición
+        pago_tipo: 'TRANS', pago_titular: 'Lucía Fernández Ortega', pago_medio: 'ES91 •••• 1332', pago_fecha: sumar(h, -12) });
+      R('mirador-de-las-palomas', -3, 0, 2, 'Emma Schneider', '+49 151 2345678', 'web', 'confirmada', 1, 'Huéspedes alemanes', ['Pasaporte', 'C01X00T47'], {
+        viajeros: [
+          V('Emma', 'Schneider', '', 'M', '1990-03-14', 'Alemania', 'Pasaporte', 'C01X00T47', '', '2019-08-01', berlin, { telefono: '+49 151 2345678', email: 'emma.schneider@example.de' }),
+          V('Lukas', 'Schneider', '', 'H', '1988-12-01', 'Alemania', 'Pasaporte', 'C4J7K2L9M', '', '2020-01-20', berlin, { telefono: '+49 151 2345679' })],
+        pago_tipo: 'PLATF', pago_titular: 'Emma Schneider', pago_medio: 'PayPal', pago_fecha: sumar(h, -30),
+        parte_comunicado_en: sumar(h, -3) });
       R('barranco-de-las-iglesias', 1, 4, 8, 'Grupo amigos Úbeda', '633444555', 'telefono', 'confirmada', 0.3, 'Piden cuna', ['DNI', dni(75093214)]);
       R('las-albercas', 5, 8, 3, 'Carmen López', '644555666', 'email', 'confirmada', 0.5, '', ['NIE', 'X1234567L']);
       R('puntal-del-enebrillo', 18, 22, 4, 'Javier Moreno', '655666777', 'manual', 'confirmada', 0, '', ['DNI', dni(30418562)]);
       // Solicitudes de la web y del agente: llegan sin documento; se pide al confirmar
       R('cabeza-rubia', 10, 12, 2, 'Ana Martín', '666777888', 'web', 'pendiente', 0, 'Solicitud desde la web');
       R('el-senderista', 14, 17, 7, 'Club senderista Jaén', '677888999', 'agente', 'pendiente', 0, 'Solicitud recogida por el agente de WhatsApp');
+      // Gastos de ejemplo de los últimos 6 meses
+      d.gastos = [];
+      const G = (fecha, categoria, concepto, importe, extra = {}) => { if (fecha <= h) d.gastos.push({ id: uuid(), fecha, categoria, concepto, importe: Math.round(importe * 100) / 100, alojamiento_id: null, reserva_id: null, ...extra }); };
+      for (let m = 0; m < 6; m++) {
+        const ini = d2s(new Date(Date.UTC(+h.slice(0, 4), +h.slice(5, 7) - 6 + m, 1))), mes = +ini.slice(5, 7), dia = n => sumar(ini, n - 1);
+        G(dia(1), 'suministros', 'Fibra e internet', 45);
+        G(dia(5), 'suministros', 'Electricidad', 240 + azar() * 140);
+        G(dia(12), 'suministros', 'Agua', 70 + azar() * 40);
+        G(dia(10), 'lavanderia', 'Lavandería · sábanas y toallas', 95 + azar() * 60);
+        G(dia(25), 'lavanderia', 'Lavandería · sábanas y toallas', 95 + azar() * 60);
+        if ([10, 11, 12, 1, 2, 3, 4].includes(mes)) G(dia(8), 'lena', 'Leña de encina (1 palé)', 160 + azar() * 40);
+        if ([5, 6, 7, 8, 9].includes(mes)) G(dia(15), 'mantenimiento', 'Piscina · cloro y revisión', 120 + azar() * 50);
+        G(dia(20), 'mantenimiento', 'Jardín · poda y desbroce', 80 + azar() * 30);
+        if (m % 2) G(dia(18), 'otros', 'Reposición de menaje', 35 + azar() * 40);
+      }
+      G(sumar(h, -9), 'mantenimiento', 'Reparación del grifo del baño', 65, { alojamiento_id: 'las-albercas' });
+      // Limpieza tras cada salida ya pasada (la de hoy queda pendiente para enseñarlo)
+      d.reservas.filter(r => r.estado === 'confirmada' && r.salida < h).forEach(r =>
+        G(r.salida, 'limpieza', 'Limpieza tras salida', tarifaLimpieza(r.alojamiento_id, d), { alojamiento_id: r.alojamiento_id, reserva_id: r.id }));
       this.guardarTodo(d);
       return d;
     },
@@ -369,7 +666,13 @@
       else d.reservas.push({ ...r, id: uuid(), creado_en: new Date().toISOString() });
       this.guardarTodo(d);
     },
-    async eliminarReserva(id) { const d = this.cargar(); d.reservas = d.reservas.filter(x => x.id !== id); this.guardarTodo(d); },
+    async eliminarReserva(id) { const d = this.cargar(); d.reservas = d.reservas.filter(x => x.id !== id); d.gastos.forEach(g => { if (g.reserva_id === id) g.reserva_id = null; }); this.guardarTodo(d); },
+    async guardarGasto(g) {
+      const d = this.cargar();
+      if (g.id) d.gastos = d.gastos.map(x => x.id === g.id ? { ...x, ...g } : x); else d.gastos.push({ ...g, id: uuid() });
+      this.guardarTodo(d);
+    },
+    async eliminarGasto(id) { const d = this.cargar(); d.gastos = d.gastos.filter(x => x.id !== id); this.guardarTodo(d); },
     async guardarPrecioBase(id, precio) { const d = this.cargar(); d.alojamientos.find(a => a.id === id).precio_base = precio; this.guardarTodo(d); },
     async guardarTemporada(t) {
       const d = this.cargar();
@@ -403,14 +706,15 @@
     async sesion() { await this.iniciar(); const { data } = await this.cli.auth.getSession(); return !!data.session; },
     async listar() {
       const desde = sumar(hoyS(), -400);
-      const [a, t, f, r] = await Promise.all([
+      const [a, t, f, r, g] = await Promise.all([
         this.cli.from('alojamientos').select('*').order('orden'),
         this.cli.from('temporadas').select('*').order('desde'),
         this.cli.from('tarifas').select('*'),
-        this.cli.from('reservas').select('*').gte('salida', desde).order('entrada')
+        this.cli.from('reservas').select('*').gte('salida', desde).order('entrada'),
+        this.cli.from('gastos').select('*').gte('fecha', desde).order('fecha')
       ]);
-      [a, t, f, r].forEach(x => this.err(x.error));
-      return { alojamientos: a.data, temporadas: t.data, tarifas: f.data, reservas: r.data };
+      [a, t, f, r, g].forEach(x => this.err(x.error));
+      return { alojamientos: a.data, temporadas: t.data, tarifas: f.data, reservas: r.data, gastos: g.data };
     },
     async guardarReserva(r) {
       const { id, ...campos } = r;
@@ -418,6 +722,11 @@
       this.err((await q).error);
     },
     async eliminarReserva(id) { this.err((await this.cli.from('reservas').delete().eq('id', id)).error); },
+    async guardarGasto(g) {
+      const { id, ...campos } = g;
+      this.err((await (id ? this.cli.from('gastos').update(campos).eq('id', id) : this.cli.from('gastos').insert(campos))).error);
+    },
+    async eliminarGasto(id) { this.err((await this.cli.from('gastos').delete().eq('id', id)).error); },
     async guardarPrecioBase(id, precio) { this.err((await this.cli.from('alojamientos').update({ precio_base: precio }).eq('id', id)).error); },
     async guardarTemporada(t) {
       const { id, ...campos } = t;
@@ -432,7 +741,9 @@
   };
 
   const API = MODO === 'supabase' ? Supa : Demo;
-  let D = { alojamientos: [], temporadas: [], tarifas: [], reservas: [] };
+  let D = { alojamientos: [], temporadas: [], tarifas: [], reservas: [], gastos: [] };
+  // Coste de limpieza por defecto según tamaño (se puede cambiar en cada gasto)
+  function tarifaLimpieza(aloj, datos = D) { const c = (datos.alojamientos.find(a => a.id === aloj) || {}).capacidad || 4; return c <= 2 ? 30 : c <= 4 ? 40 : 65; }
   const alojamiento = id => D.alojamientos.find(a => a.id === id) || {};
 
   /* Mismo cálculo que la función SQL precio_estancia(): noche a noche, la tarifa
@@ -462,6 +773,12 @@
   async function mostrarApp() {
     $('#vistaLogin').classList.add('hidden'); $('#vistaApp').classList.remove('hidden');
     $('#lblModo').textContent = MODO === 'demo' ? 'Modo demostración' : 'Gestor de reservas';
+    let ultima = 'calendario'; try { ultima = sessionStorage.getItem('lospinos-pantalla') || ultima; } catch (e) {}
+    const pedida = location.hash.slice(1);
+    if (ORDEN.includes(pedida)) ultima = pedida;
+    if (!ORDEN.includes(ultima)) ultima = 'calendario';
+    history.replaceState({ pantalla: ultima }, '', '#' + ultima);
+    pantalla = ultima; ir(ultima, { historial: false });
     await recargar(true);
   }
   if (MODO === 'demo') {
@@ -488,16 +805,66 @@
   /* =====================================================================
      NAVEGACIÓN
      ===================================================================== */
-  function ir(p) {
-    $$('.pantalla').forEach(x => x.classList.toggle('activa', x.id === 'p-' + p));
-    $$('[data-ir]').forEach(b => b.classList.toggle('text-wood-600', b.dataset.ir === p));
+  const ORDEN = ['calendario', 'reservas', 'precios', 'finanzas'];
+  let pantalla = 'calendario';
+  function ir(p, { historial = true } = {}) {
+    if (historial && p !== pantalla) apilar({ pantalla: p }, '#' + p);
+    const dir = ORDEN.indexOf(p) >= ORDEN.indexOf(pantalla) ? 'desde-der' : 'desde-izq';
+    $$('.pantalla').forEach(x => {
+      const on = x.id === 'p-' + p;
+      x.classList.toggle('activa', on); x.classList.remove('desde-der', 'desde-izq');
+      if (on && p !== pantalla) { void x.offsetWidth; x.classList.add(dir); }
+    });
+    $$('[data-ir]').forEach(b => { const on = b.dataset.ir === p; b.classList.toggle('text-wood-600', on); b.classList.toggle('nav-activo', on); b.toggleAttribute('aria-current', on); });
+    pantalla = p;
+    $('#btnAtras').setAttribute('aria-label', p === 'calendario' ? 'Volver a la web' : 'Volver atrás');
+    try { sessionStorage.setItem('lospinos-pantalla', p); } catch (e) {}
     scrollTo(0, 0);
   }
+  /* Botón «atrás» del móvil / navegador y flecha de la cabecera:
+     1.º cierra la ficha abierta, 2.º vuelve a la pestaña anterior, y desde
+     Calendario (la primera) la flecha lleva a la web. */
+  let entradasPropias = 0;   // pasos dados dentro del gestor: «atrás» nunca saca de él sin querer
+  const apilar = (estado, url) => { entradasPropias++; history.pushState(estado, '', url); };
+  let apilarTrasRetroceso = false;
+  const abrirEnHistorial = () => retrocesoPropio ? (apilarTrasRetroceso = true) : apilar({ pantalla, hoja: true }, location.hash || '#' + pantalla);
+  let retrocesoPropio = false;   // el «atrás» lo ha pedido el propio gestor al cerrar una ficha
+  const cerrarEnHistorial = () => { if (history.state && history.state.hoja) { retrocesoPropio = true; history.back(); } };
+  window.addEventListener('popstate', ev => {
+    entradasPropias = Math.max(0, entradasPropias - 1);
+    if (retrocesoPropio) {   // si mientras tanto se abrió otra ficha, se apila ahora
+      retrocesoPropio = false;
+      if (apilarTrasRetroceso) { apilarTrasRetroceso = false; apilar({ pantalla, hoja: true }, location.hash || '#' + pantalla); }
+      return;
+    }
+    if ($('#hoja').classList.contains('flex') || $('#hojaGasto').classList.contains('flex')) { cerrarHoja(true); cerrarGasto(true); return; }
+    const p = (ev.state && ev.state.pantalla) || location.hash.slice(1) || 'calendario';
+    if (ORDEN.includes(p) && !$('#vistaApp').classList.contains('hidden')) ir(p, { historial: false });
+  });
+  $('#btnAtras').addEventListener('click', () => {
+    if (pantalla === 'calendario') { location.href = 'index.html'; return; }
+    if (entradasPropias > 0) history.back();
+    else ir('calendario');
+  });
+
+  // Deslizar el dedo a izquierda / derecha cambia de pestaña (salvo en zonas con desplazamiento horizontal)
+  let toque = null;
+  $('main').addEventListener('touchstart', ev => {
+    toque = ev.touches.length === 1 && !ev.target.closest('.scroll-x, input, select, textarea') ? { x: ev.touches[0].clientX, y: ev.touches[0].clientY, t: Date.now() } : null;
+  }, { passive: true });
+  $('main').addEventListener('touchend', ev => {
+    if (!toque) return;
+    const dx = ev.changedTouches[0].clientX - toque.x, dy = ev.changedTouches[0].clientY - toque.y, rapido = Date.now() - toque.t < 700;
+    toque = null;
+    if (!rapido || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8) return;
+    const i = ORDEN.indexOf(pantalla) + (dx < 0 ? 1 : -1);
+    if (i >= 0 && i < ORDEN.length) ir(ORDEN[i]);
+  }, { passive: true });
   $$('[data-ir]').forEach(b => b.addEventListener('click', () => ir(b.dataset.ir)));
   $('#btnRefrescar').addEventListener('click', () => recargar());
   document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#vistaApp').classList.contains('hidden')) recargar(true); });
 
-  function pintarTodo() { pintarResumen(); pintarCalendario(); pintarReservas(); pintarPrecios(); pintarBadge(); }
+  function pintarTodo() { pintarResumen(); pintarCalendario(); pintarReservas(); pintarPrecios(); pintarFinanzas(); pintarBadge(); }
   const activas = () => D.reservas.filter(r => r.estado !== 'cancelada');
   function pintarBadge() {
     const n = D.reservas.filter(r => r.estado === 'pendiente').length, b = $('#badgePendientes');
@@ -515,6 +882,8 @@
       tarjeta(conf.filter(r => r.entrada === h).length, 'Entradas hoy', 'bg-pine-700 text-cream', 'hoy') +
       tarjeta(conf.filter(r => r.salida === h).length, 'Salidas hoy', 'bg-white', 'hoy') +
       tarjeta(D.reservas.filter(r => r.estado === 'pendiente').length, 'Pendientes', 'bg-wood-100 text-wood-700', 'pendientes');
+    const np = D.reservas.filter(partePendiente).length;
+    if (np) $('#resumenHoy').innerHTML += `<button data-filtro-ir="partes" class="col-span-3 rounded-2xl bg-red-50 p-3 text-left text-sm font-semibold text-red-800 shadow-soft">📨 ${np} parte${np === 1 ? '' : 's'} de viajeros por comunicar a SES.Hospedajes · plazo 24 h desde la entrada</button>`;
     $$('[data-filtro-ir]').forEach(b => b.addEventListener('click', () => { filtro = b.dataset.filtroIr; ir('reservas'); pintarReservas(); }));
   }
   function pintarCalendario() {
@@ -564,6 +933,7 @@
   const FILTROS = [
     ['pendientes', 'Pendientes', r => r.estado === 'pendiente'],
     ['hoy', 'Hoy', r => r.estado === 'confirmada' && r.entrada <= hoyS() && r.salida >= hoyS()],
+    ['partes', 'Partes SES', partePendiente],
     ['proximas', 'Próximas', r => r.estado !== 'cancelada' && r.salida >= hoyS()],
     ['pasadas', 'Pasadas', r => r.estado !== 'cancelada' && r.salida < hoyS()],
     ['canceladas', 'Canceladas', r => r.estado === 'cancelada'],
@@ -577,7 +947,7 @@
       return `<button data-filtro="${k}" class="shrink-0 rounded-full px-4 py-2 text-sm font-medium ${filtro === k ? 'bg-pine-700 text-white' : 'bg-white text-pine-800 shadow-soft'}">${t} <span class="opacity-60">${n}</span></button>`;
     }).join('');
     const q = $('#buscar').value.trim().toLowerCase(), fn = FILTROS.find(f => f[0] === filtro)[2];
-    const lista = D.reservas.filter(fn).filter(r => !q || `${r.nombre} ${r.telefono || ''} ${r.email || ''} ${r.documento || ''}`.toLowerCase().includes(q))
+    const lista = D.reservas.filter(fn).filter(r => !q || `${r.nombre} ${r.telefono || ''} ${r.email || ''} ${r.documento || ''} ${r.referencia || ''} ${(r.viajeros || []).map(v => nombreV(v) + ' ' + (v.documento || '')).join(' ')}`.toLowerCase().includes(q))
       .sort((a, b) => filtro === 'pasadas' ? b.entrada.localeCompare(a.entrada) : a.entrada.localeCompare(b.entrada));
     $('#listaReservas').innerHTML = lista.length ? lista.map(r => {
       const a = alojamiento(r.alojamiento_id), n = noches(r.entrada, r.salida), [et, ec] = ESTADO[r.estado];
@@ -589,7 +959,9 @@
               <p class="truncate text-sm text-pine-700/70">${esc(a.nombre || r.alojamiento_id)}</p></div>
             <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${ec}">${et}</span>
           </div>
-          <p class="mt-2 text-xs ${r.documento ? 'text-pine-700/70' : 'font-semibold text-red-700'}">${r.documento ? '🪪 ' + esc(docCorto(r)) : '⚠️ Falta DNI / pasaporte'}</p>
+          <p class="mt-2 text-xs ${r.documento ? 'text-pine-700/70' : 'font-semibold text-red-700'}">${r.documento ? '🪪 ' + esc(docCorto(r)) : '⚠️ Falta DNI / pasaporte'}${r.referencia ? ` · ${esc(r.referencia)}` : ''}</p>
+          ${r.estado === 'confirmada' ? (() => { const g = registro(r), pend = partePendiente(r);
+            return `<p class="mt-1 text-xs ${pend ? 'font-semibold text-red-700' : 'text-pine-700/70'}">🧾 Registro ${g.completos}/${g.total} viajeros${r.parte_comunicado_en ? ' · 📨 Comunicado a SES' : pend ? ' · 📨 Parte pendiente de comunicar (24 h)' : ''}</p>`; })() : ''}
           <p class="mt-2 text-sm font-medium">${fLarga(r.entrada)} → ${fLarga(r.salida)} · ${n} noche${n === 1 ? '' : 's'} · 👥 ${r.personas}</p>
           <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-pine-700/70">
             <span>${ORIGEN[r.origen] || r.origen}</span><span>Total ${euros(r.precio_total)}</span>
@@ -651,20 +1023,129 @@
   }
   ['alojamiento_id', 'entrada', 'salida'].forEach(n => F[n].addEventListener('change', () => {
     if (n === 'entrada' && F.entrada.value && (!F.salida.value || F.salida.value <= F.entrada.value)) F.salida.value = sumar(F.entrada.value, 1);
+    if (n === 'alojamiento_id') { F.habitaciones.value = HABS[F.alojamiento_id.value] || 1; F.internet.value = SIN_WIFI.includes(F.alojamiento_id.value) ? 'no' : 'si'; }
     actualizarDerivados();
   }));
   F.precio_total.addEventListener('input', () => { precioManual = true; });
-  const EJEMPLO_DOC = { DNI: '12345678Z', NIE: 'X1234567L', Pasaporte: 'PAB123456' };
-  F.tipo_documento.addEventListener('change', () => { F.documento.placeholder = EJEMPLO_DOC[F.tipo_documento.value]; });
+
+  /* ----- Viajeros: una tarjeta por persona (la 1.ª es el titular) ----- */
+  document.body.insertAdjacentHTML('beforeend', `<datalist id="paises">${PAISES.map(x => `<option value="${x}">`).join('')}</datalist>`);
+  const CI = 'mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-2.5 text-sm';
+  function tarjetaViajero(v, i, abierto) {
+    const campo = (k, label, attrs = '', cls = '') => `<label class="block min-w-0 ${cls}" data-campo="${k}"><span class="text-xs font-medium">${label}</span><input data-k="${k}" value="${esc(v[k] ?? '')}" ${attrs} class="${CI}" /></label>`;
+    const lista = (k, label, opts, attrs = '', cls = '') => `<label class="block min-w-0 ${cls}" data-campo="${k}"><span class="text-xs font-medium">${label}</span><select data-k="${k}" ${attrs} class="${CI}">${opts.map(([val, t]) => `<option value="${esc(val)}" ${String(v[k] ?? '') === val ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>`;
+    const tipo = v.tipo_documento || 'DNI', titular = i === 0;
+    return `<details data-viajero="${i}" class="rounded-2xl border border-stone-150 bg-cream/60" ${abierto ? 'open' : ''}>
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3">
+        <span class="min-w-0 truncate text-sm font-semibold">${titular ? '👤 Titular' : `👥 Viajero ${i + 1}`} · <span data-nombre-v class="font-normal">${esc(nombreV(v) || 'sin datos')}</span></span>
+        <span data-estado-v class="shrink-0 text-xs font-semibold"></span></summary>
+      <div class="grid grid-cols-2 gap-3 border-t border-stone-150 p-4 sm:grid-cols-3">
+        ${campo('nombre', 'Nombre', 'autocomplete="off"')}${campo('apellido1', 'Primer apellido', 'autocomplete="off"')}${campo('apellido2', 'Segundo apellido', 'autocomplete="off"')}
+        ${lista('sexo', 'Sexo', SEXOS)}${campo('nacimiento', 'Fecha de nacimiento', 'type="date"')}${campo('nacionalidad', 'Nacionalidad', 'list="paises" autocomplete="off"')}
+        ${lista('tipo_documento', 'Documento', [['DNI', 'DNI'], ['NIE', 'NIE'], ['Pasaporte', 'Pasaporte']], titular ? 'name="tipo_documento"' : '')}
+        ${campo('documento', `Número${titular ? ' <span class="text-red-700">*</span>' : ''}`, `style="text-transform:uppercase" ${titular ? 'name="documento"' : ''} autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${EJEMPLO_DOC[tipo]}"`, 'uppercase')}
+        ${campo('soporte', 'Nº de soporte', `style="text-transform:uppercase" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${EJEMPLO_SOPORTE[tipo]}"`, `uppercase ${tipo === 'Pasaporte' ? 'hidden' : ''}`)}
+        ${campo('expedicion', 'Fecha de expedición', 'type="date"')}
+        ${campo('direccion', 'Dirección de residencia habitual', 'autocomplete="off"', 'col-span-2 sm:col-span-3')}
+        ${campo('cp', 'Código postal', 'inputmode="numeric" autocomplete="off"')}${campo('localidad', 'Municipio / localidad', 'autocomplete="off"')}${campo('pais', 'País de residencia', 'list="paises" autocomplete="off"')}
+        ${campo('telefono', 'Teléfono', 'type="tel" autocomplete="off"')}${campo('email', 'Email', 'type="email" autocomplete="off"')}
+        ${titular ? '' : lista('parentesco', 'Parentesco con el titular (menores)', [['', '—'], ...PARENTESCOS.map(x => [x, x])])}
+      </div>
+      <p data-faltan-v class="px-4 pb-3 text-xs"></p>
+    </details>`;
+  }
+  function leerViajeros() {
+    return $$('[data-viajero]', $('#viajeros')).map(card => {
+      const v = {}; $$('[data-k]', card).forEach(el => { v[el.dataset.k] = el.value.trim(); });
+      return v;
+    });
+  }
+  function pintarViajeros(lista, abiertos) {
+    $('#viajeros').innerHTML = lista.map((v, i) => tarjetaViajero(v, i, abiertos ? abiertos.includes(i) : i === 0)).join('');
+    $$('[data-viajero]', $('#viajeros')).forEach(estadoTarjeta);
+    actualizarRegistro();
+  }
+  function ajustarViajeros() {   // al cambiar el nº de personas, conservando lo escrito
+    const n = Math.max(1, Math.min(+F.personas.value || 1, alojamiento(F.alojamiento_id.value).capacidad || 8));
+    const actual = leerViajeros(), abiertos = $$('[data-viajero]', $('#viajeros')).filter(c => c.open).map(c => +c.dataset.viajero);
+    if (actual.length === n) return;
+    pintarViajeros([...Array(n)].map((_, i) => actual[i] || { tipo_documento: 'DNI' }), abiertos);
+  }
+  function estadoTarjeta(card) {
+    const v = {}; $$('[data-k]', card).forEach(el => { v[el.dataset.k] = el.value.trim(); });
+    const res = revisarViajero(v, F.entrada.value);
+    $('[data-nombre-v]', card).textContent = nombreV(v) || 'sin datos';
+    const est = $('[data-estado-v]', card);
+    est.textContent = res.ok ? '✓ Completo' : res.errores.length ? '⚠️ Revisar' : `Faltan ${res.falta.length}`;
+    est.className = `shrink-0 text-xs font-semibold ${res.ok ? 'text-pine-700' : res.errores.length ? 'text-red-700' : 'text-wood-700'}`;
+    const txt = [res.errores.length ? '⚠️ ' + res.errores.join(' · ') : '', res.falta.length ? 'Falta: ' + res.falta.map(k => ETIQUETA[k]).join(', ') : ''].filter(Boolean).join('. ');
+    const pf = $('[data-faltan-v]', card); pf.textContent = res.edad !== null && res.edad < 14 && !res.ok ? `Menor de 14 años: sin documento. ${txt}` : txt;
+    pf.className = `px-4 pb-3 text-xs ${res.errores.length ? 'text-red-700' : 'text-pine-700/70'} ${pf.textContent ? '' : 'hidden'}`;
+    const par = $('[data-campo="parentesco"]', card); if (par) par.classList.toggle('opacity-40', !(res.edad !== null && res.edad < 18));
+    return res;
+  }
+  function actualizarRegistro() {
+    const cards = $$('[data-viajero]', $('#viajeros')), ok = cards.filter(c => $('[data-estado-v]', c).textContent.startsWith('✓')).length;
+    const e = $('#estadoRegistro'); e.textContent = `${ok}/${cards.length} completos`;
+    e.className = `shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${ok === cards.length ? 'bg-pine-100 text-pine-800' : 'bg-wood-100 text-wood-700'}`;
+  }
+  $('#viajeros').addEventListener('input', ev => { const c = ev.target.closest('[data-viajero]'); if (c) { estadoTarjeta(c); actualizarRegistro(); } });
+  $('#viajeros').addEventListener('change', ev => {
+    const c = ev.target.closest('[data-viajero]'); if (!c) return;
+    if (ev.target.dataset.k === 'tipo_documento') {
+      const t = ev.target.value;
+      $('[data-k="documento"]', c).placeholder = EJEMPLO_DOC[t];
+      $('[data-k="soporte"]', c).placeholder = EJEMPLO_SOPORTE[t];
+      $('[data-campo="soporte"]', c).classList.toggle('hidden', t === 'Pasaporte');
+      if (t === 'Pasaporte') $('[data-k="soporte"]', c).value = '';
+    }
+    estadoTarjeta(c); actualizarRegistro();
+  });
+  F.personas.addEventListener('input', ajustarViajeros);
+  F.personas.addEventListener('change', ajustarViajeros);
+  F.entrada.addEventListener('change', () => { $$('[data-viajero]', $('#viajeros')).forEach(estadoTarjeta); actualizarRegistro(); });
+  // El nombre de la reserva rellena el del titular si aún está vacío
+  F.nombre.addEventListener('change', () => {
+    const c = $('[data-viajero="0"]'); if (!c) return;
+    const n = $('[data-k="nombre"]', c), a1 = $('[data-k="apellido1"]', c), a2 = $('[data-k="apellido2"]', c);
+    if (n.value || a1.value || /^(familia|grupo|club)\b| y /i.test(F.nombre.value)) return;
+    const p = F.nombre.value.trim().split(/\s+/);
+    n.value = p[0] || ''; a1.value = p[1] || ''; a2.value = p.slice(2).join(' ');
+    estadoTarjeta(c); actualizarRegistro();
+  });
+  ['telefono', 'email'].forEach(k => F[k].addEventListener('change', () => {
+    const el = $(`[data-viajero="0"] [data-k="${k}"]`); if (el && !el.value) { el.value = F[k].value.trim(); estadoTarjeta($('[data-viajero="0"]')); actualizarRegistro(); }
+  }));
+  // Pago: campos según la forma de pago
+  const MEDIO = { TARJT: ['Últimos 4 dígitos', '•••• 1234'], TRANS: ['IBAN (enmascarado)', 'ES91 •••• 1332'], MOVIL: ['Teléfono / Bizum', '600 000 000'], PLATF: ['Plataforma', 'PayPal, Stripe, Booking…'], TREG: ['Nº de la tarjeta regalo', ''], OTRO: ['Identificación', ''] };
+  function actualizarPago() {
+    const t = F.pago_tipo.value, m = MEDIO[t];
+    $('#pagoDetalle').classList.toggle('hidden', !m);
+    $('#bloqueCaducidad').classList.toggle('hidden', t !== 'TARJT');
+    if (m) { $('#lblPagoMedio').textContent = m[0]; F.pago_medio.placeholder = m[1]; }
+  }
+  F.pago_tipo.addEventListener('change', actualizarPago);
   $('#btnRecalcular').addEventListener('click', () => { precioManual = false; actualizarDerivados(); });
 
   function abrirReserva(r, previo = {}) {
     opcionesAloj(); F.reset(); precioManual = !!r;
-    const v = r || { alojamiento_id: D.alojamientos[0]?.id, entrada: hoyS(), salida: sumar(hoyS(), 2), personas: 2, estado: 'confirmada', origen: 'manual', pagado: 0, ...previo };
-    if (!v.tipo_documento) v.tipo_documento = 'DNI';
-    ['id', 'alojamiento_id', 'entrada', 'salida', 'personas', 'estado', 'origen', 'nombre', 'tipo_documento', 'documento', 'telefono', 'email', 'precio_total', 'pagado', 'notas'].forEach(k => { F[k].value = v[k] ?? ''; });
+    const v = { ...(r || { alojamiento_id: D.alojamientos[0]?.id, entrada: hoyS(), salida: sumar(hoyS(), 2), personas: 2, estado: 'confirmada', origen: 'manual', pagado: 0, ...previo }) };
+    if (!v.fecha_contrato) v.fecha_contrato = (v.creado_en || '').slice(0, 10) || hoyS();
+    if (!v.habitaciones) v.habitaciones = HABS[v.alojamiento_id] || 1;
+    v.internet = (v.internet ?? !SIN_WIFI.includes(v.alojamiento_id)) ? 'si' : 'no';
+    // Tarjetas de viajeros (antes de rellenar: el documento del titular vive en la 1.ª)
+    const lista = viajerosDe(v);
+    if (!lista[0].telefono && v.telefono) lista[0].telefono = v.telefono;
+    if (!lista[0].email && v.email) lista[0].email = v.email;
+    pintarViajeros(lista, [0]);
+    ['id', 'alojamiento_id', 'entrada', 'salida', 'personas', 'estado', 'origen', 'nombre', 'telefono', 'email', 'precio_total', 'pagado', 'notas',
+     'referencia', 'fecha_contrato', 'habitaciones', 'internet', 'pago_tipo', 'pago_titular', 'pago_medio', 'pago_caducidad', 'pago_fecha'].forEach(k => { F[k].value = v[k] ?? ''; });
+    F.parte_comunicado.checked = !!v.parte_comunicado_en;
+    $('#infoComunicado').textContent = v.parte_comunicado_en ? `Comunicado el ${fLarga(v.parte_comunicado_en)}. Conservar 3 años.` : 'Plazo: 24 horas desde la entrada. Conservar 3 años.';
+    actualizarPago();
+    $$('[data-viajero]', $('#viajeros')).forEach(estadoTarjeta); actualizarRegistro();
     $('#hojaTitulo').textContent = r ? r.nombre : 'Nueva reserva';
-    $('#hojaSub').textContent = r ? `${ORIGEN[r.origen] || ''} · ${ESTADO[r.estado][0]} · ${r.documento ? `🪪 ${r.tipo_documento} ${r.documento}` : '⚠️ Sin documento'}` : 'Reserva';
+    $('#hojaSub').textContent = r ? `${r.referencia ? r.referencia + ' · ' : ''}${ORIGEN[r.origen] || ''} · ${ESTADO[r.estado][0]} · ${r.documento ? `🪪 ${r.tipo_documento} ${r.documento}` : '⚠️ Sin documento'}` : 'Reserva';
     $('#btnConfirmarGuardar').classList.toggle('hidden', r?.estado === 'confirmada' || (!r && v.estado === 'confirmada'));
     const acc = $('#accionesExistente'); acc.classList.toggle('hidden', !r); acc.classList.toggle('grid', !!r);
     if (r) {
@@ -673,13 +1154,18 @@
     }
     $('#errorReserva').classList.add('hidden');
     actualizarDerivados();
+    if (!$('#hoja').classList.contains('flex')) abrirEnHistorial();
     $('#hoja').classList.replace('hidden', 'flex'); document.body.style.overflow = 'hidden';
     setTimeout(() => (r ? F.estado : F.nombre).focus({ preventScroll: true }), 50);
   }
-  function cerrarHoja() { $('#hoja').classList.replace('flex', 'hidden'); document.body.style.overflow = ''; }
+  function cerrarHoja(desdeHistorial) {
+    if (!$('#hoja').classList.contains('flex')) return;
+    $('#hoja').classList.replace('flex', 'hidden'); document.body.style.overflow = '';
+    if (!desdeHistorial) cerrarEnHistorial();
+  }
   $('#btnNueva').addEventListener('click', () => abrirReserva(null));
   $('#hoja').addEventListener('click', ev => { if (ev.target === $('#hoja') || ev.target.closest('[data-cerrar]')) cerrarHoja(); });
-  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarHoja(); });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { cerrarHoja(); cerrarGasto(); } });
 
   async function guardarFicha(forzarConfirmada) {
     const f = Object.fromEntries(new FormData(F)), err = $('#errorReserva'), a = alojamiento(f.alojamiento_id);
@@ -690,13 +1176,35 @@
     else if ((nueva || confirmando || f.documento.trim()) && !doc.ok) msg = (confirmando && !f.documento.trim() ? 'Para confirmar la reserva hace falta el DNI / NIE / pasaporte del huésped. ' : '') + doc.msg;
     else if (!f.entrada || !f.salida || f.salida <= f.entrada) msg = 'La salida debe ser posterior a la entrada.';
     else if (!(+f.personas >= 1 && +f.personas <= a.capacidad)) msg = `${a.nombre} admite hasta ${a.capacidad} personas.`;
-    if (msg) { err.textContent = msg; err.classList.remove('hidden'); return; }
+    ajustarViajeros();
+    const viajeros = leerViajeros().map(v => ({ ...v, documento: v.documento ? validarDocumento(v.tipo_documento, v.documento).v : '', soporte: v.soporte.toUpperCase().replace(/\s/g, ''),
+      nacionalidad: v.nacionalidad, pais: v.pais }));
+    const revision = viajeros.map(v => revisarViajero(v, f.entrada));
+    if (!msg) {
+      const i = revision.findIndex(x => x.errores.length);
+      if (i >= 0) { msg = `${i ? 'Viajero ' + (i + 1) : 'Titular'}: ${revision[i].errores[0]}.`; $(`[data-viajero="${i}"]`).open = true; }
+    }
+    if (!msg && f.pago_caducidad && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(f.pago_caducidad.trim())) msg = 'La caducidad de la tarjeta debe ser MM/AA (p. ej. 08/28).';
+    if (!msg && f.pago_tipo === 'TARJT' && /\d{9,}/.test(f.pago_medio.replace(/\s/g, ''))) msg = 'De la tarjeta guarda solo los 4 últimos dígitos (•••• 1234), nunca el número completo.';
+    if (!msg && f.parte_comunicado) {
+      const inc = revision.map((x, i) => x.ok ? null : (i ? `viajero ${i + 1}` : 'titular')).filter(Boolean);
+      if (f.estado !== 'confirmada' && !forzarConfirmada) msg = 'Solo se comunica el parte de reservas confirmadas.';
+      else if (inc.length) { msg = `Para marcar el parte como comunicado falta completar: ${inc.join(', ')}.`; revision.forEach((x, i) => { if (!x.ok) $(`[data-viajero="${i}"]`).open = true; }); }
+      else if (!f.pago_tipo) msg = 'Para comunicar el parte indica la forma de pago.';
+    }
+    if (msg) { err.textContent = msg; err.classList.remove('hidden'); err.scrollIntoView({ block: 'nearest' }); return; }
+    const previa = D.reservas.find(x => x.id === f.id) || {};
     const r = {
       id: f.id || undefined, alojamiento_id: f.alojamiento_id, entrada: f.entrada, salida: f.salida, personas: +f.personas,
       nombre: f.nombre.trim(), tipo_documento: doc.ok ? f.tipo_documento : null, documento: doc.ok ? doc.v : null,
       telefono: f.telefono.trim() || null, email: f.email.trim() || null, origen: f.origen,
       estado: forzarConfirmada ? 'confirmada' : f.estado, precio_total: f.precio_total === '' ? null : +f.precio_total,
-      pagado: +f.pagado || 0, notas: f.notas.trim() || null
+      pagado: +f.pagado || 0, notas: f.notas.trim() || null,
+      viajeros, referencia: f.referencia || (forzarConfirmada || f.estado === 'confirmada' ? nuevaReferencia(f.entrada) : null),
+      fecha_contrato: f.fecha_contrato || null, habitaciones: +f.habitaciones || null, internet: f.internet === 'si',
+      pago_tipo: f.pago_tipo || null, pago_titular: f.pago_titular.trim() || null, pago_medio: f.pago_medio.trim() || null,
+      pago_caducidad: f.pago_caducidad.trim() || null, pago_fecha: f.pago_fecha || null,
+      parte_comunicado_en: f.parte_comunicado ? (previa.parte_comunicado_en || hoyS()) : null
     };
     if (!r.id) delete r.id;
     try { await API.guardarReserva(r); cerrarHoja(); await recargar(true); toast(r.estado === 'confirmada' ? '✓ Reserva confirmada' : 'Reserva guardada'); }
@@ -707,6 +1215,222 @@
   $('#accEliminar').addEventListener('click', async () => {
     if (!confirm('¿Eliminar esta reserva definitivamente? (Si solo se anula, mejor márcala como Cancelada)')) return;
     try { await API.eliminarReserva(F.id.value); cerrarHoja(); await recargar(true); toast('Reserva eliminada'); } catch (e) { toast('⚠️ ' + e.message); }
+  });
+
+  /* ----- Parte de viajeros (imprimir / PDF) y CSV ----- */
+  const ESTABLECIMIENTO = 'Cabañas de Madera Los Pinos · Arroyo Frío, La Iruela (Jaén) · Registro de Turismo de Andalucía A/JA/00117';
+  const reservaAbierta = () => D.reservas.find(x => x.id === F.id.value);
+  const fechaES = s => s ? s2d(s).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '—';
+  $('#accParte').addEventListener('click', () => {
+    const r = reservaAbierta(); if (!r) return;
+    const a = alojamiento(r.alojamiento_id), sexo = Object.fromEntries(SEXOS);
+    const fila = (k, v) => `<tr><th>${k}</th><td>${esc(v || '—')}</td></tr>`;
+    const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Parte ${esc(r.referencia || '')}</title>
+      <style>body{font:14px/1.4 system-ui,sans-serif;color:#1a261b;margin:24px;max-width:800px}h1{font-size:20px;margin:0}h2{font-size:15px;margin:22px 0 6px;border-bottom:2px solid #1a261b}
+      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}th{width:40%;background:#f4efe6;font-weight:600}
+      .firma{margin-top:10px;height:50px;border-bottom:1px solid #999;width:60%}.nota{font-size:11px;color:#555;margin-top:24px}.viajero{break-inside:avoid}
+      button{padding:10px 18px;border-radius:999px;border:0;background:#2d4a31;color:#fff;font-weight:600}@media print{button{display:none}}</style></head><body>
+      <button onclick="print()">Imprimir / Guardar PDF</button>
+      <h1>Parte de entrada de viajeros</h1><p>${ESTABLECIMIENTO}</p>
+      <h2>Contrato</h2><table>${fila('Referencia', r.referencia)}${fila('Fecha de contrato', fechaES(r.fecha_contrato))}${fila('Alojamiento', a.nombre)}
+      ${fila('Entrada / salida', `${fechaES(r.entrada)} → ${fechaES(r.salida)}`)}${fila('Nº de viajeros', r.personas)}${fila('Nº de habitaciones', r.habitaciones)}${fila('Acceso a internet', r.internet ? 'Sí' : 'No')}</table>
+      <h2>Pago</h2><table>${fila('Forma de pago', PAGOS[r.pago_tipo])}${fila('Titular del medio de pago', r.pago_titular)}${fila('Identificación del medio', r.pago_medio)}${r.pago_tipo === 'TARJT' ? fila('Caducidad de la tarjeta', r.pago_caducidad) : ''}${fila('Fecha del pago', fechaES(r.pago_fecha))}</table>
+      ${viajerosDe(r).map((v, i) => `<div class="viajero"><h2>${i ? 'Viajero ' + (i + 1) : 'Viajero 1 · Titular'}</h2><table>
+        ${fila('Nombre', v.nombre)}${fila('Apellidos', [v.apellido1, v.apellido2].filter(Boolean).join(' '))}${fila('Sexo', sexo[v.sexo])}${fila('Fecha de nacimiento', fechaES(v.nacimiento))}${fila('Nacionalidad', v.nacionalidad)}
+        ${fila('Documento', v.documento ? `${v.tipo_documento} ${v.documento}` : (edad(v.nacimiento, r.entrada) < 14 ? 'Menor de 14 años' : ''))}${v.tipo_documento !== 'Pasaporte' ? fila('Nº de soporte', v.soporte) : ''}${fila('Fecha de expedición', fechaES(v.expedicion))}
+        ${fila('Residencia habitual', [v.direccion, v.cp, v.localidad, v.pais].filter(Boolean).join(', '))}${fila('Teléfono', v.telefono)}${fila('Email', v.email)}${i ? fila('Parentesco con el titular', v.parentesco) : ''}
+        </table><p>Firma del viajero:</p><div class="firma"></div></div>`).join('')}
+      <p class="nota">Datos recogidos en cumplimiento del Real Decreto 933/2021 y comunicados al Ministerio del Interior (SES.Hospedajes). Se conservan durante 3 años y no se usan para otros fines.
+      ${r.parte_comunicado_en ? `Comunicado el ${fechaES(r.parte_comunicado_en)}.` : 'Pendiente de comunicar.'}</p></body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) return toast('⚠️ Permite las ventanas emergentes para ver el parte');
+    w.document.write(html); w.document.close();
+  });
+  $('#accCsv').addEventListener('click', () => {
+    const r = reservaAbierta(); if (!r) return;
+    const cols = ['referencia', 'fecha_contrato', 'alojamiento', 'entrada', 'salida', 'habitaciones', 'internet', 'n_viajero', 'rol', 'nombre', 'apellido1', 'apellido2', 'sexo', 'nacimiento', 'nacionalidad',
+      'tipo_documento', 'documento', 'soporte', 'expedicion', 'direccion', 'cp', 'localidad', 'pais', 'telefono', 'email', 'parentesco', 'pago_tipo', 'pago_titular', 'pago_medio', 'pago_caducidad', 'pago_fecha'];
+    const celda = x => { const t = String(x ?? ''); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const filas = viajerosDe(r).map((v, i) => ({ ...r, ...v, alojamiento: alojamiento(r.alojamiento_id).nombre, internet: r.internet ? 'S' : 'N', n_viajero: i + 1, rol: i ? 'Acompañante' : 'Titular', pago_tipo: r.pago_tipo }));
+    const csv = '\ufeff' + [cols.join(';'), ...filas.map(o => cols.map(c => celda(o[c])).join(';'))].join('\r\n');
+    const aEl = document.createElement('a');
+    aEl.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    aEl.download = `parte-viajeros-${r.referencia || r.id.slice(0, 8)}.csv`; aEl.click();
+    setTimeout(() => URL.revokeObjectURL(aEl.href), 1000);
+  });
+
+  /* =====================================================================
+     FINANZAS: gastos, limpiezas e ingresos vs gastos
+     Ingresos = reservas confirmadas; cada una se reparte entre los meses
+     según sus noches (una estancia del 30 al 2 cuenta en los dos meses).
+     ===================================================================== */
+  const CATEGORIAS = {
+    limpieza: ['🧹', 'Limpieza', '#2f4430', 'Limpieza tras salida'],
+    lavanderia: ['🧺', 'Lavandería', '#4f6b4b', 'Lavado de sábanas y toallas'],
+    lena: ['🪵', 'Leña', '#7a4e25', 'Leña de encina'],
+    mantenimiento: ['🛠️', 'Mantenimiento (piscina/jardín)', '#b07a45', 'Piscina: cloro · Jardín: poda…'],
+    suministros: ['💡', 'Suministros', '#d9b48a', 'Electricidad, agua, gas, internet…'],
+    otros: ['📦', 'Otros', '#9fb59b', 'Menaje, papelería, seguros…']
+  };
+  let mesFin = hoyS().slice(0, 7), catFiltro = '', verTodos = false;
+  const mesMas = (ym, n) => { const [y, m] = ym.split('-').map(Number); return d2s(new Date(Date.UTC(y, m - 1 + n, 1))).slice(0, 7); };
+  const nombreMes = ym => { const t = s2d(ym + '-01').toLocaleDateString('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+  const euros0 = n => Number(n).toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  const suma = l => l.reduce((t, g) => t + (+g.importe || 0), 0);
+  const corto = n => (n < 0 ? '−' : '') + (Math.abs(n) >= 1000 ? (Math.abs(n) / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 }) + ' k' : Math.round(Math.abs(n)) + ' €');
+  const nombreCorto = a => (a.nombre || '').replace(/^(Cabaña|Casa|Apartamento|Dúplex) /, '');
+  function reparto(ym, aloj) {   // ingresos y noches ocupadas de un mes
+    const ini = ym + '-01', fin = mesMas(ym, 1) + '-01';
+    let ingresos = 0, nochesOc = 0;
+    D.reservas.filter(r => r.estado === 'confirmada' && (!aloj || r.alojamiento_id === aloj) && r.entrada < fin && r.salida > ini).forEach(r => {
+      const dentro = noches(r.entrada > ini ? r.entrada : ini, r.salida < fin ? r.salida : fin);
+      ingresos += (+r.precio_total || 0) * dentro / noches(r.entrada, r.salida); nochesOc += dentro;
+    });
+    return { ingresos: Math.round(ingresos * 100) / 100, noches: nochesOc };
+  }
+  const gastosMes = ym => (D.gastos || []).filter(g => g.fecha.startsWith(ym));
+  const limpiezaDe = r => (D.gastos || []).find(g => g.categoria === 'limpieza' && (g.reserva_id === r.id || (!g.reserva_id && g.alojamiento_id === r.alojamiento_id && g.fecha === r.salida)));
+
+  function pintarFinanzas() {
+    if (!D.alojamientos.length) return;
+    $('#finMes').textContent = nombreMes(mesFin);
+    const h = hoyS(), actual = mesFin === h.slice(0, 7), { ingresos: ing, noches: nOc } = reparto(mesFin), gl = gastosMes(mesFin), gas = suma(gl), neto = ing - gas;
+    const diasMes = noches(mesFin + '-01', mesMas(mesFin, 1) + '-01'), ocup = Math.round(nOc / (diasMes * D.alojamientos.length) * 100);
+    const pctIng = ing + gas ? ing / (ing + gas) * 100 : 50;
+
+    // Balance neto
+    $('#finBalance').innerHTML = `<p class="text-xs font-semibold uppercase tracking-widest text-cream/60">Beneficio neto real · ${actual ? 'mes en curso' : nombreMes(mesFin).toLowerCase()}</p>
+      <p class="mt-1 font-serif text-5xl font-semibold ${neto < 0 ? 'text-red-300' : 'text-white'}">${euros(neto)}</p>
+      <p class="mt-1 text-sm text-cream/70">${ing ? `Margen ${Math.round(neto / ing * 100)} %` : 'Sin ingresos este mes'}${actual ? ' · incluye las reservas confirmadas que quedan del mes' : ''}</p>
+      <div class="mt-4 flex h-3 overflow-hidden rounded-full bg-white/10" role="img" aria-label="Proporción ingresos / gastos">
+        <div class="bg-pine-300 transition-all duration-500" style="width:${pctIng}%"></div><div class="flex-1 bg-wood-500"></div></div>
+      <div class="mt-3 grid grid-cols-3 gap-2">
+        <div class="rounded-2xl bg-white/10 p-3"><p class="text-[11px] text-cream/60">Ingresos</p><p class="text-lg font-semibold leading-tight">${euros0(ing)}</p></div>
+        <div class="rounded-2xl bg-white/10 p-3"><p class="text-[11px] text-cream/60">Gastos</p><p class="text-lg font-semibold leading-tight">${euros0(gas)}</p></div>
+        <div class="rounded-2xl bg-white/10 p-3"><p class="text-[11px] text-cream/60">Ocupación</p><p class="text-lg font-semibold leading-tight">${ocup} %</p></div>
+      </div>`;
+
+    // Gráfica de 6 meses (barras con Tailwind, sin librerías)
+    const datos = [...Array(6)].map((_, i) => { const ym = mesMas(mesFin, i - 5); return { ym, ing: reparto(ym).ingresos, gas: suma(gastosMes(ym)) }; });
+    const max = Math.max(1, ...datos.flatMap(x => [x.ing, x.gas]));
+    $('#finGrafica').innerHTML = `<div class="flex h-52 items-stretch gap-1.5">${datos.map(x => {
+      const n = x.ing - x.gas, sel = x.ym === mesFin, lbl = s2d(x.ym + '-01').toLocaleDateString('es-ES', { month: 'short', timeZone: 'UTC' }).replace('.', '');
+      return `<button data-gmes="${x.ym}" class="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-0.5 pt-2 transition ${sel ? 'bg-wood-100' : 'hover:bg-pine-50'}" aria-pressed="${sel}" aria-label="${nombreMes(x.ym)}: ingresos ${euros(x.ing)}, gastos ${euros(x.gas)}">
+        <span class="text-[10px] font-bold ${n < 0 ? 'text-red-700' : 'text-pine-700'}">${corto(n)}</span>
+        <span class="flex w-full flex-1 items-end justify-center gap-0.5">
+          <span class="gbarra block w-1/2 max-w-[20px] rounded-t-md bg-pine-700" style="height:0" data-h="${x.ing / max * 100}"></span>
+          <span class="gbarra block w-1/2 max-w-[20px] rounded-t-md bg-wood-500" style="height:0" data-h="${x.gas / max * 100}"></span>
+        </span>
+        <span class="pb-1.5 text-[11px] capitalize ${sel ? 'font-bold text-pine-900' : 'text-pine-700/70'}">${lbl}</span></button>`;
+    }).join('')}</div>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => $$('#finGrafica [data-h]').forEach(b => { b.style.height = Math.max(+b.dataset.h, +b.dataset.h ? 2 : 0) + '%'; })));
+
+    // Por categoría
+    const porCat = Object.keys(CATEGORIAS).map(k => [k, suma(gl.filter(g => g.categoria === k))]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+    $('#finCategorias').innerHTML = porCat.length ? porCat.map(([k, v]) => `<button data-fcat="${k}" class="block w-full text-left">
+        <span class="flex justify-between gap-3 text-sm"><span>${CATEGORIAS[k][0]} ${CATEGORIAS[k][1]}</span><span class="font-semibold">${euros(v)} <span class="font-normal text-pine-700/60">· ${Math.round(v / gas * 100)} %</span></span></span>
+        <span class="mt-1 block h-2 rounded-full bg-stone-150"><span class="block h-2 rounded-full" style="width:${v / gas * 100}%;background:${CATEGORIAS[k][2]}"></span></span></button>`).join('')
+      : '<p class="text-sm text-pine-700/60">Sin gastos apuntados este mes.</p>';
+
+    // Limpiezas tras cada salida del mes
+    const salidas = D.reservas.filter(r => r.estado === 'confirmada' && r.salida.startsWith(mesFin)).sort((a, b) => a.salida.localeCompare(b.salida));
+    const pasadas = salidas.filter(r => r.salida <= h), hechas = pasadas.filter(limpiezaDe), faltan = pasadas.filter(r => !limpiezaDe(r)), proximas = salidas.filter(r => r.salida > h);
+    const est = $('#finLimpiezasEstado');
+    est.textContent = pasadas.length ? `${hechas.length}/${pasadas.length} apuntadas` : '';
+    est.className = `text-xs font-semibold ${faltan.length ? 'text-red-700' : 'text-pine-700'}`;
+    const filaL = (r, dcha) => `<div class="flex items-center justify-between gap-3 rounded-2xl bg-cream px-4 py-3 text-sm">
+        <span class="min-w-0"><span class="block truncate font-medium">${esc(nombreCorto(alojamiento(r.alojamiento_id)))}</span><span class="block truncate text-xs text-pine-700/60">Salida ${fLarga(r.salida)} · ${esc(r.nombre)}</span></span>${dcha}</div>`;
+    $('#finLimpiezas').innerHTML = (salidas.length ? '' : '<p class="text-sm text-pine-700/60">No hay salidas este mes.</p>') +
+      faltan.map(r => filaL(r, `<button data-limpieza="${r.id}" class="shrink-0 rounded-full bg-pine-700 px-4 py-2 text-xs font-semibold text-white">+ Apuntar</button>`)).join('') +
+      proximas.map(r => filaL(r, '<span class="shrink-0 text-xs text-pine-700/60">Programada</span>')).join('') +
+      (hechas.length ? `<details class="rounded-2xl bg-pine-50 px-4 py-3 text-sm"><summary class="cursor-pointer font-medium">✓ ${hechas.length} limpieza${hechas.length === 1 ? '' : 's'} apuntada${hechas.length === 1 ? '' : 's'} · ${euros(suma(hechas.map(limpiezaDe)))}</summary>
+        <div class="mt-2 space-y-1">${hechas.map(r => { const g = limpiezaDe(r); return `<button data-gasto="${g.id}" class="flex w-full justify-between gap-3 py-1 text-left text-xs"><span class="truncate">${fCorta(r.salida)} · ${esc(nombreCorto(alojamiento(r.alojamiento_id)))} · ${esc(r.nombre)}</span><span class="shrink-0 font-semibold">${euros(g.importe)}</span></button>`; }).join('')}</div></details>` : '');
+
+    // Por alojamiento
+    const filasA = D.alojamientos.map(a => { const i = reparto(mesFin, a.id).ingresos, g = suma(gl.filter(x => x.alojamiento_id === a.id)); return { a, i, g, n: i - g }; });
+    const maxA = Math.max(1, ...filasA.map(x => x.i)), generales = suma(gl.filter(x => !x.alojamiento_id));
+    $('#finAlojamientos').innerHTML = filasA.map(({ a, i, g, n }) => `<div>
+        <div class="flex justify-between gap-3 text-sm"><span class="truncate font-medium">${esc(nombreCorto(a))}</span><span class="shrink-0 font-semibold ${n < 0 ? 'text-red-700' : ''}">${euros(n)}</span></div>
+        <div class="mt-1 flex h-2 gap-0.5"><span class="block h-2 rounded-full bg-pine-700" style="width:${i / maxA * 100}%"></span><span class="block h-2 rounded-full bg-wood-500" style="width:${Math.min(g, maxA) / maxA * 100}%"></span></div>
+        <p class="mt-0.5 text-[11px] text-pine-700/60">Ingresos ${euros(i)} · gastos asignados ${euros(g)}</p></div>`).join('') +
+      `<p class="border-t border-stone-150 pt-3 text-xs text-pine-700/70">Gastos generales sin alojamiento asignado: <strong>${euros(generales)}</strong></p>`;
+
+    // Lista de gastos
+    const sel = $('#finFiltroCat');
+    sel.innerHTML = `<option value="">Todas</option>` + Object.entries(CATEGORIAS).map(([k, c]) => `<option value="${k}">${c[0]} ${c[1].split(' (')[0]}</option>`).join('');
+    sel.value = catFiltro;
+    const lista = gl.filter(g => !catFiltro || g.categoria === catFiltro).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const visibles = verTodos ? lista : lista.slice(0, 8);
+    $('#finGastos').innerHTML = lista.length ? visibles.map(g => { const c = CATEGORIAS[g.categoria] || CATEGORIAS.otros, a = g.alojamiento_id ? alojamiento(g.alojamiento_id) : null;
+      return `<button data-gasto="${g.id}" class="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-soft active:scale-[.99]">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-cream text-xl">${c[0]}</span>
+        <span class="min-w-0 flex-1"><span class="block truncate font-medium">${esc(g.concepto)}</span>
+          <span class="block truncate text-xs text-pine-700/60">${fLarga(g.fecha)} · ${c[1]}${a ? ' · ' + esc(nombreCorto(a)) : ''}</span></span>
+        <span class="shrink-0 font-semibold">−${euros(g.importe)}</span></button>`; }).join('')
+        + (lista.length > visibles.length ? `<button data-ver-todos class="w-full rounded-full border border-pine-700/20 py-3 text-sm font-semibold">Ver los ${lista.length} gastos · ${euros(suma(lista))}</button>` : '')
+      : `<p class="rounded-3xl bg-white p-6 text-center text-sm text-pine-700/60 shadow-soft">No hay gastos${catFiltro ? ' de esta categoría' : ''} este mes.</p>`;
+  }
+  $$('[data-fmes]').forEach(b => b.addEventListener('click', () => { mesFin = mesMas(mesFin, +b.dataset.fmes); verTodos = false; pintarFinanzas(); }));
+  $('#finFiltroCat').addEventListener('change', ev => { catFiltro = ev.target.value; verTodos = false; pintarFinanzas(); });
+  $('#p-finanzas').addEventListener('click', ev => {
+    if (ev.target.closest('[data-ver-todos]')) { verTodos = true; return pintarFinanzas(); }
+    const m = ev.target.closest('[data-gmes]'); if (m) { mesFin = m.dataset.gmes; verTodos = false; return pintarFinanzas(); }
+    const c = ev.target.closest('[data-fcat]'); if (c) { catFiltro = c.dataset.fcat; verTodos = false; pintarFinanzas(); return $('#finGastos').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    const g = ev.target.closest('[data-gasto]'); if (g) return abrirGasto(D.gastos.find(x => x.id === g.dataset.gasto));
+    const l = ev.target.closest('[data-limpieza]');
+    if (l) {
+      const r = D.reservas.find(x => x.id === l.dataset.limpieza);
+      const ultima = [...D.gastos].filter(x => x.categoria === 'limpieza' && x.alojamiento_id === r.alojamiento_id).sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+      abrirGasto(null, { categoria: 'limpieza', concepto: `Limpieza tras salida · ${r.nombre}`, fecha: r.salida, alojamiento_id: r.alojamiento_id, reserva_id: r.id, importe: ultima ? ultima.importe : tarifaLimpieza(r.alojamiento_id) });
+    }
+  });
+
+  /* ----- Ficha de gasto ----- */
+  const FG = $('#formGasto');
+  function pintarCats() {
+    $('#gastoCats').innerHTML = Object.entries(CATEGORIAS).map(([k, c]) => `<button type="button" data-cat="${k}" aria-pressed="${FG.categoria.value === k}"
+      class="flex flex-col items-center gap-1 rounded-2xl border px-2 py-3 text-xs font-medium transition active:scale-95 ${FG.categoria.value === k ? 'border-pine-700 bg-pine-700 text-white' : 'border-stone-150 bg-white'}">
+      <span class="text-2xl">${c[0]}</span>${c[1].replace(' (', '<span class="-mt-1 text-[10px] opacity-70">(')}${c[1].includes('(') ? '</span>' : ''}</button>`).join('');
+    FG.concepto.placeholder = 'Ej.: ' + (CATEGORIAS[FG.categoria.value] || CATEGORIAS.otros)[3];
+  }
+  function abrirGasto(g, previo = {}) {
+    FG.reset();
+    FG.alojamiento_id.innerHTML = '<option value="">General (sin alojamiento)</option>' + D.alojamientos.map(a => `<option value="${a.id}">${esc(a.nombre)}</option>`).join('');
+    const v = g || { fecha: mesFin === hoyS().slice(0, 7) ? hoyS() : mesFin + '-01', categoria: 'limpieza', ...previo };
+    ['id', 'reserva_id', 'categoria', 'concepto', 'fecha', 'importe', 'alojamiento_id'].forEach(k => { FG[k].value = v[k] ?? ''; });
+    if (v.importe != null && v.importe !== '') FG.importe.value = String(v.importe).replace('.', ',');
+    pintarCats();
+    const r = v.reserva_id && D.reservas.find(x => x.id === v.reserva_id), info = $('#gastoReserva');
+    info.classList.toggle('hidden', !r);
+    if (r) info.textContent = `🔗 Vinculado a la reserva de ${r.nombre} (salida ${fLarga(r.salida)})`;
+    $('#gastoTitulo').textContent = g ? 'Editar gasto' : 'Nuevo gasto';
+    $('#btnEliminarGasto').classList.toggle('hidden', !g);
+    $('#errorGasto').classList.add('hidden');
+    if (!$('#hojaGasto').classList.contains('flex')) abrirEnHistorial();
+    $('#hojaGasto').classList.replace('hidden', 'flex'); document.body.style.overflow = 'hidden';
+    setTimeout(() => (previo.importe ? FG.importe : FG.concepto).focus({ preventScroll: true }), 50);
+  }
+  function cerrarGasto(desdeHistorial) {
+    if (!$('#hojaGasto').classList.contains('flex')) return;
+    $('#hojaGasto').classList.replace('flex', 'hidden'); document.body.style.overflow = '';
+    if (!desdeHistorial) cerrarEnHistorial();
+  }
+  $('#btnNuevoGasto').addEventListener('click', () => abrirGasto(null));
+  $('#gastoCats').addEventListener('click', ev => { const b = ev.target.closest('[data-cat]'); if (b) { FG.categoria.value = b.dataset.cat; pintarCats(); } });
+  $('#hojaGasto').addEventListener('click', ev => { if (ev.target === $('#hojaGasto') || ev.target.closest('[data-cerrar-gasto]')) cerrarGasto(); });
+  FG.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const f = Object.fromEntries(new FormData(FG)), err = $('#errorGasto'), importe = Math.round(parseFloat(String(f.importe).replace(',', '.')) * 100) / 100;
+    const msg = !CATEGORIAS[f.categoria] ? 'Elige una categoría.' : !f.concepto.trim() ? 'Escribe el concepto del gasto.' : !f.fecha ? 'Indica la fecha.' : !(importe > 0) ? 'El importe debe ser mayor que 0.' : '';
+    if (msg) { err.textContent = msg; err.classList.remove('hidden'); return; }
+    const g = { id: f.id || undefined, fecha: f.fecha, categoria: f.categoria, concepto: f.concepto.trim(), importe, alojamiento_id: f.alojamiento_id || null, reserva_id: f.reserva_id || null };
+    if (!g.id) delete g.id;
+    try { await API.guardarGasto(g); cerrarGasto(); mesFin = g.fecha.slice(0, 7); await recargar(true); toast('✓ Gasto guardado'); }
+    catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+  });
+  $('#btnEliminarGasto').addEventListener('click', async () => {
+    if (!confirm('¿Eliminar este gasto?')) return;
+    try { await API.eliminarGasto(FG.id.value); cerrarGasto(); await recargar(true); toast('Gasto eliminado'); } catch (e) { toast('⚠️ ' + e.message); }
   });
 
   /* =====================================================================

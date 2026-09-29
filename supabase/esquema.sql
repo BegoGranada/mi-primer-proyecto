@@ -80,8 +80,39 @@ create table if not exists public.reservas (
 alter table public.reservas add column if not exists tipo_documento text check (tipo_documento in ('DNI', 'NIE', 'Pasaporte'));
 alter table public.reservas add column if not exists documento text;
 
+-- Registro de viajeros SES.Hospedajes (RD 933/2021). Los datos de cada viajero van en
+-- 'viajeros' (jsonb: nombre, apellido1, apellido2, sexo, nacimiento, nacionalidad,
+-- tipo_documento, documento, soporte, expedicion, direccion, cp, localidad, pais,
+-- telefono, email, parentesco). El gestor valida que estén completos.
+alter table public.reservas add column if not exists viajeros jsonb not null default '[]'::jsonb;
+alter table public.reservas add column if not exists referencia text;
+alter table public.reservas add column if not exists fecha_contrato date;
+alter table public.reservas add column if not exists habitaciones int check (habitaciones > 0);
+alter table public.reservas add column if not exists internet boolean;
+alter table public.reservas add column if not exists pago_tipo text check (pago_tipo in ('EFECT', 'TARJT', 'TRANS', 'MOVIL', 'PLATF', 'TREG', 'DESTI', 'OTRO'));
+alter table public.reservas add column if not exists pago_titular text;
+alter table public.reservas add column if not exists pago_medio text;      -- solo últimos dígitos, nunca la tarjeta completa
+alter table public.reservas add column if not exists pago_caducidad text;  -- MM/AA
+alter table public.reservas add column if not exists pago_fecha date;
+alter table public.reservas add column if not exists parte_comunicado_en date;
+create unique index if not exists reservas_referencia_idx on public.reservas (referencia) where referencia is not null;
+
 create index if not exists reservas_fechas_idx on public.reservas (entrada, salida);
 create index if not exists reservas_estado_idx on public.reservas (estado);
+
+-- Gastos (módulo Finanzas): limpieza, lavandería, leña, mantenimiento, suministros, otros.
+-- Opcionalmente vinculados a un alojamiento y a la reserva cuya salida originó la limpieza.
+create table if not exists public.gastos (
+  id              uuid primary key default gen_random_uuid(),
+  fecha           date not null,
+  categoria       text not null check (categoria in ('limpieza', 'lavanderia', 'lena', 'mantenimiento', 'suministros', 'otros')),
+  concepto        text not null,
+  importe         numeric(8,2) not null check (importe > 0),
+  alojamiento_id  text references public.alojamientos(id) on delete set null,
+  reserva_id      uuid references public.reservas(id) on delete set null,
+  creado_en       timestamptz not null default now()
+);
+create index if not exists gastos_fecha_idx on public.gastos (fecha);
 
 -- -----------------------------------------------------------------------------
 -- 2. REGLA ANTI-SOLAPE (solo entre reservas confirmadas)
@@ -185,13 +216,14 @@ alter table public.alojamientos enable row level security;
 alter table public.temporadas   enable row level security;
 alter table public.tarifas      enable row level security;
 alter table public.reservas     enable row level security;
+alter table public.gastos       enable row level security;
 
 -- El propietario (cualquier usuario autenticado de este proyecto) gestiona todo.
 -- Crear los usuarios SOLO desde Supabase → Authentication (desactivar el registro público).
 do $$
 declare t text;
 begin
-  foreach t in array array['alojamientos', 'temporadas', 'tarifas', 'reservas'] loop
+  foreach t in array array['alojamientos', 'temporadas', 'tarifas', 'reservas', 'gastos'] loop
     execute format('drop policy if exists "propietario_todo" on public.%I', t);
     execute format('create policy "propietario_todo" on public.%I for all to authenticated using (true) with check (true)', t);
   end loop;
@@ -204,7 +236,7 @@ drop policy if exists "publico_lee_temporadas" on public.temporadas;
 create policy "publico_lee_temporadas" on public.temporadas for select to anon using (true);
 drop policy if exists "publico_lee_tarifas" on public.tarifas;
 create policy "publico_lee_tarifas" on public.tarifas for select to anon using (true);
--- Reservas: el público NO tiene ninguna política → no puede leer ni escribir directamente.
+-- Reservas y gastos: el público NO tiene ninguna política → no puede leer ni escribir directamente.
 -- Solo puede crear solicitudes a través de crear_solicitud().
 
 revoke all on function public.crear_solicitud(text, date, date, int, text, text, text, text, text) from public;
