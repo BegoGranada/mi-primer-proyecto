@@ -464,6 +464,40 @@ def pagina(a, cfg, css):
       </div>
     </section>
 
+    <!-- =================== RESERVAS (formulario al final, como en la web original) =================== -->
+    <section id="reservas" class="foto-pendiente scroll-mt-20 py-20 text-cream sm:py-24">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6">
+        <h2 class="text-center font-serif text-5xl font-semibold text-wood-100">Reservas</h2>
+        <p class="mt-6 text-cream/90">Si desea realizar una reserva, por favor rellene el siguiente formulario y le responderemos en la mayor brevedad posible con la disponibilidad, precio total e instrucciones para formalizar la reserva:</p>
+        <form id="bookingForm" class="mt-8 space-y-6" novalidate>
+          <input type="hidden" name="alojamiento" value="{e(nombre_full)}" />
+          <label class="block"><span class="text-sm font-medium">Nombre*</span>
+            <input type="text" name="nombre" required autocomplete="name" placeholder="Para saber quién eres" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0" /></label>
+          <label class="block"><span class="text-sm font-medium">Correo electrónico*</span>
+            <input type="email" name="email" required autocomplete="email" placeholder="Para responderte" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0" /></label>
+          <label class="block"><span class="text-sm font-medium">Teléfono*</span>
+            <input type="tel" name="telefono" required autocomplete="tel" placeholder="Por si necesitamos llamarte" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0" /></label>
+          <div class="grid gap-6 sm:grid-cols-2">
+            <label class="block"><span class="text-sm font-medium">Fecha de entrada*</span>
+              <input type="date" name="entrada" required class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0 [color-scheme:dark]" /></label>
+            <label class="block"><span class="text-sm font-medium">Fecha de salida*</span>
+              <input type="date" name="salida" required class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0 [color-scheme:dark]" /></label>
+          </div>
+          <label class="block sm:w-1/2"><span class="text-sm font-medium">Cantidad de personas* <span class="text-cream/60">(máx. {a["max"]})</span></span>
+            <input type="number" name="personas" min="1" max="{a["max"]}" value="{min(2, a["max"])}" required class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0" /></label>
+          <p class="text-sm">Mascotas: No se aceptan.</p>
+          <label class="block"><span class="text-sm font-medium">Comentarios (opcional):</span>
+            <textarea name="comentarios" rows="3" placeholder="¿Necesitas comentarnos algo?" class="mt-1 w-full border-0 border-b border-wood-300/50 bg-white/5 px-3 py-3 text-cream placeholder:text-cream/40 focus:border-wood-300 focus:outline-none focus:ring-0"></textarea></label>
+          <p id="formError" class="hidden rounded-lg bg-red-900/40 px-4 py-3 text-sm font-medium text-red-100"></p>
+          <div class="grid gap-3 pt-2 sm:grid-cols-2">
+            <button type="submit" data-via="email" class="rounded-full bg-wood-500 px-6 py-4 font-semibold text-white transition hover:bg-wood-600">Enviar solicitud por email</button>
+            <button type="submit" data-via="whatsapp" class="rounded-full border border-cream/40 px-6 py-4 font-semibold text-cream transition hover:bg-cream/10">Enviar por WhatsApp</button>
+          </div>
+          <p class="text-center text-xs text-cream/60">Entrada 15:00 h · Salida 10:00 h · No se permite fumar · o llámanos al <a href="tel:+34686235888" class="font-semibold underline">686 23 58 88</a></p>
+        </form>
+      </div>
+    </section>
+
     <!-- =================== OTROS ALOJAMIENTOS =================== -->
     <section class="border-t border-stone-150 bg-white py-20 sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -485,42 +519,6 @@ def pagina(a, cfg, css):
   </footer>
 
   <button data-open-booking class="fixed inset-x-4 bottom-4 z-30 rounded-full bg-wood-500 py-4 font-semibold text-white shadow-2xl shadow-wood-700/40 sm:hidden">Reservar {e(a["nombre"])}</button>
-
-  <!-- =================== MODAL DE RESERVA =================== -->
-  <div id="bookingModal" class="fixed inset-0 z-50 hidden items-end justify-center bg-pine-900/70 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
-    <div class="max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-cream p-6 shadow-2xl sm:rounded-3xl sm:p-8">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[.25em] text-wood-600">Solicitud de reserva</p>
-          <h2 id="bookingTitle" class="mt-1 font-serif text-3xl font-semibold">Reserva tu estancia</h2>
-        </div>
-        <button data-close-booking class="rounded-full p-2 text-pine-700 hover:bg-pine-50" aria-label="Cerrar">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
-        </button>
-      </div>
-      <form id="bookingForm" class="mt-6 space-y-4" novalidate>
-        <label class="block"><span class="text-sm font-medium">Alojamiento</span>
-          <select name="alojamiento" id="fAlojamiento" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></select>
-          <span id="fInfo" class="mt-1 block text-xs text-pine-700/70"></span></label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block"><span class="text-sm font-medium">Entrada</span><input type="date" name="entrada" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
-          <label class="block"><span class="text-sm font-medium">Salida</span><input type="date" name="salida" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block"><span class="text-sm font-medium">Personas</span><input type="number" name="personas" id="fPersonas" min="1" value="2" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
-          <label class="block"><span class="text-sm font-medium">Teléfono</span><input type="tel" name="telefono" required autocomplete="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
-        </div>
-        <label class="block"><span class="text-sm font-medium">Nombre</span><input type="text" name="nombre" required autocomplete="name" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
-        <label class="block"><span class="text-sm font-medium">Comentarios <span class="text-pine-700/50">(opcional)</span></span><textarea name="comentarios" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></textarea></label>
-        <p class="rounded-xl bg-pine-50 px-4 py-3 text-xs text-pine-700">Entrada 15:00 h · Salida 10:00 h · No se aceptan mascotas · No se permite fumar dentro</p>
-        <p id="formError" class="hidden text-sm font-medium text-red-700"></p>
-        <div class="grid gap-3 pt-2 sm:grid-cols-2">
-          <button type="submit" data-via="whatsapp" class="rounded-full bg-pine-700 px-6 py-3.5 font-semibold text-white transition hover:bg-pine-800">Enviar por WhatsApp</button>
-          <button type="submit" data-via="email" class="rounded-full bg-wood-500 px-6 py-3.5 font-semibold text-white transition hover:bg-wood-600">Enviar por email</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <script>
     const ACTUAL = {json.dumps(nombre_full, ensure_ascii=False)};
@@ -564,18 +562,13 @@ def pagina(a, cfg, css):
     const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
     addEventListener('scroll', onScroll, {{ passive: true }}); onScroll();
 
-    // Modal de reserva (preseleccionado con este alojamiento)
-    const sel = $('#fAlojamiento'), modal = $('#bookingModal');
-    sel.innerHTML = ALOJAMIENTOS.map(a => `<option>${{a.nombre}}</option>`).join('');
-    const sync = () => {{ const a = ALOJAMIENTOS.find(x => x.nombre === sel.value); $('#fInfo').textContent = a.info; $('#fPersonas').max = a.max; }};
-    sel.value = ACTUAL; sync(); sel.addEventListener('change', sync);
-    const abrir = () => {{ mobileMenu.classList.add('hidden'); modal.classList.replace('hidden', 'flex'); document.body.style.overflow = 'hidden'; }};
-    const cerrar = () => {{ modal.classList.replace('flex', 'hidden'); document.body.style.overflow = ''; }};
+    // Botones "Reservar": bajan al formulario de Reservas del final de la página
     document.addEventListener('click', ev => {{
-      if (ev.target.closest('[data-open-booking]')) {{ ev.preventDefault(); abrir(); }}
-      if (ev.target.closest('[data-close-booking]') || ev.target === modal) cerrar();
+      if (!ev.target.closest('[data-open-booking]')) return;
+      ev.preventDefault(); mobileMenu.classList.add('hidden');
+      $('#reservas').scrollIntoView({{ behavior: 'smooth' }});
+      setTimeout(() => $('#bookingForm [name="nombre"]').focus({{ preventScroll: true }}), 600);
     }});
-    document.addEventListener('keydown', ev => {{ if (ev.key === 'Escape') cerrar(); }});
     const now = new Date(), hoy = new Date(now - now.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
     $$('#bookingForm input[type="date"]').forEach(i => i.min = hoy);
     $('#bookingForm').addEventListener('submit', ev => {{
@@ -583,12 +576,14 @@ def pagina(a, cfg, css):
       const d = Object.fromEntries(new FormData(ev.target));
       const max = ALOJAMIENTOS.find(x => x.nombre === d.alojamiento).max;
       let err = '';
-      if (!d.entrada || !d.salida || d.salida <= d.entrada) err = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
+      if (!d.nombre.trim()) err = 'Indica tu nombre.';
+      else if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(d.email.trim())) err = 'Indica un correo electrónico válido.';
+      else if (!d.telefono.trim()) err = 'Indica tu teléfono.';
+      else if (!d.entrada || !d.salida || d.salida <= d.entrada) err = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
       else if (!(+d.personas >= 1 && +d.personas <= max)) err = `Este alojamiento admite hasta ${{max}} personas.`;
-      else if (!d.nombre.trim() || !d.telefono.trim()) err = 'Indica tu nombre y teléfono.';
       $('#formError').textContent = err; $('#formError').classList.toggle('hidden', !err);
       if (err) return;
-      const msg = `Hola, me gustaría reservar:\\n• Alojamiento: ${{d.alojamiento}}\\n• Entrada: ${{d.entrada}} (15:00 h)\\n• Salida: ${{d.salida}} (10:00 h)\\n• Personas: ${{d.personas}}\\n• Nombre: ${{d.nombre}}\\n• Teléfono: ${{d.telefono}}` + (d.comentarios ? `\\n• Comentarios: ${{d.comentarios}}` : '');
+      const msg = `Hola, me gustaría reservar:\\n• Alojamiento: ${{d.alojamiento}}\\n• Entrada: ${{d.entrada}} (15:00 h)\\n• Salida: ${{d.salida}} (10:00 h)\\n• Personas: ${{d.personas}}\\n• Nombre: ${{d.nombre}}\\n• Email: ${{d.email}}\\n• Teléfono: ${{d.telefono}}` + (d.comentarios ? `\\n• Comentarios: ${{d.comentarios}}` : '');
       if (ev.submitter && ev.submitter.dataset.via === 'whatsapp') window.open(`https://wa.me/34686235888?text=${{encodeURIComponent(msg)}}`, '_blank', 'noopener');
       else location.href = `mailto:info@cabanaslospinos.com?subject=${{encodeURIComponent('Solicitud de reserva – ' + d.alojamiento)}}&body=${{encodeURIComponent(msg)}}`;
     }});
