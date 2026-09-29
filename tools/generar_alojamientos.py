@@ -1,0 +1,454 @@
+#!/usr/bin/env python3
+"""
+Generador de las páginas individuales de alojamiento de Cabañas Los Pinos.
+
+Uso (desde la raíz del repositorio):
+    python3 tools/generar_alojamientos.py
+
+- Los datos de cada alojamiento están en la lista ALOJAMIENTOS (abajo).
+- La configuración de Tailwind y los estilos se copian de index.html,
+  así las páginas mantienen siempre el mismo tema que la portada.
+- Vuelve a ejecutarlo tras editar cualquier dato: sobrescribe los 8 .html.
+"""
+import html
+import json
+import re
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+WP = 'https://cabanaslospinos.com/wp-content/uploads/2026/06/'
+LOGO_H = WP + 'logo_clp_trans_horizontal.webp'
+LOGO_V = WP + 'logo_clp_vertical.webp'
+
+# ---------------------------------------------------------------------------
+# DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
+# foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
+# EDITAR: las descripciones pueden sustituirse por los textos originales.
+# ---------------------------------------------------------------------------
+ALOJAMIENTOS = [
+    dict(slug='montemalo', nombre='Montemalo', tipo='Cabaña de madera', foto='portada2.webp',
+         max=4, precio='90 – 150 €', habs='2 habitaciones',
+         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
+         wifi=True, extras=[],
+         descripcion=['Montemalo es una cabaña de madera para 4 personas en pleno pinar de Arroyo Frío, '
+                      'dentro del Parque Natural Sierra de Cazorla, Segura y Las Villas.',
+                      'Sus dos habitaciones con cama de 135 la hacen perfecta para dos parejas o para una familia '
+                      'que busca calma, naturaleza y todas las comodidades de casa.']),
+    dict(slug='las-albercas', nombre='Las Albercas', tipo='Cabaña de madera', foto='portada3.webp',
+         max=4, precio='90 – 150 €', habs='2 habitaciones',
+         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
+         wifi=True, extras=[],
+         descripcion=['Las Albercas es una cabaña de madera para 4 personas rodeada de pinos, '
+                      'en el corazón de la Sierra de Cazorla.',
+                      'Con dos habitaciones de cama de 135, cocina equipada y baño privado, es una base '
+                      'cómoda para descubrir las rutas del Parque Natural.']),
+    dict(slug='puntal-del-enebrillo', nombre='Puntal del Enebrillo', tipo='Cabaña de madera', foto='portada5.webp',
+         max=4, precio='90 – 150 €', habs='2 habitaciones',
+         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
+         wifi=True, extras=[],
+         descripcion=['Puntal del Enebrillo es una cabaña de madera para 4 personas que toma su nombre '
+                      'de uno de los parajes de la sierra.',
+                      'Dos habitaciones con cama de 135 y todo el equipamiento necesario para disfrutar '
+                      'de una escapada tranquila en Arroyo Frío.']),
+    dict(slug='barranco-de-las-iglesias', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto='portada6.webp',
+         max=8, precio='130 – 180 €', habs='2 pisos · 3 habitaciones + buhardilla',
+         camas=['3 habitaciones repartidas en 2 pisos', 'Buhardilla con 4 camas individuales'],
+         wifi=True, extras=['Dos pisos'],
+         descripcion=['Barranco de las Iglesias es nuestra cabaña más grande: dos pisos pensados para '
+                      'grupos y familias numerosas de hasta 8 personas.',
+                      'Tres habitaciones y una amplia buhardilla con 4 camas individuales, ideal para que '
+                      'los más pequeños tengan su propio espacio.']),
+    dict(slug='cabeza-rubia', nombre='Cabeza Rubia', tipo='Cabaña de madera', foto='portada7.webp',
+         max=2, precio='50 – 80 €', habs='1 habitación',
+         camas=['Habitación: cama de 135 cm'],
+         wifi=True, extras=[],
+         descripcion=['Cabeza Rubia es una cabaña de madera para 2 personas, perfecta para una escapada '
+                      'en pareja entre pinos.',
+                      'Una habitación con cama de 135, cocina, baño privado y la tranquilidad de Arroyo Frío '
+                      'a las puertas del Parque Natural.']),
+    dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada', foto=None,
+         max=3, precio='65 – 80 €', habs='1 habitación',
+         camas=['1 cama de matrimonio', '1 cama individual'],
+         wifi=False, extras=['Terraza privada'],
+         descripcion=['La Casa Los Pineros es un alojamiento íntimo con terraza privada, pensado para '
+                      'parejas o pequeñas familias de hasta 3 personas.',
+                      'Una habitación con cama de matrimonio y cama individual, y una terraza propia para '
+                      'disfrutar del aire de la sierra.']),
+    dict(slug='mirador-de-las-palomas', nombre='Mirador de las Palomas', tipo='Apartamento con terraza superior', foto=None,
+         max=4, precio='90 – 120 €', habs='2 habitaciones',
+         camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
+         wifi=False, extras=['Terraza superior'],
+         descripcion=['El Apartamento Mirador de las Palomas toma su nombre del célebre mirador de la sierra '
+                      'y cuenta con una terraza superior.',
+                      'Dos habitaciones con cama de 135 para 4 personas, ideal para familias o dos parejas.']),
+    dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas', foto=None,
+         max=8, precio='70 – 180 €', habs='3 plantas · 5 habitaciones',
+         camas=['2 habitaciones de matrimonio', '3 habitaciones con camas individuales'],
+         wifi=False, extras=['Tres plantas'],
+         descripcion=['El Dúplex El Senderista reparte sus tres plantas en cinco habitaciones, con capacidad '
+                      'para hasta 8 personas.',
+                      'Dos habitaciones de matrimonio y tres con camas individuales: el punto de partida perfecto '
+                      'para grupos que vienen a recorrer las rutas del Parque Natural.']),
+]
+
+COMUNES = [('🛁', 'Baño privado'), ('🍳', 'Cocina'), ('📺', 'TV'), ('❄️', 'Aire acondicionado'),
+           ('🔥', 'Calefacción o chimenea'), ('🧊', 'Nevera'), ('🧺', 'Lavadora'), ('♨️', 'Microondas')]
+
+e = html.escape
+
+
+def titulo_completo(a):
+    """Nombre tal y como aparece en menús y formularios."""
+    t = a['tipo'].split()[0]  # Cabaña / Casa / Apartamento / Dúplex
+    return f'{t} {a["nombre"]}'
+
+
+def extraer_tema():
+    """Copia de index.html la config de Tailwind y el bloque <style>."""
+    idx = (RAIZ / 'index.html').read_text(encoding='utf-8')
+    cfg = re.search(r'<script>\s*// Paleta propia.*?</script>', idx, re.S).group(0)
+    css = re.search(r'<style>.*?</style>', idx, re.S).group(0)
+    return cfg, css
+
+
+def menu_alojamientos(actual, movil=False):
+    items = []
+    for a in ALOJAMIENTOS:
+        activo = a['slug'] == actual
+        cur = ' aria-current="page"' if activo else ''
+        if movil:
+            cls = 'block py-2' + (' font-semibold text-wood-300' if activo else '')
+            items.append(f'            <li><a href="{a["slug"]}.html"{cur} class="{cls}">{e(titulo_completo(a))}</a></li>')
+        else:
+            cls = 'block rounded-lg px-4 py-2 hover:bg-pine-50' + (' bg-pine-50 font-semibold' if activo else '')
+            items.append(f'              <a href="{a["slug"]}.html"{cur} class="{cls}">{e(titulo_completo(a))}</a>')
+    return '\n'.join(items)
+
+
+def cabecera(actual):
+    return f'''  <!-- =================== CABECERA (igual que la portada) =================== -->
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-40 transition-all duration-300">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8" aria-label="Principal">
+      <a href="index.html" class="flex items-center gap-2 text-cream" aria-label="Cabañas de Madera Los Pinos — Inicio">
+        <img data-logo src="{LOGO_H}" alt="Cabañas de Madera Los Pinos" class="hidden h-10 w-auto brightness-0 invert sm:h-12" />
+        <svg data-logo-fallback class="h-8 w-8 text-wood-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6 10h3l-4 6h4l-3 4h12l-3-4h4l-4-6h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
+        <span data-logo-fallback class="font-serif text-xl font-semibold leading-tight tracking-wide sm:text-2xl">Cabañas Los Pinos</span>
+      </a>
+
+      <ul class="hidden items-center gap-8 text-sm font-medium text-cream/90 lg:flex">
+        <li><a href="index.html" class="hover:text-wood-300">Inicio</a></li>
+        <li class="group relative">
+          <a href="index.html#alojamientos" class="inline-flex items-center gap-1 text-wood-300">Alojamientos
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg>
+          </a>
+          <div class="invisible absolute left-1/2 top-full w-80 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div class="rounded-xl bg-cream p-2 text-pine-900 shadow-soft">
+{menu_alojamientos(actual)}
+            </div>
+          </div>
+        </li>
+        <li><a href="index.html#entorno" class="hover:text-wood-300">Entorno</a></li>
+        <li><a href="index.html#noticias" class="hover:text-wood-300">Noticias</a></li>
+        <li><a href="index.html#contacto" class="hover:text-wood-300">Contacto</a></li>
+        <li><button data-open-booking class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</button></li>
+      </ul>
+
+      <button id="menuBtn" class="rounded-lg p-2 text-cream lg:hidden" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menú">
+        <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden max-h-[80svh] overflow-y-auto border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
+      <ul class="space-y-1 px-4 py-4 text-cream">
+        <li><a href="index.html" class="block rounded-lg px-3 py-3 hover:bg-white/5">Inicio</a></li>
+        <li>
+          <a href="index.html#alojamientos" class="block rounded-lg px-3 py-3 hover:bg-white/5">Alojamientos</a>
+          <ul class="ml-4 border-l border-white/10 pl-3 text-sm text-cream/80">
+{menu_alojamientos(actual, movil=True)}
+          </ul>
+        </li>
+        <li><a href="index.html#entorno" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
+        <li><a href="index.html#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
+        <li><a href="index.html#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
+        <li class="pt-2"><button data-open-booking class="w-full rounded-full bg-wood-500 px-5 py-3 font-semibold text-white">Reservar ahora</button></li>
+      </ul>
+    </div>
+  </header>'''
+
+
+def pagina(a, cfg, css):
+    nombre_full = titulo_completo(a)
+    foto = WP + a['foto'] if a['foto'] else ''
+    servicios = COMUNES + ([('📶', 'Wi-Fi')] if a['wifi'] else []) \
+        + [('🌿', x) for x in a['extras']] \
+        + [('🏊', 'Piscina (según temporada)'), ('🍖', 'Barbacoa exterior (según temporada)'),
+           ('🧭', 'Asesoramiento turístico')]
+    li_serv = '\n'.join(
+        f'          <li class="flex items-center gap-3 rounded-2xl border border-stone-150 bg-white p-4 shadow-soft">'
+        f'<span class="text-2xl" aria-hidden="true">{i}</span><span class="text-sm font-medium">{e(t)}</span></li>'
+        for i, t in servicios)
+    li_camas = '\n'.join(
+        f'            <li class="flex items-start gap-3"><span class="mt-1 text-wood-500">🛏️</span><span>{e(c)}</span></li>'
+        for c in a['camas'])
+    parrafos = '\n'.join(f'          <p>{e(p)}</p>' for p in a['descripcion'])
+    otros = '\n'.join(
+        f'''        <a href="{o["slug"]}.html" class="group flex flex-col justify-between rounded-2xl border border-stone-150 bg-white p-5 shadow-soft transition hover:-translate-y-1 hover:border-wood-300">
+          <div><p class="text-xs uppercase tracking-widest text-wood-600">{e(o["tipo"])}</p>
+          <p class="mt-1 font-serif text-2xl font-semibold leading-tight">{e(o["nombre"])}</p></div>
+          <p class="mt-3 text-sm text-pine-700/75">👥 {o["max"]} pers. · {e(o["precio"])}/noche <span class="text-wood-600 transition group-hover:translate-x-1">→</span></p>
+        </a>''' for o in ALOJAMIENTOS if o['slug'] != a['slug'])
+    datos_js = json.dumps([{'nombre': titulo_completo(o), 'max': o['max'],
+                            'info': f'{o["max"]} personas · {o["habs"]} · {o["precio"]}/noche'}
+                           for o in ALOJAMIENTOS], ensure_ascii=False)
+    descripcion_meta = f'{nombre_full}: {a["tipo"].lower()} para {a["max"]} personas en Arroyo Frío, Sierra de Cazorla. {a["precio"]}/noche.'
+
+    return f'''<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- ============================================================
+       {nombre_full} — Cabañas de Madera Los Pinos
+       Página GENERADA por tools/generar_alojamientos.py:
+       edita los datos allí y vuelve a ejecutarlo, no a mano.
+       Secciones: cabecera · hero a pantalla completa · datos clave ·
+       descripción + reserva · camas · servicios · normas ·
+       otros alojamientos · pie · modal de reserva
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{e(nombre_full)} · Cabañas de Madera Los Pinos · Arroyo Frío</title>
+  <meta name="description" content="{e(descripcion_meta)}" />
+  <meta name="theme-color" content="#1a261b" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  {cfg}
+  {css}
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+{cabecera(a['slug'])}
+
+  <main>
+    <!-- =================== HERO: foto a pantalla completa + título centrado =================== -->
+    <section class="relative flex min-h-[100svh] items-center justify-center overflow-hidden text-center">
+      <div id="heroFoto" class="foto-pendiente absolute inset-0" data-src="{foto}"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-pine-900/60 via-pine-900/35 to-pine-900/80"></div>
+      <div class="relative mx-auto max-w-4xl px-4 pt-24">
+        <nav aria-label="Ruta" class="mb-6 text-xs uppercase tracking-[.2em] text-cream/70">
+          <a href="index.html" class="hover:text-cream">Inicio</a> <span class="mx-2">/</span>
+          <a href="index.html#alojamientos" class="hover:text-cream">Alojamientos</a>
+        </nav>
+        <p class="text-sm font-medium uppercase tracking-[.3em] text-wood-300">{e(a["tipo"])}</p>
+        <h1 class="mt-4 font-serif text-5xl font-semibold leading-[1.05] text-white drop-shadow-lg sm:text-7xl lg:text-8xl">{e(a["nombre"])}</h1>
+        <div class="mx-auto mt-6 flex items-center justify-center gap-3 text-cream/85" aria-hidden="true">
+          <span class="h-px w-12 bg-cream/50"></span><span>🌲</span><span class="h-px w-12 bg-cream/50"></span>
+        </div>
+        <p class="mt-6 text-lg text-cream/90">👥 {a["max"]} personas · {e(a["habs"])} · <strong class="font-semibold text-white">{e(a["precio"])}</strong> / noche</p>
+        <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+          <button data-open-booking class="rounded-full bg-wood-500 px-8 py-4 font-semibold text-white shadow-xl shadow-wood-700/40 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+          <a href="#detalles" class="rounded-full border border-cream/40 px-8 py-4 font-medium text-cream transition hover:bg-cream/10">Ver detalles</a>
+        </div>
+      </div>
+      <a href="#detalles" class="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce text-cream/70" aria-label="Bajar a los detalles">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+      </a>
+    </section>
+
+    <!-- =================== DATOS CLAVE =================== -->
+    <section id="detalles" class="scroll-mt-20 border-b border-stone-150 bg-white">
+      <dl class="mx-auto grid max-w-7xl grid-cols-2 divide-stone-150 px-4 sm:px-6 lg:grid-cols-4 lg:divide-x lg:px-8">
+        <div class="p-6 text-center"><dt class="text-xs uppercase tracking-widest text-pine-700/60">Capacidad</dt><dd class="mt-1 font-serif text-3xl font-semibold">{a["max"]} personas</dd></div>
+        <div class="p-6 text-center"><dt class="text-xs uppercase tracking-widest text-pine-700/60">Distribución</dt><dd class="mt-1 font-serif text-2xl font-semibold">{e(a["habs"])}</dd></div>
+        <div class="p-6 text-center"><dt class="text-xs uppercase tracking-widest text-pine-700/60">Precio / noche</dt><dd class="mt-1 font-serif text-3xl font-semibold">{e(a["precio"])}</dd></div>
+        <div class="p-6 text-center"><dt class="text-xs uppercase tracking-widest text-pine-700/60">Horario</dt><dd class="mt-1 font-serif text-2xl font-semibold">15:00 → 10:00</dd></div>
+      </dl>
+    </section>
+
+    <!-- =================== DESCRIPCIÓN + CAMAS + TARJETA DE RESERVA =================== -->
+    <section class="py-20 sm:py-24">
+      <div class="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <div class="space-y-12 lg:col-span-2">
+          <div class="space-y-4 text-lg leading-relaxed text-pine-700/90">
+            <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">El alojamiento</p>
+            <h2 class="font-serif text-4xl font-semibold text-pine-900 sm:text-5xl">{e(nombre_full)}</h2>
+{parrafos}
+          </div>
+          <div>
+            <h3 class="font-serif text-3xl font-semibold">Habitaciones y camas</h3>
+            <ul class="mt-5 space-y-3 rounded-3xl border border-stone-150 bg-white p-6 text-pine-800 shadow-soft">
+{li_camas}
+            </ul>
+          </div>
+        </div>
+
+        <aside class="lg:sticky lg:top-28 lg:self-start">
+          <div class="rounded-3xl bg-pine-800 p-8 text-cream shadow-soft">
+            <p class="text-xs uppercase tracking-widest text-cream/60">Precio por noche</p>
+            <p class="mt-1 font-serif text-4xl">{e(a["precio"])}</p>
+            <p class="mt-1 text-sm text-cream/60">Según temporada · hasta {a["max"]} personas</p>
+            <button data-open-booking class="mt-6 w-full rounded-full bg-wood-500 py-4 font-semibold text-white transition hover:bg-wood-600">Reservar ahora</button>
+            <a href="https://wa.me/34686235888?text={e('Hola, me interesa ' + nombre_full)}" target="_blank" rel="noopener" class="mt-3 block w-full rounded-full border border-cream/40 py-3 text-center font-medium transition hover:bg-cream/10">WhatsApp directo</a>
+            <p class="mt-6 text-center text-sm text-cream/70">o llámanos al <a href="tel:+34686235888" class="font-semibold text-cream underline">686 23 58 88</a></p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- =================== SERVICIOS =================== -->
+    <section class="bg-stone-150 py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Servicios</p>
+        <h2 class="mt-2 font-serif text-4xl font-semibold">Todo lo que incluye</h2>
+        <ul class="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+{li_serv}
+        </ul>
+      </div>
+    </section>
+
+    <!-- =================== NORMAS =================== -->
+    <section class="py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="font-serif text-4xl font-semibold">Normas de la casa</h2>
+        <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div class="rounded-3xl border border-stone-150 bg-white p-6 shadow-soft"><p class="text-xs uppercase tracking-widest text-pine-700/60">Entrada</p><p class="font-serif text-3xl font-semibold">15:00 h</p></div>
+          <div class="rounded-3xl border border-stone-150 bg-white p-6 shadow-soft"><p class="text-xs uppercase tracking-widest text-pine-700/60">Salida</p><p class="font-serif text-3xl font-semibold">10:00 h</p></div>
+          <div class="rounded-3xl border border-red-200 bg-red-50/60 p-6"><p class="text-xs uppercase tracking-widest text-red-800/70">Mascotas</p><p class="font-serif text-2xl font-semibold text-red-900">No se aceptan</p></div>
+          <div class="rounded-3xl border border-red-200 bg-red-50/60 p-6"><p class="text-xs uppercase tracking-widest text-red-800/70">Tabaco</p><p class="font-serif text-2xl font-semibold text-red-900">No fumar dentro</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== OTROS ALOJAMIENTOS =================== -->
+    <section class="border-t border-stone-150 bg-white py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="font-serif text-4xl font-semibold">Otros alojamientos</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+{otros}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =================== PIE (igual que la portada) =================== -->
+  <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo src="{LOGO_V}" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
+      <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
+    </div>
+  </footer>
+
+  <button data-open-booking class="fixed inset-x-4 bottom-4 z-30 rounded-full bg-wood-500 py-4 font-semibold text-white shadow-2xl shadow-wood-700/40 sm:hidden">Reservar {e(a["nombre"])}</button>
+
+  <!-- =================== MODAL DE RESERVA =================== -->
+  <div id="bookingModal" class="fixed inset-0 z-50 hidden items-end justify-center bg-pine-900/70 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+    <div class="max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-cream p-6 shadow-2xl sm:rounded-3xl sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[.25em] text-wood-600">Solicitud de reserva</p>
+          <h2 id="bookingTitle" class="mt-1 font-serif text-3xl font-semibold">Reserva tu estancia</h2>
+        </div>
+        <button data-close-booking class="rounded-full p-2 text-pine-700 hover:bg-pine-50" aria-label="Cerrar">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <form id="bookingForm" class="mt-6 space-y-4" novalidate>
+        <label class="block"><span class="text-sm font-medium">Alojamiento</span>
+          <select name="alojamiento" id="fAlojamiento" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></select>
+          <span id="fInfo" class="mt-1 block text-xs text-pine-700/70"></span></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Entrada</span><input type="date" name="entrada" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+          <label class="block"><span class="text-sm font-medium">Salida</span><input type="date" name="salida" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Personas</span><input type="number" name="personas" id="fPersonas" min="1" value="2" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+          <label class="block"><span class="text-sm font-medium">Teléfono</span><input type="tel" name="telefono" required autocomplete="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Nombre</span><input type="text" name="nombre" required autocomplete="name" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        <label class="block"><span class="text-sm font-medium">Comentarios <span class="text-pine-700/50">(opcional)</span></span><textarea name="comentarios" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></textarea></label>
+        <p class="rounded-xl bg-pine-50 px-4 py-3 text-xs text-pine-700">Entrada 15:00 h · Salida 10:00 h · No se aceptan mascotas · No se permite fumar dentro</p>
+        <p id="formError" class="hidden text-sm font-medium text-red-700"></p>
+        <div class="grid gap-3 pt-2 sm:grid-cols-2">
+          <button type="submit" data-via="whatsapp" class="rounded-full bg-pine-700 px-6 py-3.5 font-semibold text-white transition hover:bg-pine-800">Enviar por WhatsApp</button>
+          <button type="submit" data-via="email" class="rounded-full bg-wood-500 px-6 py-3.5 font-semibold text-white transition hover:bg-wood-600">Enviar por email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const ACTUAL = {json.dumps(nombre_full, ensure_ascii=False)};
+    const ALOJAMIENTOS = {datos_js};
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+    // Foto del hero: si no hay foto o no carga, queda la textura de madera con el logo
+    (function () {{
+      const box = $('#heroFoto'), src = box.dataset.src;
+      const logo = () => box.innerHTML = `<div class="grid h-full place-items-center"><img src="{LOGO_V}" alt="" class="h-1/3 w-auto opacity-25 brightness-0 invert" onerror="this.remove()"></div>`;
+      if (!src) return logo();
+      const img = new Image();
+      img.alt = ACTUAL; img.className = 'h-full w-full object-cover';
+      img.onload = () => {{ box.classList.remove('foto-pendiente'); box.replaceChildren(img); }};
+      img.onerror = logo;
+      img.src = src;
+    }})();
+
+    // Logos de cabecera y pie: se muestran si cargan; si no, queda el texto
+    $$('img[data-logo]').forEach(img => {{
+      const ok = () => {{ img.classList.remove('hidden'); img.parentElement.querySelectorAll('[data-logo-fallback]').forEach(x => x.classList.add('hidden')); }};
+      if (img.complete && img.naturalWidth) ok(); else {{ img.onload = ok; img.onerror = () => img.remove(); }}
+    }});
+
+    // Menú móvil y cabecera al hacer scroll
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu'), header = $('#siteHeader');
+    menuBtn.addEventListener('click', () => menuBtn.setAttribute('aria-expanded', !mobileMenu.classList.toggle('hidden')));
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 40);
+    addEventListener('scroll', onScroll, {{ passive: true }}); onScroll();
+
+    // Modal de reserva (preseleccionado con este alojamiento)
+    const sel = $('#fAlojamiento'), modal = $('#bookingModal');
+    sel.innerHTML = ALOJAMIENTOS.map(a => `<option>${{a.nombre}}</option>`).join('');
+    const sync = () => {{ const a = ALOJAMIENTOS.find(x => x.nombre === sel.value); $('#fInfo').textContent = a.info; $('#fPersonas').max = a.max; }};
+    sel.value = ACTUAL; sync(); sel.addEventListener('change', sync);
+    const abrir = () => {{ mobileMenu.classList.add('hidden'); modal.classList.replace('hidden', 'flex'); document.body.style.overflow = 'hidden'; }};
+    const cerrar = () => {{ modal.classList.replace('flex', 'hidden'); document.body.style.overflow = ''; }};
+    document.addEventListener('click', ev => {{
+      if (ev.target.closest('[data-open-booking]')) {{ ev.preventDefault(); abrir(); }}
+      if (ev.target.closest('[data-close-booking]') || ev.target === modal) cerrar();
+    }});
+    document.addEventListener('keydown', ev => {{ if (ev.key === 'Escape') cerrar(); }});
+    const now = new Date(), hoy = new Date(now - now.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+    $$('#bookingForm input[type="date"]').forEach(i => i.min = hoy);
+    $('#bookingForm').addEventListener('submit', ev => {{
+      ev.preventDefault();
+      const d = Object.fromEntries(new FormData(ev.target));
+      const max = ALOJAMIENTOS.find(x => x.nombre === d.alojamiento).max;
+      let err = '';
+      if (!d.entrada || !d.salida || d.salida <= d.entrada) err = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
+      else if (!(+d.personas >= 1 && +d.personas <= max)) err = `Este alojamiento admite hasta ${{max}} personas.`;
+      else if (!d.nombre.trim() || !d.telefono.trim()) err = 'Indica tu nombre y teléfono.';
+      $('#formError').textContent = err; $('#formError').classList.toggle('hidden', !err);
+      if (err) return;
+      const msg = `Hola, me gustaría reservar:\\n• Alojamiento: ${{d.alojamiento}}\\n• Entrada: ${{d.entrada}} (15:00 h)\\n• Salida: ${{d.salida}} (10:00 h)\\n• Personas: ${{d.personas}}\\n• Nombre: ${{d.nombre}}\\n• Teléfono: ${{d.telefono}}` + (d.comentarios ? `\\n• Comentarios: ${{d.comentarios}}` : '');
+      if (ev.submitter && ev.submitter.dataset.via === 'whatsapp') window.open(`https://wa.me/34686235888?text=${{encodeURIComponent(msg)}}`, '_blank', 'noopener');
+      else location.href = `mailto:info@cabanaslospinos.com?subject=${{encodeURIComponent('Solicitud de reserva – ' + d.alojamiento)}}&body=${{encodeURIComponent(msg)}}`;
+    }});
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+'''
+
+
+def main():
+    cfg, css = extraer_tema()
+    for a in ALOJAMIENTOS:
+        (RAIZ / f'{a["slug"]}.html').write_text(pagina(a, cfg, css), encoding='utf-8')
+        print('✓', f'{a["slug"]}.html')
+
+
+if __name__ == '__main__':
+    main()

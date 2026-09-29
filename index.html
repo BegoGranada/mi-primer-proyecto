@@ -97,12 +97,17 @@
           <a href="#alojamientos" class="inline-flex items-center gap-1 hover:text-wood-300">Alojamientos
             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg>
           </a>
-          <div class="invisible absolute left-1/2 top-full w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+          <div class="invisible absolute left-1/2 top-full w-80 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
             <div class="rounded-xl bg-cream p-2 text-pine-900 shadow-soft">
-              <a href="#cabanas" class="block rounded-lg px-4 py-2 hover:bg-pine-50">5 Cabañas de Madera</a>
-              <a href="#casa-los-pineros" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Casa Los Pineros</a>
-              <a href="#apartamento-mirador" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Apartamento Mirador de Las Palomas</a>
-              <a href="#duplex-senderista" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Dúplex El Senderista</a>
+              <!-- Páginas individuales (generadas con tools/generar_alojamientos.py) -->
+              <a href="montemalo.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Montemalo</a>
+              <a href="las-albercas.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Las Albercas</a>
+              <a href="puntal-del-enebrillo.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Puntal del Enebrillo</a>
+              <a href="barranco-de-las-iglesias.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Barranco de las Iglesias</a>
+              <a href="cabeza-rubia.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Cabaña Cabeza Rubia</a>
+              <a href="casa-los-pineros.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Casa Los Pineros</a>
+              <a href="mirador-de-las-palomas.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Apartamento Mirador de las Palomas</a>
+              <a href="el-senderista.html" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Dúplex El Senderista</a>
             </div>
           </div>
         </li>
@@ -118,16 +123,20 @@
     </nav>
 
     <!-- Menú móvil -->
-    <div id="mobileMenu" class="hidden border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
+    <div id="mobileMenu" class="hidden max-h-[80svh] overflow-y-auto border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
       <ul class="space-y-1 px-4 py-4 text-cream">
         <li><a href="#inicio" class="block rounded-lg px-3 py-3 hover:bg-white/5">Inicio</a></li>
         <li>
           <a href="#alojamientos" class="block rounded-lg px-3 py-3 hover:bg-white/5">Alojamientos</a>
           <ul class="ml-4 border-l border-white/10 pl-3 text-sm text-cream/80">
-            <li><a href="#cabanas" class="block py-2">5 Cabañas de Madera</a></li>
-            <li><a href="#casa-los-pineros" class="block py-2">Casa Los Pineros</a></li>
-            <li><a href="#apartamento-mirador" class="block py-2">Apartamento Mirador de Las Palomas</a></li>
-            <li><a href="#duplex-senderista" class="block py-2">Dúplex El Senderista</a></li>
+            <li><a href="montemalo.html" class="block py-2">Cabaña Montemalo</a></li>
+            <li><a href="las-albercas.html" class="block py-2">Cabaña Las Albercas</a></li>
+            <li><a href="puntal-del-enebrillo.html" class="block py-2">Cabaña Puntal del Enebrillo</a></li>
+            <li><a href="barranco-de-las-iglesias.html" class="block py-2">Cabaña Barranco de las Iglesias</a></li>
+            <li><a href="cabeza-rubia.html" class="block py-2">Cabaña Cabeza Rubia</a></li>
+            <li><a href="casa-los-pineros.html" class="block py-2">Casa Los Pineros</a></li>
+            <li><a href="mirador-de-las-palomas.html" class="block py-2">Apartamento Mirador de las Palomas</a></li>
+            <li><a href="el-senderista.html" class="block py-2">Dúplex El Senderista</a></li>
           </ul>
         </li>
         <li><a href="#entorno" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
@@ -239,6 +248,7 @@
               <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Terraza,Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
               <div class="mt-8 flex flex-wrap items-center gap-5">
                 <button data-open-booking data-alojamiento="Casa Los Pineros" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <a href="casa-los-pineros.html" class="rounded-full border border-pine-700/30 px-7 py-3.5 font-semibold text-pine-800 transition hover:bg-pine-50">Ver alojamiento</a>
                 <p><span class="font-serif text-3xl font-semibold">65 – 80 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
               </div>
             </div>
@@ -257,6 +267,7 @@
               <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Terraza,Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
               <div class="mt-8 flex flex-wrap items-center gap-5">
                 <button data-open-booking data-alojamiento="Apartamento Mirador de Las Palomas" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <a href="mirador-de-las-palomas.html" class="rounded-full border border-pine-700/30 px-7 py-3.5 font-semibold text-pine-800 transition hover:bg-pine-50">Ver alojamiento</a>
                 <p><span class="font-serif text-3xl font-semibold">90 – 120 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
               </div>
             </div>
@@ -275,6 +286,7 @@
               <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
               <div class="mt-8 flex flex-wrap items-center gap-5">
                 <button data-open-booking data-alojamiento="Dúplex El Senderista" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <a href="el-senderista.html" class="rounded-full border border-pine-700/30 px-7 py-3.5 font-semibold text-pine-800 transition hover:bg-pine-50">Ver alojamiento</a>
                 <p><span class="font-serif text-3xl font-semibold">70 – 180 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
               </div>
             </div>
@@ -567,11 +579,11 @@
     /* ---------- Alojamientos (datos oficiales) ----------
        EDITAR: si cada cabaña tiene nombre propio, cámbialo en "nombre". */
     const CABANAS = [
-      { nombre: 'Montemalo',                foto: 'cabana1', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
-      { nombre: 'Las Albercas',             foto: 'cabana2', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
-      { nombre: 'Puntal del Enebrillo',     foto: 'cabana3', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
-      { nombre: 'Barranco de las Iglesias', foto: 'cabana4', max: 8, camas: '2 pisos · 3 habs · buhardilla con 4 camas ind.', precio: '130 – 180 €' },
-      { nombre: 'Cabeza Rubia',             foto: 'cabana5', max: 2, camas: '1 cama de 135',                                   precio: '50 – 80 €' }
+      { slug: 'montemalo', nombre: 'Montemalo',                foto: 'cabana1', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
+      { slug: 'las-albercas', nombre: 'Las Albercas',             foto: 'cabana2', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
+      { slug: 'puntal-del-enebrillo', nombre: 'Puntal del Enebrillo',     foto: 'cabana3', max: 4, camas: '2 habs · 2 camas de 135',                         precio: '90 – 150 €' },
+      { slug: 'barranco-de-las-iglesias', nombre: 'Barranco de las Iglesias', foto: 'cabana4', max: 8, camas: '2 pisos · 3 habs · buhardilla con 4 camas ind.', precio: '130 – 180 €' },
+      { slug: 'cabeza-rubia', nombre: 'Cabeza Rubia',             foto: 'cabana5', max: 2, camas: '1 cama de 135',                                   precio: '50 – 80 €' }
     ];
 
     const ALOJAMIENTOS = {
@@ -599,10 +611,11 @@
         </div>
         <div class="flex flex-1 flex-col p-5">
           <p class="text-xs uppercase tracking-widest text-wood-600">Cabaña</p>
-          <h4 class="font-serif text-2xl font-semibold leading-tight">${c.nombre}</h4>
+          <h4 class="font-serif text-2xl font-semibold leading-tight"><a href="${c.slug}.html" class="hover:text-wood-600">${c.nombre}</a></h4>
           <p class="mt-2 text-sm font-medium text-pine-800">👥 ${c.max} personas</p>
           <p class="mt-1 flex-1 text-sm text-pine-700/70">${c.camas} · Wi-Fi</p>
-          <button data-open-booking data-alojamiento="Cabaña ${c.nombre}" class="mt-5 w-full rounded-full bg-wood-500 py-3 font-semibold text-white transition hover:bg-wood-600">Reservar ahora</button>
+          <a href="${c.slug}.html" class="mt-5 block text-center text-sm font-semibold text-wood-600 hover:underline">Ver cabaña →</a>
+          <button data-open-booking data-alojamiento="Cabaña ${c.nombre}" class="mt-3 w-full rounded-full bg-wood-500 py-3 font-semibold text-white transition hover:bg-wood-600">Reservar ahora</button>
         </div>
       </article>`).join('');
 
