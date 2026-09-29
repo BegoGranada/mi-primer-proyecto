@@ -43,7 +43,7 @@ A partir de ese momento:
 | `alojamientos` | `id` (slug, igual que las páginas de la web: `montemalo`, `las-albercas`…), nombre, tipo, capacidad, precio base, orden, activo |
 | `temporadas` | nombre, desde, hasta (incluidos), color |
 | `tarifas` | precio por noche de cada alojamiento en cada temporada |
-| `reservas` | alojamiento, entrada, salida, personas, huésped (nombre, teléfono, email), `origen` (web · whatsapp · agente · telefono · email · manual), `estado` (pendiente · confirmada · cancelada), precio total, pagado, notas |
+| `reservas` | alojamiento, entrada, salida, personas, huésped (nombre, teléfono, email, `tipo_documento` DNI · NIE · Pasaporte y `documento`, obligatorio para confirmar), `origen` (web · whatsapp · agente · telefono · email · manual), `estado` (pendiente · confirmada · cancelada), precio total, pagado, notas |
 
 **Reglas que garantiza la base de datos** (aunque falle la app):
 - Dos reservas **confirmadas** del mismo alojamiento no pueden solaparse (el día de salida queda libre para la siguiente entrada).

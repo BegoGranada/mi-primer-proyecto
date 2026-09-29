@@ -130,7 +130,7 @@
       <section id="p-reservas" class="pantalla">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="font-serif text-3xl font-semibold">Reservas</h2>
-          <input id="buscar" type="search" placeholder="Buscar por nombre o teléfono…" class="w-full rounded-full border border-stone-150 bg-white px-5 py-3 sm:w-72" />
+          <input id="buscar" type="search" placeholder="Buscar por nombre, teléfono o DNI…" class="w-full rounded-full border border-stone-150 bg-white px-5 py-3 sm:w-72" />
         </div>
         <div id="filtros" class="scroll-x mt-4 flex gap-2 pb-1"></div>
         <div id="listaReservas" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
@@ -207,8 +207,18 @@
               <option value="pendiente">🟡 Pendiente</option><option value="confirmada">🟢 Confirmada</option><option value="cancelada">⚪ Cancelada</option>
             </select></label>
         </div>
-        <label class="block"><span class="text-sm font-medium">Nombre del huésped</span>
+        <label class="block"><span class="text-sm font-medium">Nombre y apellidos del huésped</span>
           <input name="nombre" required autocomplete="off" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
+        <!-- Documento de identidad: obligatorio para el registro de viajeros en España -->
+        <div class="grid grid-cols-[8rem_1fr] gap-3">
+          <label class="block"><span class="text-sm font-medium">Documento</span>
+            <select name="tipo_documento" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3">
+              <option value="DNI">DNI</option><option value="NIE">NIE</option><option value="Pasaporte">Pasaporte</option>
+            </select></label>
+          <label class="block"><span class="text-sm font-medium">Número <span id="docObligatorio" class="text-red-700">*</span></span>
+            <input name="documento" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="12345678Z" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 uppercase tracking-wider" /></label>
+        </div>
+        <p id="infoDocumento" class="-mt-2 text-xs text-pine-700/70">Obligatorio para confirmar la reserva (registro de viajeros).</p>
         <div class="grid grid-cols-2 gap-3">
           <label class="block"><span class="text-sm font-medium">Teléfono</span>
             <input name="telefono" type="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3" /></label>
@@ -272,6 +282,26 @@
   const toast = msg => { const t = $('#toast'); t.firstElementChild.textContent = msg; t.style.opacity = 1; clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, 2600); };
 
   /* =====================================================================
+     DOCUMENTO DE IDENTIDAD (DNI / NIE / Pasaporte)
+     DNI: 8 cifras + letra de control · NIE: X/Y/Z + 7 cifras + letra ·
+     Pasaporte: 5–20 letras o cifras. La letra de control se comprueba.
+     ===================================================================== */
+  const LETRAS_DNI = 'TRWAGMYFPDXBNJZSQVHLCKE';
+  function validarDocumento(tipo, numero) {
+    const v = String(numero || '').toUpperCase().replace(/[\s.-]/g, '');
+    if (!v) return { ok: false, v, msg: 'Falta el número de documento.' };
+    if (tipo === 'DNI') {
+      if (!/^\d{8}[A-Z]$/.test(v)) return { ok: false, v, msg: 'El DNI son 8 cifras y una letra (p. ej. 12345678Z).' };
+      if (LETRAS_DNI[+v.slice(0, 8) % 23] !== v[8]) return { ok: false, v, msg: 'La letra del DNI no es correcta: revisa el número.' };
+    } else if (tipo === 'NIE') {
+      if (!/^[XYZ]\d{7}[A-Z]$/.test(v)) return { ok: false, v, msg: 'El NIE es X, Y o Z + 7 cifras + letra (p. ej. X1234567L).' };
+      if (LETRAS_DNI[+('XYZ'.indexOf(v[0]) + v.slice(1, 8)) % 23] !== v[8]) return { ok: false, v, msg: 'La letra del NIE no es correcta: revisa el número.' };
+    } else if (!/^[A-Z0-9]{5,20}$/.test(v)) return { ok: false, v, msg: 'El pasaporte debe tener entre 5 y 20 letras o cifras.' };
+    return { ok: true, v };
+  }
+  const docCorto = r => r.documento ? `${r.tipo_documento || 'Doc.'} •••${r.documento.slice(-5)}` : '';
+
+  /* =====================================================================
      DATOS: dos "motores" con la misma interfaz
        · Supabase  → si config.js tiene URL y clave
        · Demo      → datos de ejemplo en localStorage
@@ -291,7 +321,7 @@
   ];
 
   const Demo = {
-    CLAVE: 'lospinos-gestor-demo-v1',
+    CLAVE: 'lospinos-gestor-demo-v2',   // v2: incluye documento de identidad
     cargar() {
       try { const d = JSON.parse(localStorage.getItem(this.CLAVE)); if (d && d.alojamientos) return d; } catch (e) {}
       return this.semilla();
@@ -305,18 +335,21 @@
         tarifas: ALOJ_BASE.map(a => ({ alojamiento_id: a[0], temporada_id: 1, precio_noche: a[5] })),
         reservas: []
       };
-      const R = (aloj, e, s, pers, nombre, tel, origen, estado, pagadoPct, notas) => {
+      const dni = n => String(n).padStart(8, '0') + LETRAS_DNI[n % 23];   // DNI de ejemplo con letra válida
+      const R = (aloj, e, s, pers, nombre, tel, origen, estado, pagadoPct, notas, doc = [null, null]) => {
         const entrada = sumar(h, e), salida = sumar(h, s);
         const total = precioEstancia(aloj, entrada, salida, d);
         d.reservas.push({ id: uuid(), alojamiento_id: aloj, entrada, salida, personas: pers, nombre, telefono: tel, email: '',
+          tipo_documento: doc[0], documento: doc[1],
           origen, estado, precio_total: total, pagado: Math.round(total * pagadoPct), notas: notas || '', creado_en: new Date().toISOString() });
       };
-      R('montemalo', -2, 2, 4, 'Familia García', '600111222', 'whatsapp', 'confirmada', 0.5, 'Llegan sobre las 18:00');
-      R('casa-los-pineros', 0, 3, 2, 'Lucía y Marcos', '611222333', 'telefono', 'confirmada', 1);
-      R('mirador-de-las-palomas', -3, 0, 4, 'Pedro Ruiz', '622333444', 'web', 'confirmada', 1);
-      R('barranco-de-las-iglesias', 1, 4, 8, 'Grupo amigos Úbeda', '633444555', 'telefono', 'confirmada', 0.3, 'Piden cuna');
-      R('las-albercas', 5, 8, 3, 'Carmen López', '644555666', 'email', 'confirmada', 0.5);
-      R('puntal-del-enebrillo', 18, 22, 4, 'Javier Moreno', '655666777', 'manual', 'confirmada', 0);
+      R('montemalo', -2, 2, 4, 'Familia García', '600111222', 'whatsapp', 'confirmada', 0.5, 'Llegan sobre las 18:00', ['DNI', dni(26134871)]);
+      R('casa-los-pineros', 0, 3, 2, 'Lucía y Marcos', '611222333', 'telefono', 'confirmada', 1, '', ['DNI', dni(48291630)]);
+      R('mirador-de-las-palomas', -3, 0, 4, 'Emma Schneider', '+49 151 2345678', 'web', 'confirmada', 1, 'Huéspedes alemanes', ['Pasaporte', 'C01X00T47']);
+      R('barranco-de-las-iglesias', 1, 4, 8, 'Grupo amigos Úbeda', '633444555', 'telefono', 'confirmada', 0.3, 'Piden cuna', ['DNI', dni(75093214)]);
+      R('las-albercas', 5, 8, 3, 'Carmen López', '644555666', 'email', 'confirmada', 0.5, '', ['NIE', 'X1234567L']);
+      R('puntal-del-enebrillo', 18, 22, 4, 'Javier Moreno', '655666777', 'manual', 'confirmada', 0, '', ['DNI', dni(30418562)]);
+      // Solicitudes de la web y del agente: llegan sin documento; se pide al confirmar
       R('cabeza-rubia', 10, 12, 2, 'Ana Martín', '666777888', 'web', 'pendiente', 0, 'Solicitud desde la web');
       R('el-senderista', 14, 17, 7, 'Club senderista Jaén', '677888999', 'agente', 'pendiente', 0, 'Solicitud recogida por el agente de WhatsApp');
       this.guardarTodo(d);
@@ -544,7 +577,7 @@
       return `<button data-filtro="${k}" class="shrink-0 rounded-full px-4 py-2 text-sm font-medium ${filtro === k ? 'bg-pine-700 text-white' : 'bg-white text-pine-800 shadow-soft'}">${t} <span class="opacity-60">${n}</span></button>`;
     }).join('');
     const q = $('#buscar').value.trim().toLowerCase(), fn = FILTROS.find(f => f[0] === filtro)[2];
-    const lista = D.reservas.filter(fn).filter(r => !q || `${r.nombre} ${r.telefono || ''} ${r.email || ''}`.toLowerCase().includes(q))
+    const lista = D.reservas.filter(fn).filter(r => !q || `${r.nombre} ${r.telefono || ''} ${r.email || ''} ${r.documento || ''}`.toLowerCase().includes(q))
       .sort((a, b) => filtro === 'pasadas' ? b.entrada.localeCompare(a.entrada) : a.entrada.localeCompare(b.entrada));
     $('#listaReservas').innerHTML = lista.length ? lista.map(r => {
       const a = alojamiento(r.alojamiento_id), n = noches(r.entrada, r.salida), [et, ec] = ESTADO[r.estado];
@@ -556,7 +589,8 @@
               <p class="truncate text-sm text-pine-700/70">${esc(a.nombre || r.alojamiento_id)}</p></div>
             <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${ec}">${et}</span>
           </div>
-          <p class="mt-3 text-sm font-medium">${fLarga(r.entrada)} → ${fLarga(r.salida)} · ${n} noche${n === 1 ? '' : 's'} · 👥 ${r.personas}</p>
+          <p class="mt-2 text-xs ${r.documento ? 'text-pine-700/70' : 'font-semibold text-red-700'}">${r.documento ? '🪪 ' + esc(docCorto(r)) : '⚠️ Falta DNI / pasaporte'}</p>
+          <p class="mt-2 text-sm font-medium">${fLarga(r.entrada)} → ${fLarga(r.salida)} · ${n} noche${n === 1 ? '' : 's'} · 👥 ${r.personas}</p>
           <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-pine-700/70">
             <span>${ORIGEN[r.origen] || r.origen}</span><span>Total ${euros(r.precio_total)}</span>
             ${r.estado === 'confirmada' && r.precio_total ? `<span class="${pendiente > 0 ? 'font-semibold text-wood-700' : 'text-pine-700'}">${pendiente > 0 ? 'Pendiente ' + euros(pendiente) : '✓ Pagado'}</span>` : ''}
@@ -579,6 +613,11 @@
     if (!c && !x) return;
     const r = D.reservas.find(y => y.id === (c || x).dataset[c ? 'confirmar' : 'rechazar']);
     if (x && !confirm(`¿Rechazar la solicitud de ${r.nombre}?`)) return;
+    if (c && !r.documento) {   // sin documento no se puede confirmar: se abre la ficha para añadirlo
+      abrirReserva(r); F.estado.value = 'confirmada';
+      const err = $('#errorReserva'); err.textContent = 'Para confirmar, añade el DNI / NIE / pasaporte del huésped y pulsa Guardar.'; err.classList.remove('hidden');
+      setTimeout(() => F.documento.focus(), 60); return;
+    }
     try { await API.guardarReserva({ ...r, estado: c ? 'confirmada' : 'cancelada' }); await recargar(true); toast(c ? '✓ Reserva confirmada' : 'Solicitud rechazada'); }
     catch (e) { toast('⚠️ ' + e.message); }
   });
@@ -615,14 +654,17 @@
     actualizarDerivados();
   }));
   F.precio_total.addEventListener('input', () => { precioManual = true; });
+  const EJEMPLO_DOC = { DNI: '12345678Z', NIE: 'X1234567L', Pasaporte: 'PAB123456' };
+  F.tipo_documento.addEventListener('change', () => { F.documento.placeholder = EJEMPLO_DOC[F.tipo_documento.value]; });
   $('#btnRecalcular').addEventListener('click', () => { precioManual = false; actualizarDerivados(); });
 
   function abrirReserva(r, previo = {}) {
     opcionesAloj(); F.reset(); precioManual = !!r;
     const v = r || { alojamiento_id: D.alojamientos[0]?.id, entrada: hoyS(), salida: sumar(hoyS(), 2), personas: 2, estado: 'confirmada', origen: 'manual', pagado: 0, ...previo };
-    ['id', 'alojamiento_id', 'entrada', 'salida', 'personas', 'estado', 'origen', 'nombre', 'telefono', 'email', 'precio_total', 'pagado', 'notas'].forEach(k => { F[k].value = v[k] ?? ''; });
+    if (!v.tipo_documento) v.tipo_documento = 'DNI';
+    ['id', 'alojamiento_id', 'entrada', 'salida', 'personas', 'estado', 'origen', 'nombre', 'tipo_documento', 'documento', 'telefono', 'email', 'precio_total', 'pagado', 'notas'].forEach(k => { F[k].value = v[k] ?? ''; });
     $('#hojaTitulo').textContent = r ? r.nombre : 'Nueva reserva';
-    $('#hojaSub').textContent = r ? `${ORIGEN[r.origen] || ''} · ${ESTADO[r.estado][0]}` : 'Reserva';
+    $('#hojaSub').textContent = r ? `${ORIGEN[r.origen] || ''} · ${ESTADO[r.estado][0]} · ${r.documento ? `🪪 ${r.tipo_documento} ${r.documento}` : '⚠️ Sin documento'}` : 'Reserva';
     $('#btnConfirmarGuardar').classList.toggle('hidden', r?.estado === 'confirmada' || (!r && v.estado === 'confirmada'));
     const acc = $('#accionesExistente'); acc.classList.toggle('hidden', !r); acc.classList.toggle('grid', !!r);
     if (r) {
@@ -642,13 +684,17 @@
   async function guardarFicha(forzarConfirmada) {
     const f = Object.fromEntries(new FormData(F)), err = $('#errorReserva'), a = alojamiento(f.alojamiento_id);
     let msg = '';
+    const nueva = !f.id, confirmando = forzarConfirmada || f.estado === 'confirmada';
+    const doc = validarDocumento(f.tipo_documento, f.documento);
     if (!f.nombre.trim()) msg = 'Escribe el nombre del huésped.';
+    else if ((nueva || confirmando || f.documento.trim()) && !doc.ok) msg = (confirmando && !f.documento.trim() ? 'Para confirmar la reserva hace falta el DNI / NIE / pasaporte del huésped. ' : '') + doc.msg;
     else if (!f.entrada || !f.salida || f.salida <= f.entrada) msg = 'La salida debe ser posterior a la entrada.';
     else if (!(+f.personas >= 1 && +f.personas <= a.capacidad)) msg = `${a.nombre} admite hasta ${a.capacidad} personas.`;
     if (msg) { err.textContent = msg; err.classList.remove('hidden'); return; }
     const r = {
       id: f.id || undefined, alojamiento_id: f.alojamiento_id, entrada: f.entrada, salida: f.salida, personas: +f.personas,
-      nombre: f.nombre.trim(), telefono: f.telefono.trim() || null, email: f.email.trim() || null, origen: f.origen,
+      nombre: f.nombre.trim(), tipo_documento: doc.ok ? f.tipo_documento : null, documento: doc.ok ? doc.v : null,
+      telefono: f.telefono.trim() || null, email: f.email.trim() || null, origen: f.origen,
       estado: forzarConfirmada ? 'confirmada' : f.estado, precio_total: f.precio_total === '' ? null : +f.precio_total,
       pagado: +f.pagado || 0, notas: f.notas.trim() || null
     };

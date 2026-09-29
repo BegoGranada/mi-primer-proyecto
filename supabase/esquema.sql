@@ -76,6 +76,10 @@ create table if not exists public.reservas (
   check (salida > entrada)
 );
 
+-- Documento de identidad del huésped (registro de viajeros en España). Se valida en el gestor.
+alter table public.reservas add column if not exists tipo_documento text check (tipo_documento in ('DNI', 'NIE', 'Pasaporte'));
+alter table public.reservas add column if not exists documento text;
+
 create index if not exists reservas_fechas_idx on public.reservas (entrada, salida);
 create index if not exists reservas_estado_idx on public.reservas (estado);
 
