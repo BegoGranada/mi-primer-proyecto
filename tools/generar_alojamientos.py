@@ -107,10 +107,19 @@ ALOJAMIENTOS = [
                       'de uno de los parajes de la sierra.',
                       'Dos habitaciones con cama de 135 y todo el equipamiento necesario para disfrutar '
                       'de una escapada tranquila en Arroyo Frío.']),
-    dict(slug='barranco-de-las-iglesias', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto='portada6.webp',
+    dict(slug='barranco-de-las-iglesias', nombre='Barranco de las Iglesias', tipo='Cabaña de madera', foto=['barranco1.webp', 'portada6.webp'],
          max=8, precio='130 – 180 €', habs='2 pisos · 3 habitaciones + buhardilla',
          camas=['3 habitaciones repartidas en 2 pisos', 'Buhardilla con 4 camas individuales'],
          wifi=True, extras=['Dos pisos'],
+         # Fotos reales de la web original (pestaña Red de la página de Barranco de las Iglesias).
+         # Su página carga barranco1.webp (como Puntal carga puntal_enebrillo1); portada6 de respaldo.
+         cabecera='cabecera_barranco.webp',
+         galeria=['20260517_111336.webp', '20260517_111431.webp', '20260326_134041.webp',
+                  '20260326_134219.webp', '20260326_134329.webp', '20260326_134146.webp',
+                  '20260517_111311.webp', '20260326_134215.webp', '20260326_134244.webp',
+                  '20260326_134455.webp', '20260326_134424.webp', '20260326_134102.webp',
+                  '20260517_111331.webp', '20260326_134325.webp', '20260326_134449.webp',
+                  '20260326_134109.webp', '20260326_134008.webp', '20260326_134013.webp'],
          descripcion=['Barranco de las Iglesias es nuestra cabaña más grande: dos pisos pensados para '
                       'grupos y familias numerosas de hasta 8 personas.',
                       'Tres habitaciones y una amplia buhardilla con 4 camas individuales, ideal para que '
