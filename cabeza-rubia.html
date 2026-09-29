@@ -328,15 +328,23 @@
 
     // Foto del hero: si no hay foto o no carga, queda la textura de madera con el logo
     (function () {
-      const box = $('#heroFoto'), src = box.dataset.src;
+      const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
       const logo = () => box.innerHTML = `<div class="grid h-full place-items-center"><img src="https://cabanaslospinos.com/wp-content/uploads/2026/06/logo_clp_vertical.webp" alt="" class="h-1/3 w-auto opacity-25 brightness-0 invert" onerror="this.remove()"></div>`;
-      if (!src) return logo();
+      if (!srcs.length) return logo();
       const img = new Image();
       img.alt = ACTUAL; img.className = 'h-full w-full object-cover';
       img.onload = () => { box.classList.remove('foto-pendiente'); box.replaceChildren(img); };
-      img.onerror = logo;
-      img.src = src;
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : logo();  // prueba la siguiente ruta
+      img.src = srcs.shift();
     })();
+
+    // Galería: cada foto prueba sus rutas candidatas; si ninguna carga, se retira
+    $$('[data-gal] img').forEach(img => {
+      const srcs = img.dataset.srcs.split('|'), enlace = img.closest('[data-gal]');
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : enlace.remove();
+      img.onload = () => enlace.href = img.currentSrc || img.src;
+      img.src = srcs.shift();
+    });
 
     // Logos de cabecera y pie: se muestran si cargan; si no, queda el texto
     $$('img[data-logo]').forEach(img => {

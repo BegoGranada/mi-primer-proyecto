@@ -17,6 +17,20 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 WP = 'https://cabanaslospinos.com/wp-content/uploads/2026/06/'
+UPLOADS = 'https://cabanaslospinos.com/wp-content/uploads/'
+# Carpetas donde se buscan las fotos cuyo nombre no lleva ruta (se prueban
+# en este orden en el navegador y se usa la primera que responda).
+CARPETAS = ['2026/07', '2026/06', '2026/05']
+
+
+def rutas(nombre):
+    """URL completa -> [URL]; 'AAAA/MM/archivo' -> [uploads/AAAA/MM/archivo];
+    'archivo' -> una URL candidata por cada carpeta de CARPETAS."""
+    if nombre.startswith('http'):
+        return [nombre]
+    if '/' in nombre:
+        return [UPLOADS + nombre]
+    return [f'{UPLOADS}{c}/{nombre}' for c in CARPETAS]
 LOGO_H = WP + 'logo_clp_trans_horizontal.webp'
 LOGO_V = WP + 'logo_clp_vertical.webp'
 
@@ -24,8 +38,10 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
 # registro: nº de registro oficial de turismo (opcional; se muestra si existe)
-# galeria: lista de URLs completas de fotos (opcional). Si está vacía, la
-#          sección 'Galería' no se genera. Admite rutas relativas a WP.
+# cabecera: foto específica para el hero (opcional; si no carga se usa 'foto')
+# galeria: lista de fotos (opcional). Si está vacía, la sección 'Galería' no
+#          se genera. Admite URL completa, 'AAAA/MM/archivo' o solo 'archivo'
+#          (se busca en CARPETAS). Las fotos que no carguen se retiran solas.
 # EDITAR: las descripciones pueden sustituirse por los textos originales.
 # ---------------------------------------------------------------------------
 ALOJAMIENTOS = [
@@ -35,9 +51,13 @@ ALOJAMIENTOS = [
                 'Habitaciones separadas'],
          wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
          registro='A/JA/00117',
-         # EDITAR: pega aquí las 6 URLs reales del mosaico de Montemalo
-         # (p. ej. WP + 'montemalo-1.webp' o la URL completa)
-         galeria=[],
+         # Fotos reales de la web original (pestaña Red de la página de Montemalo)
+         cabecera='cabecera_montemalo.webp',
+         galeria=['20260521_190342.webp', '20260517_113341.webp', '20260521_190842.webp',
+                  '20260521_190629.webp', '20260517_113328.webp', '20260521_190411.webp',
+                  '20260521_190420.webp', '20260521_190555.webp', '20260521_190619.webp',
+                  '20260521_190722.webp', '20260521_190658.webp', '20260521_190757.webp',
+                  '20260521_190423.webp'],
          # Texto REAL de la web original (extraído por Begoña, 29 sept 2026)
          descripcion=['Cabaña ideal para parejas (con opción de alojar a 4 personas en 2 camas de matrimonio '
                       'en 2 habitaciones separadas). Cuenta con 1 baño con bañera y ducha, vistas al jardín, TV, '
@@ -187,7 +207,8 @@ def cabecera(actual):
 
 def pagina(a, cfg, css):
     nombre_full = titulo_completo(a)
-    foto = WP + a['foto'] if a['foto'] else ''
+    fotos_hero = (rutas(a['cabecera']) if a.get('cabecera') else []) + ([WP + a['foto']] if a['foto'] else [])
+    foto = '|'.join(fotos_hero)
     servicios = COMUNES + ([('📶', 'Wi-Fi')] if a['wifi'] else []) \
         + [('✨', x) for x in a['extras']] \
         + [('🏊', 'Piscina (según temporada)'), ('🍖', 'Barbacoa exterior (según temporada)'),
@@ -210,13 +231,12 @@ def pagina(a, cfg, css):
                             'info': f'{o["max"]} personas · {o["habs"]} · {o["precio"]}/noche'}
                            for o in ALOJAMIENTOS], ensure_ascii=False)
     registro = a.get('registro')
-    fotos_gal = [u if u.startswith('http') else WP + u for u in a.get('galeria', [])]
+    fotos_gal = [rutas(u) for u in a.get('galeria', [])]
     items_gal = '\n'.join(
-        f'          <a href="{e(u)}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg shadow-md" data-gal>'
-        f'<img src="{e(u)}" alt="{e(nombre_full)} — foto {i}" loading="lazy" '
-        f'class="rounded-lg shadow-md hover:scale-105 transition-transform duration-300 object-cover w-full h-64" '
-        f'onerror="this.closest(\'[data-gal]\').remove()"></a>'
-        for i, u in enumerate(fotos_gal, 1))
+        f'          <a href="{e(c[0])}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg shadow-md" data-gal>'
+        f'<img data-srcs="{e("|".join(c))}" alt="{e(nombre_full)} — foto {i}" loading="lazy" '
+        f'class="rounded-lg shadow-md hover:scale-105 transition-transform duration-300 object-cover w-full h-64"></a>'
+        for i, c in enumerate(fotos_gal, 1))
     galeria = f'''
 
     <!-- =================== GALERÍA (fotos reales) =================== -->
@@ -418,15 +438,23 @@ def pagina(a, cfg, css):
 
     // Foto del hero: si no hay foto o no carga, queda la textura de madera con el logo
     (function () {{
-      const box = $('#heroFoto'), src = box.dataset.src;
+      const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
       const logo = () => box.innerHTML = `<div class="grid h-full place-items-center"><img src="{LOGO_V}" alt="" class="h-1/3 w-auto opacity-25 brightness-0 invert" onerror="this.remove()"></div>`;
-      if (!src) return logo();
+      if (!srcs.length) return logo();
       const img = new Image();
       img.alt = ACTUAL; img.className = 'h-full w-full object-cover';
       img.onload = () => {{ box.classList.remove('foto-pendiente'); box.replaceChildren(img); }};
-      img.onerror = logo;
-      img.src = src;
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : logo();  // prueba la siguiente ruta
+      img.src = srcs.shift();
     }})();
+
+    // Galería: cada foto prueba sus rutas candidatas; si ninguna carga, se retira
+    $$('[data-gal] img').forEach(img => {{
+      const srcs = img.dataset.srcs.split('|'), enlace = img.closest('[data-gal]');
+      img.onerror = () => srcs.length ? img.src = srcs.shift() : enlace.remove();
+      img.onload = () => enlace.href = img.currentSrc || img.src;
+      img.src = srcs.shift();
+    }});
 
     // Logos de cabecera y pie: se muestran si cargan; si no, queda el texto
     $$('img[data-logo]').forEach(img => {{
