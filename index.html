@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <!-- ============================================================
+       Cabañas de Madera Los Pinos · Arroyo Frío (Sierra de Cazorla)
+       Rediseño premium tipo landing page — HTML5 + Tailwind CSS (CDN)
+
+       Estructura:
+         1. <head>: metadatos, fuentes, Tailwind + tema
+         2. Header / navegación (escritorio + menú móvil)
+         3. #inicio        – Hero
+         4. #alojamientos  – 5 cabañas + Casa Los Pineros + Apartamento + Dúplex
+         5. Servicios comunes
+         6. Normas de la casa
+         7. #entorno       – Parque Natural + asesoramiento turístico
+         8. #noticias
+         9. #contacto
+        10. #reservas      – CTA + modal de reserva (email o WhatsApp)
+        11. Footer + scripts
+
+       FOTOS: todas las imágenes se configuran en el objeto FOTOS
+       (script al final). Pega ahí las URLs originales de
+       cabanaslospinos.com; los huecos vacíos muestran "Foto pendiente".
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</title>
+  <meta name="description" content="Cabañas de madera, casa, apartamento y dúplex en Arroyo Frío, Sierra de Cazorla. Baño privado, cocina, aire acondicionado, piscina y barbacoa. Desde 65 €/noche." />
+  <meta name="theme-color" content="#1a261b" />
+
+  <!-- Tipografías: Cormorant Garamond (títulos) + Inter (texto) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS vía CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Paleta propia: verdes de pinar, madera y crema
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pine:  { 50:'#f3f6f2', 100:'#e1e9df', 300:'#9fb59b', 500:'#4f6b4b', 700:'#2f4430', 800:'#243425', 900:'#1a261b' },
+            wood:  { 100:'#f4e7d7', 300:'#d9b48a', 500:'#b07a45', 600:'#96622f', 700:'#7a4e25' },
+            cream: '#faf6ef',
+            stone: { 150:'#ece7df' }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans:  ['Inter', 'system-ui', 'sans-serif']
+          },
+          boxShadow: { soft: '0 10px 40px -12px rgba(26,38,27,.25)' }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Aparición suave al hacer scroll */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+    .reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}}
+    /* Header con fondo al hacer scroll */
+    #siteHeader.scrolled{background:rgba(26,38,27,.92);backdrop-filter:blur(10px);box-shadow:0 4px 24px rgba(0,0,0,.18)}
+    /* Hueco de foto sin URL: textura de vetas de madera */
+    .foto-pendiente{background:
+      repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px),
+      linear-gradient(135deg,#2f4430,#7a4e25)}
+  </style>
+</head>
+
+<body class="bg-cream text-pine-900 font-sans antialiased">
+
+  <!-- =================== 2. HEADER / NAVEGACIÓN =================== -->
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-40 transition-all duration-300">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8" aria-label="Principal">
+      <a href="#inicio" class="flex items-center gap-2 text-cream">
+        <svg class="h-8 w-8 text-wood-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6 10h3l-4 6h4l-3 4h12l-3-4h4l-4-6h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
+        <span class="font-serif text-xl font-semibold leading-tight tracking-wide sm:text-2xl">Cabañas Los Pinos</span>
+      </a>
+
+      <!-- Menú escritorio -->
+      <ul class="hidden items-center gap-8 text-sm font-medium text-cream/90 lg:flex">
+        <li><a href="#inicio" class="hover:text-wood-300">Inicio</a></li>
+        <li class="group relative">
+          <a href="#alojamientos" class="inline-flex items-center gap-1 hover:text-wood-300">Alojamientos
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/></svg>
+          </a>
+          <div class="invisible absolute left-1/2 top-full w-72 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div class="rounded-xl bg-cream p-2 text-pine-900 shadow-soft">
+              <a href="#cabanas" class="block rounded-lg px-4 py-2 hover:bg-pine-50">5 Cabañas de Madera</a>
+              <a href="#casa-los-pineros" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Casa Los Pineros</a>
+              <a href="#apartamento-mirador" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Apartamento Mirador de Las Palomas</a>
+              <a href="#duplex-senderista" class="block rounded-lg px-4 py-2 hover:bg-pine-50">Dúplex El Senderista</a>
+            </div>
+          </div>
+        </li>
+        <li><a href="#entorno" class="hover:text-wood-300">Entorno</a></li>
+        <li><a href="#noticias" class="hover:text-wood-300">Noticias</a></li>
+        <li><a href="#contacto" class="hover:text-wood-300">Contacto</a></li>
+        <li><a href="#reservas" class="rounded-full bg-wood-500 px-5 py-2.5 text-white shadow-lg shadow-wood-700/30 transition hover:bg-wood-600">Reservas</a></li>
+      </ul>
+
+      <button id="menuBtn" class="rounded-lg p-2 text-cream lg:hidden" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menú">
+        <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </nav>
+
+    <!-- Menú móvil -->
+    <div id="mobileMenu" class="hidden border-t border-white/10 bg-pine-900/95 backdrop-blur lg:hidden">
+      <ul class="space-y-1 px-4 py-4 text-cream">
+        <li><a href="#inicio" class="block rounded-lg px-3 py-3 hover:bg-white/5">Inicio</a></li>
+        <li>
+          <a href="#alojamientos" class="block rounded-lg px-3 py-3 hover:bg-white/5">Alojamientos</a>
+          <ul class="ml-4 border-l border-white/10 pl-3 text-sm text-cream/80">
+            <li><a href="#cabanas" class="block py-2">5 Cabañas de Madera</a></li>
+            <li><a href="#casa-los-pineros" class="block py-2">Casa Los Pineros</a></li>
+            <li><a href="#apartamento-mirador" class="block py-2">Apartamento Mirador de Las Palomas</a></li>
+            <li><a href="#duplex-senderista" class="block py-2">Dúplex El Senderista</a></li>
+          </ul>
+        </li>
+        <li><a href="#entorno" class="block rounded-lg px-3 py-3 hover:bg-white/5">Entorno</a></li>
+        <li><a href="#noticias" class="block rounded-lg px-3 py-3 hover:bg-white/5">Noticias</a></li>
+        <li><a href="#contacto" class="block rounded-lg px-3 py-3 hover:bg-white/5">Contacto</a></li>
+        <li><a href="#reservas" class="block rounded-lg px-3 py-3 hover:bg-white/5">Reservas</a></li>
+        <li class="pt-2"><button data-open-booking class="w-full rounded-full bg-wood-500 px-5 py-3 font-semibold text-white">Reservar ahora</button></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- =================== 3. HERO / INICIO =================== -->
+    <section id="inicio" class="relative flex min-h-[100svh] items-center overflow-hidden">
+      <!-- Foto de fondo: FOTOS.hero -->
+      <div data-foto="hero" data-alt="Cabañas de Madera Los Pinos en Arroyo Frío" data-bg class="absolute inset-0"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-pine-900/70 via-pine-900/40 to-pine-900/85"></div>
+
+      <div class="relative mx-auto w-full max-w-7xl px-4 pb-20 pt-32 sm:px-6 lg:px-8">
+        <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[.2em] text-cream backdrop-blur">
+          Arroyo Frío · Sierra de Cazorla
+        </p>
+        <h1 class="max-w-3xl font-serif text-5xl font-semibold leading-[1.05] text-cream sm:text-6xl lg:text-7xl">
+          Cabañas de Madera <em class="text-wood-300">Los Pinos</em>
+        </h1>
+        <p class="mt-6 max-w-xl text-lg text-cream/85">
+          Cabañas, casa, apartamento y dúplex en pleno Parque Natural Sierra de Cazorla, Segura y Las Villas.
+          Piscina, barbacoa y la tranquilidad del pinar.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+          <button data-open-booking class="group inline-flex items-center justify-center gap-2 rounded-full bg-wood-500 px-8 py-4 text-base font-semibold text-white shadow-xl shadow-wood-700/40 transition hover:-translate-y-0.5 hover:bg-wood-600">
+            Reservar ahora
+            <svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+          </button>
+          <a href="#alojamientos" class="inline-flex items-center justify-center rounded-full border border-cream/40 px-8 py-4 text-base font-medium text-cream transition hover:bg-cream/10">
+            Ver alojamientos
+          </a>
+        </div>
+
+        <dl class="mt-16 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/15 pt-8 text-cream">
+          <div><dt class="text-xs uppercase tracking-widest text-cream/60">Alojamientos</dt><dd class="font-serif text-3xl sm:text-4xl">8</dd></div>
+          <div><dt class="text-xs uppercase tracking-widest text-cream/60">Capacidad</dt><dd class="font-serif text-3xl sm:text-4xl">2–8 pax</dd></div>
+          <div><dt class="text-xs uppercase tracking-widest text-cream/60">Desde</dt><dd class="font-serif text-3xl sm:text-4xl">65 €</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- =================== 4. ALOJAMIENTOS =================== -->
+    <section id="alojamientos" class="py-24 sm:py-32">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Alojamientos</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Elige tu refugio en la sierra</h2>
+          <p class="mt-4 text-pine-700/80">Cinco cabañas de madera, una casa, un apartamento y un dúplex. Todos con baño privado, cocina, aire acondicionado y calefacción o chimenea.</p>
+        </div>
+
+        <!-- Resumen comparativo de precios -->
+        <div class="reveal mt-14 overflow-hidden rounded-3xl border border-stone-150 bg-white shadow-soft">
+          <div class="grid divide-y divide-stone-150 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+            <a href="#cabanas" class="p-6 transition hover:bg-pine-50"><p class="text-xs uppercase tracking-widest text-pine-700/60">5 Cabañas de Madera</p><p class="mt-1 font-serif text-3xl font-semibold">65 – 180 €</p><p class="text-sm text-pine-700/70">2 a 8 personas · 1 a 3 hab.</p></a>
+            <a href="#casa-los-pineros" class="p-6 transition hover:bg-pine-50 sm:border-l sm:border-stone-150 lg:border-l-0"><p class="text-xs uppercase tracking-widest text-pine-700/60">Casa Los Pineros</p><p class="mt-1 font-serif text-3xl font-semibold">65 – 80 €</p><p class="text-sm text-pine-700/70">3 personas · 1 hab.</p></a>
+            <a href="#apartamento-mirador" class="p-6 transition hover:bg-pine-50"><p class="text-xs uppercase tracking-widest text-pine-700/60">Mirador de Las Palomas</p><p class="mt-1 font-serif text-3xl font-semibold">90 – 120 €</p><p class="text-sm text-pine-700/70">4 personas · 2 hab.</p></a>
+            <a href="#duplex-senderista" class="p-6 transition hover:bg-pine-50 sm:border-l sm:border-stone-150 lg:border-l-0"><p class="text-xs uppercase tracking-widest text-pine-700/60">Dúplex El Senderista</p><p class="mt-1 font-serif text-3xl font-semibold">70 – 180 €</p><p class="text-sm text-pine-700/70">8 personas · 4 hab.</p></a>
+          </div>
+          <p class="border-t border-stone-150 bg-pine-50/60 px-6 py-3 text-center text-xs text-pine-700/70">Precios por noche según alojamiento y temporada.</p>
+        </div>
+
+        <!-- 4a. Las 5 cabañas de madera -->
+        <div id="cabanas" class="mt-24 scroll-mt-28">
+          <div class="reveal mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div class="max-w-xl">
+              <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">El alma del complejo</p>
+              <h3 class="mt-2 font-serif text-4xl font-semibold">5 Cabañas de Madera</h3>
+              <p class="mt-3 text-pine-700/85">Cabañas tranquilas y acogedoras entre pinos, de 1 a 3 habitaciones y para 2 a 8 personas. Las únicas con Wi-Fi del complejo.</p>
+              <ul class="mt-5 flex flex-wrap gap-2 text-sm" data-features="Baño privado,Cocina,TV,Wi-Fi,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
+            </div>
+            <div class="shrink-0 rounded-2xl bg-pine-800 px-6 py-4 text-cream">
+              <span class="text-xs uppercase tracking-widest text-cream/60">Precio por noche</span>
+              <p class="font-serif text-3xl">65 € – 180 €</p>
+              <span class="text-xs text-cream/60">2 a 8 personas</span>
+            </div>
+          </div>
+
+          <!-- Tarjetas de las 5 cabañas, generadas desde CABANAS (script) -->
+          <div id="cabanasGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5"></div>
+        </div>
+
+        <!-- 4b. Alojamientos singulares -->
+        <div class="mt-28 space-y-24">
+
+          <!-- Casa Los Pineros -->
+          <article id="casa-los-pineros" class="reveal grid scroll-mt-28 items-center gap-10 lg:grid-cols-2">
+            <div class="relative">
+              <div data-foto="casaPineros" data-alt="Casa Los Pineros con terraza" class="aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+              <span class="absolute left-5 top-5 rounded-full bg-cream/95 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-pine-800">Casa con terraza</span>
+            </div>
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">3 personas · 2 adultos + 1 niño · 1 habitación</p>
+              <h3 class="mt-2 font-serif text-4xl font-semibold">Casa ‘Los Pineros’</h3>
+              <p class="mt-4 text-pine-700/85">Una casa íntima con terraza propia, pensada para parejas o pequeñas familias que buscan desconectar entre pinos.</p>
+              <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Terraza,Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
+              <div class="mt-8 flex flex-wrap items-center gap-5">
+                <button data-open-booking data-alojamiento="Casa Los Pineros" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <p><span class="font-serif text-3xl font-semibold">65 – 80 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Apartamento Mirador de Las Palomas -->
+          <article id="apartamento-mirador" class="reveal grid scroll-mt-28 items-center gap-10 lg:grid-cols-2">
+            <div class="relative lg:order-2">
+              <div data-foto="apartamentoMirador" data-alt="Apartamento Mirador de Las Palomas con terraza" class="aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+              <span class="absolute left-5 top-5 rounded-full bg-cream/95 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-pine-800">Apartamento con terraza</span>
+            </div>
+            <div class="lg:order-1">
+              <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">4 personas · 2 habitaciones</p>
+              <h3 class="mt-2 font-serif text-4xl font-semibold">Apartamento ‘Mirador de Las Palomas’</h3>
+              <p class="mt-4 text-pine-700/85">Toma su nombre del célebre mirador de la sierra. Un apartamento con terraza, amplio y luminoso, ideal para familias o dos parejas.</p>
+              <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Terraza,Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
+              <div class="mt-8 flex flex-wrap items-center gap-5">
+                <button data-open-booking data-alojamiento="Apartamento Mirador de Las Palomas" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <p><span class="font-serif text-3xl font-semibold">90 – 120 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dúplex El Senderista -->
+          <article id="duplex-senderista" class="reveal grid scroll-mt-28 items-center gap-10 lg:grid-cols-2">
+            <div class="relative">
+              <div data-foto="duplexSenderista" data-alt="Dúplex El Senderista" class="aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+              <span class="absolute left-5 top-5 rounded-full bg-cream/95 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-pine-800">Dúplex</span>
+            </div>
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">8 personas · 4 habitaciones</p>
+              <h3 class="mt-2 font-serif text-4xl font-semibold">Dúplex ‘El Senderista’</h3>
+              <p class="mt-4 text-pine-700/85">Nuestro alojamiento más grande: dos plantas y cuatro habitaciones para grupos y familias numerosas que vienen a recorrer las rutas del Parque Natural.</p>
+              <ul class="mt-6 flex flex-wrap gap-2 text-sm" data-features="Baño privado,Cocina,TV,Aire acondicionado,Calefacción o chimenea,Nevera,Lavadora,Microondas"></ul>
+              <div class="mt-8 flex flex-wrap items-center gap-5">
+                <button data-open-booking data-alojamiento="Dúplex El Senderista" class="rounded-full bg-wood-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-wood-700/30 transition hover:-translate-y-0.5 hover:bg-wood-600">Reservar ahora</button>
+                <p><span class="font-serif text-3xl font-semibold">70 – 180 €</span> <span class="text-sm text-pine-700/70">/ noche</span></p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 5. SERVICIOS COMUNES =================== -->
+    <section class="bg-pine-800 py-24 text-cream sm:py-28">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal max-w-2xl">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-300">Servicios</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Todo lo que necesitas, nada que sobre</h2>
+          <p class="mt-4 text-cream/75">Incluido en todos los alojamientos:</p>
+        </div>
+        <ul id="serviciosGrid" class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4"></ul>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-3">
+          <div class="reveal rounded-2xl border border-wood-300/30 bg-wood-500/10 p-6">
+            <p class="text-3xl" aria-hidden="true">📶</p>
+            <p class="mt-3 font-semibold">Wi-Fi</p>
+            <p class="text-sm text-cream/70">Disponible solo en las cabañas.</p>
+          </div>
+          <div class="reveal rounded-2xl border border-wood-300/30 bg-wood-500/10 p-6">
+            <p class="text-3xl" aria-hidden="true">🏊 🍖</p>
+            <p class="mt-3 font-semibold">Piscina y barbacoa exterior</p>
+            <p class="text-sm text-cream/70">Sujeto a temporada.</p>
+          </div>
+          <div class="reveal rounded-2xl border border-wood-300/30 bg-wood-500/10 p-6">
+            <p class="text-3xl" aria-hidden="true">🧭</p>
+            <p class="mt-3 font-semibold">Asesoramiento turístico</p>
+            <p class="text-sm text-cream/70">Rutas, aventura y gastronomía de la sierra.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 6. NORMAS DE LA CASA =================== -->
+    <section class="py-24 sm:py-28">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Normas de la casa</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Para una estancia tranquila</h2>
+        </div>
+        <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="reveal rounded-3xl border border-stone-150 bg-white p-7 shadow-soft">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-pine-50 text-pine-700">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+            </div>
+            <p class="text-xs uppercase tracking-widest text-pine-700/60">Entrada</p>
+            <p class="font-serif text-4xl font-semibold">15:00 h</p>
+          </div>
+          <div class="reveal rounded-3xl border border-stone-150 bg-white p-7 shadow-soft">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-pine-50 text-pine-700">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            </div>
+            <p class="text-xs uppercase tracking-widest text-pine-700/60">Salida</p>
+            <p class="font-serif text-4xl font-semibold">10:00 h</p>
+          </div>
+          <div class="reveal rounded-3xl border border-red-200 bg-red-50/60 p-7">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-red-100 text-red-700">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M5.6 5.6l12.8 12.8"/></svg>
+            </div>
+            <p class="text-xs uppercase tracking-widest text-red-800/70">Mascotas</p>
+            <p class="font-serif text-3xl font-semibold text-red-900">No se aceptan</p>
+          </div>
+          <div class="reveal rounded-3xl border border-red-200 bg-red-50/60 p-7">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-red-100 text-red-700">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 15h13v3H3zM18 15h1v3h-1zM21 15v3M18 12c0-2 2-2 2-4M3 3l18 18"/></svg>
+            </div>
+            <p class="text-xs uppercase tracking-widest text-red-800/70">Tabaco</p>
+            <p class="font-serif text-3xl font-semibold text-red-900">No se permite fumar dentro</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 7. ENTORNO =================== -->
+    <section id="entorno" class="relative overflow-hidden bg-stone-150 py-24 sm:py-32">
+      <div class="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+        <div class="reveal">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Entorno</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">En el corazón de la Sierra de Cazorla</h2>
+          <p class="mt-6 text-pine-700/85">
+            Arroyo Frío (La Iruela, Jaén) está en pleno Parque Natural Sierra de Cazorla, Segura y Las Villas,
+            el espacio protegido más grande de España. Te asesoramos para que aproveches cada día: rutas, aventura y gastronomía.
+          </p>
+          <ul class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🥾</span><p class="mt-2 font-semibold">Rutas</p><p class="text-sm text-pine-700/70">Senderos del Parque Natural</p></li>
+            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🧗</span><p class="mt-2 font-semibold">Aventura</p><p class="text-sm text-pine-700/70">Actividades en la naturaleza</p></li>
+            <li class="rounded-2xl bg-white p-5 shadow-soft"><span class="text-2xl" aria-hidden="true">🍷</span><p class="mt-2 font-semibold">Gastronomía</p><p class="text-sm text-pine-700/70">Cocina serrana de Jaén</p></li>
+          </ul>
+        </div>
+        <div class="reveal grid grid-cols-2 gap-4">
+          <div data-foto="entorno1" data-alt="Entorno de Arroyo Frío" class="aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+          <div data-foto="entorno2" data-alt="Sierra de Cazorla" class="mt-12 aspect-[3/4] w-full overflow-hidden rounded-3xl shadow-soft"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 8. NOTICIAS =================== -->
+    <!-- EDITAR: sustituir por las entradas reales del apartado Noticias -->
+    <section id="noticias" class="py-24 sm:py-32">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-600">Noticias</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Novedades de Los Pinos</h2>
+        </div>
+        <div class="mt-12 grid gap-6 md:grid-cols-3">
+          <article class="reveal rounded-3xl border border-stone-150 bg-white p-7 shadow-soft">
+            <p class="text-xs uppercase tracking-widest text-wood-600">Temporada</p>
+            <h3 class="mt-2 font-serif text-2xl font-semibold">Piscina y barbacoa</h3>
+            <p class="mt-2 text-sm text-pine-700/75">Disponibles según temporada. Pregúntanos las fechas al reservar.</p>
+          </article>
+          <article class="reveal rounded-3xl border border-stone-150 bg-white p-7 shadow-soft">
+            <p class="text-xs uppercase tracking-widest text-wood-600">Alojamientos</p>
+            <h3 class="mt-2 font-serif text-2xl font-semibold">Dúplex El Senderista</h3>
+            <p class="mt-2 text-sm text-pine-700/75">Cuatro habitaciones para grupos de hasta 8 personas.</p>
+          </article>
+          <article class="reveal rounded-3xl border border-stone-150 bg-white p-7 shadow-soft">
+            <p class="text-xs uppercase tracking-widest text-wood-600">Reserva directa</p>
+            <h3 class="mt-2 font-serif text-2xl font-semibold">Reserva sin intermediarios</h3>
+            <p class="mt-2 text-sm text-pine-700/75">Escríbenos o llámanos y te atendemos personalmente.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 9. CONTACTO =================== -->
+    <section id="contacto" class="bg-pine-900 py-24 text-cream sm:py-28">
+      <div class="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <div class="reveal">
+          <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-300">Contacto</p>
+          <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Hablemos</h2>
+          <p class="mt-4 text-cream/75">Te respondemos personalmente para ayudarte a elegir el alojamiento ideal.</p>
+        </div>
+        <div class="reveal grid gap-5 sm:grid-cols-3 lg:col-span-2">
+          <a href="tel:+34686235888" class="rounded-3xl border border-white/10 bg-white/5 p-7 transition hover:border-wood-300/60 hover:bg-white/10">
+            <p class="text-xs uppercase tracking-widest text-cream/60">Teléfono</p>
+            <p class="mt-3 font-serif text-2xl">686 23 58 88</p>
+          </a>
+          <a href="mailto:info@cabanaslospinos.com" class="rounded-3xl border border-white/10 bg-white/5 p-7 transition hover:border-wood-300/60 hover:bg-white/10">
+            <p class="text-xs uppercase tracking-widest text-cream/60">Email</p>
+            <p class="mt-3 break-all font-serif text-2xl">info@cabanaslospinos.com</p>
+          </a>
+          <div class="rounded-3xl border border-white/10 bg-white/5 p-7">
+            <p class="text-xs uppercase tracking-widest text-cream/60">Ubicación</p>
+            <p class="mt-3 font-serif text-2xl">Arroyo Frío</p>
+            <p class="mt-1 text-sm text-cream/60">Sierra de Cazorla (Jaén)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== 10. RESERVAS (CTA) =================== -->
+    <section id="reservas" class="relative overflow-hidden py-24 sm:py-32">
+      <div data-foto="reservas" data-alt="" data-bg class="absolute inset-0"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-wood-700/95 to-pine-900/85"></div>
+      <div class="reveal relative mx-auto max-w-3xl px-4 text-center text-cream sm:px-6">
+        <p class="text-sm font-semibold uppercase tracking-[.25em] text-wood-100">Reservas</p>
+        <h2 class="mt-3 font-serif text-4xl font-semibold sm:text-6xl">Tu escapada a la sierra empieza aquí</h2>
+        <p class="mx-auto mt-5 max-w-xl text-cream/85">Reserva directa con nosotros: trato cercano y respuesta personal.</p>
+        <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+          <button data-open-booking class="rounded-full bg-cream px-9 py-4 text-base font-semibold text-pine-900 shadow-2xl transition hover:-translate-y-0.5 hover:bg-white">Reservar ahora</button>
+          <a href="https://wa.me/34686235888" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full border border-cream/50 px-9 py-4 text-base font-medium transition hover:bg-cream/10">WhatsApp directo</a>
+          <a href="tel:+34686235888" class="inline-flex items-center justify-center rounded-full border border-cream/50 px-9 py-4 text-base font-medium transition hover:bg-cream/10">Llamar</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =================== 11. FOOTER =================== -->
+  <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
+      <p>Entrada 15:00 h · Salida 10:00 h · No mascotas · No fumar dentro</p>
+    </div>
+  </footer>
+
+  <!-- Botón flotante de reserva (solo móvil) -->
+  <button data-open-booking class="fixed inset-x-4 bottom-4 z-30 rounded-full bg-wood-500 py-4 font-semibold text-white shadow-2xl shadow-wood-700/40 sm:hidden">Reservar ahora</button>
+
+  <!-- =================== MODAL DE RESERVA =================== -->
+  <div id="bookingModal" class="fixed inset-0 z-50 hidden items-end justify-center bg-pine-900/70 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+    <div class="max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-cream p-6 shadow-2xl sm:rounded-3xl sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[.25em] text-wood-600">Solicitud de reserva</p>
+          <h2 id="bookingTitle" class="mt-1 font-serif text-3xl font-semibold">Reserva tu estancia</h2>
+        </div>
+        <button data-close-booking class="rounded-full p-2 text-pine-700 hover:bg-pine-50" aria-label="Cerrar">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <form id="bookingForm" class="mt-6 space-y-4" novalidate>
+        <label class="block">
+          <span class="text-sm font-medium">Alojamiento</span>
+          <select name="alojamiento" id="fAlojamiento" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></select>
+          <span id="fInfo" class="mt-1 block text-xs text-pine-700/70"></span>
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Entrada</span>
+            <input type="date" name="entrada" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+          <label class="block"><span class="text-sm font-medium">Salida</span>
+            <input type="date" name="salida" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-3 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="text-sm font-medium">Personas</span>
+            <input type="number" name="personas" id="fPersonas" min="1" max="8" value="2" required class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+          <label class="block"><span class="text-sm font-medium">Teléfono</span>
+            <input type="tel" name="telefono" required autocomplete="tel" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        </div>
+        <label class="block"><span class="text-sm font-medium">Nombre</span>
+          <input type="text" name="nombre" required autocomplete="name" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300" /></label>
+        <label class="block"><span class="text-sm font-medium">Comentarios <span class="text-pine-700/50">(opcional)</span></span>
+          <textarea name="comentarios" rows="2" class="mt-1 w-full rounded-xl border border-stone-150 bg-white px-4 py-3 focus:border-wood-500 focus:outline-none focus:ring-2 focus:ring-wood-300"></textarea></label>
+
+        <p class="rounded-xl bg-pine-50 px-4 py-3 text-xs text-pine-700">Entrada 15:00 h · Salida 10:00 h · No se aceptan mascotas · No se permite fumar dentro</p>
+        <p id="formError" class="hidden text-sm font-medium text-red-700"></p>
+
+        <div class="grid gap-3 pt-2 sm:grid-cols-2">
+          <button type="submit" data-via="whatsapp" class="rounded-full bg-pine-700 px-6 py-3.5 font-semibold text-white transition hover:bg-pine-800">Enviar por WhatsApp</button>
+          <button type="submit" data-via="email" class="rounded-full bg-wood-500 px-6 py-3.5 font-semibold text-white transition hover:bg-wood-600">Enviar por email</button>
+        </div>
+        <p class="text-center text-xs text-pine-700/60">O llámanos al <a href="tel:+34686235888" class="font-semibold underline">686 23 58 88</a></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================== SCRIPTS =================== -->
+  <script>
+    /* =============================================================
+       FOTOS — pega aquí las URLs ORIGINALES de cabanaslospinos.com
+       (p. ej. "https://cabanaslospinos.com/wp-content/uploads/....jpg").
+       Si una clave está vacía se muestra un marco "Foto pendiente".
+       ============================================================= */
+    const FOTOS = {
+      hero:               '',
+      cabana1:            '',
+      cabana2:            '',
+      cabana3:            '',
+      cabana4:            '',
+      cabana5:            '',
+      casaPineros:        '',
+      apartamentoMirador: '',
+      duplexSenderista:   '',
+      entorno1:           '',
+      entorno2:           '',
+      reservas:           ''
+    };
+
+    /* ---------- Alojamientos (datos oficiales) ----------
+       EDITAR: si cada cabaña tiene nombre propio, cámbialo en "nombre". */
+    const CABANAS = [1, 2, 3, 4, 5].map(n => ({ nombre: `Cabaña ${n}`, foto: `cabana${n}` }));
+
+    const ALOJAMIENTOS = {
+      'Cabañas de Madera':                  { max: 8, info: '2 a 8 personas · 1 a 3 hab. · 65 – 180 €/noche' },
+      'Casa Los Pineros':                   { max: 3, info: '3 personas (2 adultos + 1 niño) · 1 hab. · 65 – 80 €/noche' },
+      'Apartamento Mirador de Las Palomas': { max: 4, info: '4 personas · 2 hab. · 90 – 120 €/noche' },
+      'Dúplex El Senderista':               { max: 8, info: '8 personas · 4 hab. · 70 – 180 €/noche' }
+    };
+    CABANAS.forEach(c => ALOJAMIENTOS[c.nombre] = ALOJAMIENTOS['Cabañas de Madera']);
+
+    /* ---------- Servicios comunes a todos los alojamientos ---------- */
+    const SERVICIOS = [
+      ['🛁','Baño privado'], ['🍳','Cocina'], ['📺','TV'], ['❄️','Aire acondicionado'],
+      ['🔥','Calefacción o chimenea'], ['🧊','Nevera'], ['🧺','Lavadora'], ['♨️','Microondas']
+    ];
+
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+    // Tarjetas de las 5 cabañas
+    $('#cabanasGrid').innerHTML = CABANAS.map(c => `
+      <article class="reveal group flex flex-col overflow-hidden rounded-3xl bg-white shadow-soft transition hover:-translate-y-1">
+        <div data-foto="${c.foto}" data-alt="${c.nombre}, cabaña de madera" class="aspect-[4/3] w-full overflow-hidden"></div>
+        <div class="flex flex-1 flex-col p-5">
+          <h4 class="font-serif text-2xl font-semibold">${c.nombre}</h4>
+          <p class="mt-1 text-sm text-pine-700/70">Cabaña de madera · Wi-Fi</p>
+          <button data-open-booking data-alojamiento="${c.nombre}" class="mt-5 w-full rounded-full bg-wood-500 py-3 font-semibold text-white transition hover:bg-wood-600">Reservar ahora</button>
+        </div>
+      </article>`).join('');
+
+    // Cuadrícula de servicios
+    $('#serviciosGrid').innerHTML = SERVICIOS.map(([i, t]) => `
+      <li class="reveal rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
+        <span class="text-3xl" aria-hidden="true">${i}</span><p class="mt-3 text-sm font-medium">${t}</p>
+      </li>`).join('');
+
+    // data-features="a,b,c" → etiquetas
+    $$('[data-features]').forEach(ul => {
+      ul.innerHTML = ul.dataset.features.split(',').map(f =>
+        `<li class="rounded-full bg-pine-50 px-3 py-1 font-medium text-pine-700">${f.trim()}</li>`).join('');
+    });
+
+    // Pinta cada hueco de foto: <img> si hay URL, marco "Foto pendiente" si no
+    $$('[data-foto]').forEach(el => {
+      const url = FOTOS[el.dataset.foto];
+      if (url) {
+        el.innerHTML = `<img src="${url}" alt="${el.dataset.alt || ''}" loading="${el.hasAttribute('data-bg') ? 'eager' : 'lazy'}"
+          class="h-full w-full object-cover transition duration-700 group-hover:scale-105" />`;
+      } else {
+        el.classList.add('foto-pendiente', 'grid', 'place-items-center');
+        if (!el.hasAttribute('data-bg')) el.innerHTML =
+          `<span class="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-widest text-cream/70">Foto pendiente</span>`;
+      }
+    });
+
+    // Selector del formulario
+    const sel = $('#fAlojamiento');
+    sel.innerHTML = [...CABANAS.map(c => c.nombre), 'Casa Los Pineros', 'Apartamento Mirador de Las Palomas', 'Dúplex El Senderista']
+      .map(a => `<option>${a}</option>`).join('');
+    const syncInfo = () => {
+      const a = ALOJAMIENTOS[sel.value];
+      $('#fInfo').textContent = a.info;
+      $('#fPersonas').max = a.max;
+    };
+    sel.addEventListener('change', syncInfo); syncInfo();
+
+    /* ---------- Menú móvil ---------- */
+    const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu');
+    menuBtn.addEventListener('click', () => {
+      const open = !mobileMenu.classList.toggle('hidden');
+      menuBtn.setAttribute('aria-expanded', open);
+    });
+    $$('#mobileMenu a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+    /* ---------- Header al hacer scroll ---------- */
+    const header = $('#siteHeader');
+    const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+    /* ---------- Modal de reserva ---------- */
+    const modal = $('#bookingModal');
+    const openModal = (alojamiento) => {
+      if (alojamiento) { sel.value = alojamiento; syncInfo(); }
+      mobileMenu.classList.add('hidden');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => $('input[name="entrada"]').focus(), 50);
+    };
+    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; };
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('[data-open-booking]');
+      if (btn) { e.preventDefault(); openModal(btn.dataset.alojamiento); }
+      if (e.target.closest('[data-close-booking]') || e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Fecha mínima = hoy
+    const now = new Date();
+    const hoy = new Date(now - now.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+    $$('#bookingForm input[type="date"]').forEach(i => i.min = hoy);
+
+    // Envío: compone el mensaje y abre WhatsApp o el correo
+    $('#bookingForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(e.target));
+      const max = ALOJAMIENTOS[d.alojamiento].max;
+      let error = '';
+      if (!d.entrada || !d.salida || d.salida <= d.entrada) error = 'Indica fechas válidas: la salida debe ser posterior a la entrada.';
+      else if (!(+d.personas >= 1 && +d.personas <= max)) error = `Este alojamiento admite hasta ${max} personas.`;
+      else if (!d.nombre.trim() || !d.telefono.trim()) error = 'Indica tu nombre y teléfono.';
+      $('#formError').textContent = error;
+      $('#formError').classList.toggle('hidden', !error);
+      if (error) return;
+
+      const msg = `Hola, me gustaría reservar:\n• Alojamiento: ${d.alojamiento}\n• Entrada: ${d.entrada} (15:00 h)\n• Salida: ${d.salida} (10:00 h)\n• Personas: ${d.personas}\n• Nombre: ${d.nombre}\n• Teléfono: ${d.telefono}` + (d.comentarios ? `\n• Comentarios: ${d.comentarios}` : '');
+      if ((e.submitter && e.submitter.dataset.via) === 'whatsapp') {
+        window.open(`https://wa.me/34686235888?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+      } else {
+        location.href = `mailto:info@cabanaslospinos.com?subject=${encodeURIComponent('Solicitud de reserva – ' + d.alojamiento)}&body=${encodeURIComponent(msg)}`;
+      }
+    });
+
+    /* ---------- Animación de aparición ---------- */
+    const io = new IntersectionObserver(entries => entries.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
+    }), { threshold: 0.12 });
+    $$('.reveal').forEach(el => io.observe(el));
+
+    $('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
