@@ -20,6 +20,9 @@ WP = 'https://cabanaslospinos.com/wp-content/uploads/2026/06/'
 UPLOADS = 'https://cabanaslospinos.com/wp-content/uploads/'
 # Carpetas donde se buscan las fotos cuyo nombre no lleva ruta (se prueban
 # en este orden en el navegador y se usa la primera que responda).
+# Nº de registro oficial de turismo: es el mismo para todo el complejo (confirmado por Begoña)
+REGISTRO = 'A/JA/00117'
+
 CARPETAS = ['2026/07', '2026/06', '2026/05', '2026/04', '2026/03']
 
 
@@ -51,7 +54,7 @@ LOGO_V = WP + 'logo_clp_vertical.webp'
 # ---------------------------------------------------------------------------
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
 # foto: nombre del archivo en wp-content/uploads/2026/06/ o None si no hay
-# registro: nº de registro oficial de turismo (opcional; se muestra si existe)
+# registro: nº de registro propio (opcional; por defecto REGISTRO, común a todo el complejo)
 # lema: título de la sección de texto, como en la web original (opcional)
 # cabecera: foto específica para el hero (opcional; si no carga se usa 'foto')
 # foto: nombre o lista de nombres de la foto principal (se prueban en orden)
@@ -66,7 +69,6 @@ ALOJAMIENTOS = [
          camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
                 'Habitaciones separadas'],
          wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
-         registro='A/JA/00117',
          # Fotos reales de la web original (pestaña Red de la página de Montemalo)
          cabecera='cabecera_montemalo.webp',
          galeria=['20260521_190342.webp', '20260517_113341.webp', '20260521_190842.webp',
@@ -84,7 +86,6 @@ ALOJAMIENTOS = [
          camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
                 'Habitaciones separadas'],
          wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
-         registro='A/JA/00117',
          lema='Paz y relax para 4 personas',
          # Fotos reales de la web original (pestaña Red de la página de Las Albercas)
          cabecera='cabecera_lasAlbercas.webp',
@@ -103,7 +104,6 @@ ALOJAMIENTOS = [
          camas=['Habitación 1: cama de matrimonio (135 cm)', 'Habitación 2: cama de matrimonio (135 cm)',
                 'Habitaciones separadas'],
          wifi=True, extras=['Baño con bañera y ducha', 'Vistas al jardín', 'Terraza privada', 'Horno-microondas'],
-         registro='A/JA/00117',
          lema='Disfrute de la Sierra de Cazorla',
          # Fotos reales de la web original (pestaña Red de la página de Puntal del Enebrillo).
          # Su página carga puntal_enebrillo1.webp donde Montemalo carga portada2 y
@@ -322,7 +322,7 @@ def pagina(a, cfg, css):
     datos_js = json.dumps([{'nombre': titulo_completo(o), 'max': o['max'],
                             'info': f'{o["max"]} personas · {o["habs"]} · {o["precio"]}/noche'}
                            for o in ALOJAMIENTOS], ensure_ascii=False)
-    registro = a.get('registro')
+    registro = a.get('registro', REGISTRO)
     fotos_gal = [rutas(u) for u in a.get('galeria', [])]
     items_gal = '\n'.join(
         f'          <a href="{e(c[0])}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg shadow-md" data-gal>'
