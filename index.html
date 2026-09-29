@@ -83,9 +83,11 @@
   <!-- =================== 2. HEADER / NAVEGACIÓN =================== -->
   <header id="siteHeader" class="fixed inset-x-0 top-0 z-40 transition-all duration-300">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8" aria-label="Principal">
-      <a href="#inicio" class="flex items-center gap-2 text-cream">
-        <svg class="h-8 w-8 text-wood-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6 10h3l-4 6h4l-3 4h12l-3-4h4l-4-6h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
-        <span class="font-serif text-xl font-semibold leading-tight tracking-wide sm:text-2xl">Cabañas Los Pinos</span>
+      <a href="#inicio" class="flex items-center gap-2 text-cream" aria-label="Cabañas de Madera Los Pinos — Inicio">
+        <!-- Logo real (FOTOS.logoHorizontal); si no carga, se muestra el pino + texto -->
+        <img data-logo="logoHorizontal" alt="Cabañas de Madera Los Pinos" class="hidden h-10 w-auto brightness-0 invert sm:h-12" />
+        <svg data-logo-fallback class="h-8 w-8 text-wood-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6 10h3l-4 6h4l-3 4h12l-3-4h4l-4-6h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
+        <span data-logo-fallback class="font-serif text-xl font-semibold leading-tight tracking-wide sm:text-2xl">Cabañas Los Pinos</span>
       </a>
 
       <!-- Menú escritorio -->
@@ -448,6 +450,7 @@
   <!-- =================== 11. FOOTER =================== -->
   <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
+      <img data-logo="logoVertical" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
       <p>Entrada 15:00 h · Salida 10:00 h · No mascotas · No fumar dentro</p>
     </div>
@@ -531,27 +534,34 @@
     };
 
     /* =============================================================
-       FOTOS — rutas PROVISIONALES con la estructura estándar de
-       WordPress (wp-content/uploads/AAAA/MM/archivo.jpg).
-       ⚠️ Los nombres NO están verificados contra el servidor original:
-       sustitúyelos por las URLs reales que salgan en la consola.
-       Si una ruta no existe (404), la página muestra automáticamente
-       el marco "Foto pendiente" en vez de una imagen rota.
+       FOTOS — URLs REALES del servidor del cliente
+       (cabanaslospinos.com/wp-content/uploads/2026/06/, verificadas
+       en el árbol de fuentes del navegador).
+       Si una clave está vacía o la imagen falla al cargar, se muestra
+       el marco "Foto pendiente".
        ============================================================= */
-    const WP = 'https://cabanaslospinos.com/wp-content/uploads/';
+    const WP = 'https://cabanaslospinos.com/wp-content/uploads/2026/06/';
     const FOTOS = {
-      hero:               WP + 'cabanas-los-pinos-arroyo-frio-portada.jpg',
-      cabana1:            WP + 'cabana-madera-1-exterior.jpg',
-      cabana2:            WP + 'cabana-madera-2-exterior.jpg',
-      cabana3:            WP + 'cabana-madera-3-exterior.jpg',
-      cabana4:            WP + 'cabana-madera-4-exterior.jpg',
-      cabana5:            WP + 'cabana-madera-5-exterior.jpg',
-      casaPineros:        WP + 'casa-los-pineros-terraza.jpg',
-      apartamentoMirador: WP + 'apartamento-mirador-de-las-palomas-terraza.jpg',
-      duplexSenderista:   WP + 'duplex-el-senderista.jpg',
-      entorno1:           WP + 'entorno-arroyo-frio-sierra-de-cazorla.jpg',
-      entorno2:           WP + 'piscina-cabanas-los-pinos.jpg',
-      reservas:           WP + 'cabanas-los-pinos-exterior-pinar.jpg'
+      // Logos (se usan en cabecera y pie; en fondo oscuro se muestran en blanco)
+      logoHorizontal:     WP + 'logo_clp_trans_horizontal.webp',
+      logoVertical:       WP + 'logo_clp_vertical.webp',
+      // Portada / respaldo del vídeo
+      hero:               WP + 'portada1.webp',
+      // Tarjetas de las 5 cabañas
+      cabana1:            WP + 'portada2.webp',
+      cabana2:            WP + 'portada3.webp',
+      cabana3:            WP + 'portada5.webp',
+      cabana4:            WP + 'portada6.webp',
+      cabana5:            WP + 'portada7.webp',
+      // Entorno / galería
+      entorno1:           WP + 'portada9.webp',
+      entorno2:           '',                       // EDITAR: segunda foto de entorno
+      // Alojamientos singulares — EDITAR cuando tengamos sus fotos propias
+      casaPineros:        '',
+      apartamentoMirador: '',
+      duplexSenderista:   '',
+      // Fondo del bloque "Reservas" (reutiliza la portada)
+      reservas:           WP + 'portada1.webp'
     };
 
     /* ---------- Alojamientos (datos oficiales) ----------
@@ -615,6 +625,18 @@
       img.className = 'h-full w-full object-cover transition duration-700 group-hover:scale-105';
       img.onerror = () => fotoPendiente(el);
       el.replaceChildren(img);
+    });
+
+    // Logos: muestra la imagen real si carga; si falla, deja el texto/icono de respaldo
+    $$('[data-logo]').forEach(img => {
+      const url = FOTOS[img.dataset.logo];
+      if (!url) return img.remove();
+      img.onload = () => {
+        img.classList.remove('hidden');
+        img.closest('a, div').querySelectorAll('[data-logo-fallback]').forEach(el => el.classList.add('hidden'));
+      };
+      img.onerror = () => img.remove();
+      img.src = url;
     });
 
     // Vídeo de portada: construye el <iframe> de YouTube a partir de HERO_VIDEO
