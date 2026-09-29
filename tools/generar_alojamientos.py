@@ -139,29 +139,65 @@ ALOJAMIENTOS = [
                       'en pareja entre pinos.',
                       'Una habitación con cama de 135, cocina, baño privado y la tranquilidad de Arroyo Frío '
                       'a las puertas del Parque Natural.']),
-    dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada', foto=None,
+    dict(slug='casa-los-pineros', nombre='Los Pineros', tipo='Casa con terraza privada',
+         foto=['principal_losPineros.webp'],
          max=3, precio='65 – 80 €', habs='1 habitación',
-         camas=['1 cama de matrimonio', '1 cama individual'],
-         wifi=False, extras=['Terraza privada'],
-         descripcion=['La Casa Los Pineros es un alojamiento íntimo con terraza privada, pensado para '
-                      'parejas o pequeñas familias de hasta 3 personas.',
-                      'Una habitación con cama de matrimonio y cama individual, y una terraza propia para '
-                      'disfrutar del aire de la sierra.']),
-    dict(slug='mirador-de-las-palomas', nombre='Mirador de las Palomas', tipo='Apartamento con terraza superior', foto=None,
+         camas=['1 cama de matrimonio', '1 cama individual de 95 cm'],
+         wifi=False,
+         extras=['Baño con ducha', 'Terraza privada', 'Chimenea de leña (leña no incluida)', 'Horno-microondas'],
+         # Texto y fotos REALES de la web original (captura de la pestaña Red, 29 sept 2026)
+         cabecera='cabecera_losPineros.webp',
+         galeria=['20260521_192323.webp', '20260521_192301.webp', '20260521_192541.webp',
+                  '20260521_192331.webp', '20260521_192200.webp', '20260521_192550.webp',
+                  '20260521_192540.webp', '20260521_192406.webp', '20260521_192147.webp',
+                  '20260521_191955.webp', '20260521_192447.webp'],
+         descripcion=['Es una casa en el centro del pueblo, con capacidad para 3 personas, 1 habitación con cama '
+                      'de matrimonio y una cama individual. Cuenta con 1 baño con ducha, TV, nevera, lavadora y '
+                      'horno-microondas, terraza privada, chimenea de leña (leña no incluida), calefacción y aire '
+                      'acondicionado.']),
+    dict(slug='mirador-de-las-palomas', nombre='Mirador de las Palomas', tipo='Apartamento con terraza superior',
+         foto=['principal_palomas.webp'],
          max=4, precio='90 – 120 €', habs='2 habitaciones',
          camas=['Habitación 1: cama de 135 cm', 'Habitación 2: cama de 135 cm'],
-         wifi=False, extras=['Terraza superior'],
-         descripcion=['El Apartamento Mirador de las Palomas toma su nombre del célebre mirador de la sierra '
-                      'y cuenta con una terraza superior.',
-                      'Dos habitaciones con cama de 135 para 4 personas, ideal para familias o dos parejas.']),
-    dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas', foto=None,
-         max=8, precio='70 – 180 €', habs='3 plantas · 5 habitaciones',
-         camas=['2 habitaciones de matrimonio', '3 habitaciones con camas individuales'],
-         wifi=False, extras=['Tres plantas'],
-         descripcion=['El Dúplex El Senderista reparte sus tres plantas en cinco habitaciones, con capacidad '
-                      'para hasta 8 personas.',
-                      'Dos habitaciones de matrimonio y tres con camas individuales: el punto de partida perfecto '
-                      'para grupos que vienen a recorrer las rutas del Parque Natural.']),
+         wifi=False,
+         extras=['Baño con ducha', 'Terraza privada con vistas', 'Chimenea de leña (leña no incluida)',
+                 'Aire acondicionado (frío/calor) en todas las estancias', 'Horno-microondas'],
+         # Texto y fotos REALES de la web original (captura de la pestaña Red, 29 sept 2026)
+         cabecera='cabecera_palomas.webp',
+         galeria=['20260517_115258.webp', '20260517_120357.webp', '20260517_115603.webp',
+                  '20260517_115225.webp', '20260517_115232.webp', '20260517_120011.webp',
+                  '20260517_120331.webp', '20260517_115712.webp', '20260517_115803.webp',
+                  '20260517_115308.webp', '20260517_115323.webp', '20260517_115250.webp',
+                  '20260517_115517.webp', '20260517_115505.webp', '20260517_115419.webp'],
+         descripcion=['Apartamento moderno con capacidad para 4 personas en 2 habitaciones, dispone de terraza con '
+                      'vistas al Mirador de las Palomas y a la aldea. Cuenta con 1 baño con ducha, TV, nevera, '
+                      'lavadora y horno-microondas, terraza privada con vistas, chimenea de leña (leña no incluida) '
+                      'y aire acondicionado (frío/calor) en todas las estancias.']),
+    dict(slug='el-senderista', nombre='El Senderista', tipo='Dúplex de 3 plantas',
+         # ⚠️ Nombres NO verificados (no se veían en la captura): se deducen por analogía con
+         # el resto de alojamientos. Si no existen, el hero muestra la textura con el logo.
+         foto=['principal_senderista.webp'],
+         max=8, precio='70 – 180 €', habs='3 plantas · 4 habitaciones · 2 baños',
+         camas=['2 habitaciones con camas de matrimonio', 'Resto de habitaciones con camas individuales'],
+         wifi=False,
+         extras=['2 baños con ducha', 'Amplio salón', 'Chimenea de leña (leña no incluida)',
+                 'Aire acondicionado (frío/calor) en todas las estancias', 'Horno-microondas'],
+         cabecera='cabecera_senderista.webp',
+         # Galería REAL de la web original (captura de la pestaña Red, 29 sept 2026)
+         galeria=['20260604_131746.webp', '20260604_131644.webp', '20260521_194217.webp',
+                  '20260521_194322.webp', '20260521_194334.webp', '20260521_194344.webp',
+                  '20260521_194355.webp', '20260604_131608.webp', '20260604_131726.webp',
+                  '20260521_194546.webp', '20260604_131733.webp', '20260604_131712.webp',
+                  '20260521_194209.webp', '20260521_194551.webp', '20260521_194617.webp',
+                  '20260521_194700.webp', '20260521_194713.webp', '20260521_194900.webp',
+                  '20260604_131759.webp', '20260604_131812.webp', '20260604_131651.webp',
+                  '20260604_131703.webp', '20260508_200052.webp', '20260508_200111.webp',
+                  '20260508_200223.webp'],
+         # Texto REAL de la web original
+         descripcion=['Tiene 3 plantas con 4 habitaciones y 2 baños, con capacidad para 8 personas. Amplio salón '
+                      'y ubicado en una zona residencial. Cuenta con 2 baños con ducha, TV, nevera, lavadora y '
+                      'horno-microondas, 2 habitaciones con camas de matrimonio, chimenea de leña (leña no '
+                      'incluida) y aire acondicionado (frío/calor) en todas las estancias.']),
 ]
 
 COMUNES = [('🛁', 'Baño privado'), ('🍳', 'Cocina'), ('📺', 'TV'), ('❄️', 'Aire acondicionado'),
