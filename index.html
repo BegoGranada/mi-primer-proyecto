@@ -455,7 +455,7 @@
   <!-- =================== 11. FOOTER =================== -->
   <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
-      <img data-logo="logoVertical" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
+      <img data-logo="logoHorizontal" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
       <p>Entrada 15:00 h · Salida 10:00 h · No mascotas · No fumar dentro<br><span class="text-cream/50">Nº de registro: A/JA/00117</span></p>
     </div>
@@ -645,7 +645,8 @@
       el.classList.add('foto-pendiente', 'grid', 'place-items-center');
       if (el.hasAttribute('data-bg')) return el.replaceChildren();
       // Muestra el logo vertical en blanco; si tampoco carga, el texto "Foto pendiente"
-      el.innerHTML = `<img src="${FOTOS.logoVertical}" alt="" class="h-1/2 w-auto opacity-70 brightness-0 invert"
+      // Logo horizontal: es transparente (el vertical tiene fondo y se vería como un bloque)
+      el.innerHTML = `<img src="${FOTOS.logoHorizontal}" alt="" class="w-1/2 max-w-xs h-auto opacity-60 brightness-0 invert"
         onerror="this.outerHTML='<span class=&quot;rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-widest text-cream/70&quot;>Foto pendiente</span>'">`;
     };
     $$('[data-foto]').forEach(el => {

@@ -49,7 +49,7 @@ def rutas_foto(foto):
             out += rutas(f)
     return out
 LOGO_H = WP + 'logo_clp_trans_horizontal.webp'
-LOGO_V = WP + 'logo_clp_vertical.webp'
+LOGO_V = WP + 'logo_clp_vertical.webp'  # ⚠️ tiene fondo propio: no usar sobre fondos oscuros
 
 # ---------------------------------------------------------------------------
 # DATOS DE LOS ALOJAMIENTOS (catálogo oficial facilitado por el cliente)
@@ -523,7 +523,7 @@ def pagina(a, cfg, css):
   <!-- =================== PIE (igual que la portada) =================== -->
   <footer class="bg-pine-900 pb-24 pt-10 text-sm text-cream/60 sm:pb-10">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
-      <img data-logo src="{LOGO_V}" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
+      <img data-logo src="{LOGO_H}" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla</p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
     </div>
@@ -552,7 +552,7 @@ def pagina(a, cfg, css):
     // Foto del hero: si no hay foto o no carga, queda la textura de madera con el logo
     (function () {{
       const box = $('#heroFoto'), srcs = box.dataset.src.split('|').filter(Boolean);
-      const logo = () => box.innerHTML = `<div class="grid h-full place-items-center"><img src="{LOGO_V}" alt="" class="h-1/3 w-auto opacity-25 brightness-0 invert" onerror="this.remove()"></div>`;
+      const logo = () => box.innerHTML = `<div class="grid h-full place-items-center"><img src="{LOGO_H}" alt="" class="w-1/2 max-w-md h-auto opacity-25 brightness-0 invert" onerror="this.remove()"></div>`;
       if (!srcs.length) return logo();
       const img = new Image();
       img.alt = ACTUAL; img.className = 'h-full w-full object-cover';
@@ -748,7 +748,7 @@ def pagina_noticia(n, cfg, css):
   <!-- =================== PIE (igual que la portada) =================== -->
   <footer class="bg-pine-900 pb-10 pt-10 text-sm text-cream/60">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
-      <img data-logo src="{LOGO_V}" alt="Cabañas de Madera Los Pinos" class="hidden h-20 w-auto opacity-80 brightness-0 invert" />
+      <img data-logo src="{LOGO_H}" alt="Cabañas de Madera Los Pinos" class="hidden h-14 w-auto opacity-80 brightness-0 invert" />
       <p>© <span id="year"></span> Cabañas de Madera Los Pinos · Arroyo Frío, Sierra de Cazorla<br><span class="text-cream/50">Nº de registro: {REGISTRO}</span></p>
       <p><a href="mailto:info@cabanaslospinos.com" class="hover:text-cream">info@cabanaslospinos.com</a> · <a href="tel:+34686235888" class="hover:text-cream">686 23 58 88</a></p>
     </div>
